@@ -1,0 +1,14 @@
+/* Add your CSS styles for .app-header, h1, nav, .signup-btn, etc. here */
+.app-header {
+  /* example styles */
+  background-color: #f8f9fa;
+  padding: 16px;
+}
+
+.signup-btn {
+  background-color: #007bff;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+}
