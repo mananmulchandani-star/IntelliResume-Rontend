@@ -40,6 +40,7 @@ const DashboardPage = () => {
     email: '',
     phone: '',
     location: '',
+    dateOfBirth: '', // Added DOB field
     stream: '',
     field: '',
     userType: '',
@@ -47,6 +48,12 @@ const DashboardPage = () => {
     targetRole: '',
     skills: '',
     prompt: ''
+  });
+  // Skill levels state - now with default values
+  const [skillLevels, setSkillLevels] = useState({
+    technical: 'intermediate',
+    soft: 'intermediate',
+    tools: 'intermediate'
   });
   const [aiPrompt, setAiPrompt] = useState('');
   const [loading, setLoading] = useState(false);
@@ -74,14 +81,20 @@ const DashboardPage = () => {
     const loggedInUser = JSON.parse(localStorage.getItem('currentUser')) || {};
     setUserName(loggedInUser.name || loggedInUser.email || 'User');
     setResumes(userResumes);
+    
+    // Debug: Check what's loaded
+    console.log('Loaded resumes:', userResumes);
+    console.log('Current user:', loggedInUser);
   }, []);
 
   // Apply dark mode class to body
   useEffect(() => {
     if (darkMode) {
       document.body.classList.add('dark-mode');
+      document.body.style.backgroundColor = '#0f172a';
     } else {
       document.body.classList.remove('dark-mode');
+      document.body.style.backgroundColor = '#ffffff';
     }
   }, [darkMode]);
 
@@ -101,6 +114,14 @@ const DashboardPage = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showAIPopup]);
+
+  // Handle skill level change
+  const handleSkillLevelChange = (category, level) => {
+    setSkillLevels(prev => ({
+      ...prev,
+      [category]: level
+    }));
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('currentUser');
@@ -132,6 +153,7 @@ const DashboardPage = () => {
       - Email: ${formData.email || 'Not specified'}
       - Phone: ${formData.phone || 'Not specified'} 
       - Location: ${formData.location || 'Not specified'}
+      - Date of Birth: ${formData.dateOfBirth || 'Not specified'}
       
       PROFESSIONAL BACKGROUND:
       - Stream/Background: ${formData.stream}
@@ -139,15 +161,28 @@ const DashboardPage = () => {
       - User Type: ${formData.userType}
       - Experience Level: ${formData.experienceLevel}
       - Target Role: ${formData.targetRole}
-      - Key Skills: ${formData.skills}
+      - User Provided Skills: ${formData.skills || 'None provided'}
+      
+      SKILL PROFICIENCY REQUIREMENTS:
+      - Technical Skills Level: ${skillLevels.technical} (Programming languages, frameworks, technical expertise)
+      - Soft Skills Level: ${skillLevels.soft} (Communication, teamwork, leadership, problem-solving)
+      - Tools & Software Level: ${skillLevels.tools} (Development tools, software applications, platforms)
+      
+      IMPORTANT: Generate skills based on:
+      1. Stream/Background: ${formData.stream}
+      2. Target Role: ${formData.targetRole}
+      3. Field: ${formData.field}
+      4. User-specified skill proficiency levels
+      
+      Include appropriate skills for each category at the specified proficiency level.
       
       ADDITIONAL INSTRUCTIONS:
       ${formData.prompt}
       
-      IMPORTANT: Generate a COMPLETE resume with ALL sections filled. Include:
+      Generate a COMPLETE resume with ALL sections filled. Include:
       - Professional summary/objective
       - Education details (at least one entry)
-      - Skills (minimum 5-8 relevant skills)
+      - Skills (generate relevant skills based on stream and proficiency levels)
       - Projects/Experience (at least one substantial project)
       - Certifications/Achievements if relevant
       - Work Experience ONLY if experience level is not "no-experience"
@@ -200,9 +235,15 @@ const DashboardPage = () => {
         if (formData.location) {
           resumeData.location = formData.location;
         }
+        if (formData.dateOfBirth) {
+          resumeData.dateOfBirth = formData.dateOfBirth;
+        }
         if (formData.targetRole) {
           resumeData.jobTitle = formData.targetRole;
         }
+
+        // Add skill levels to resume data
+        resumeData.skillLevels = skillLevels;
 
         // Save resume to local storage
         const newResume = {
@@ -224,7 +265,8 @@ const DashboardPage = () => {
           navigate('/editor', { 
             state: { 
               resumeData: resumeData,
-              formData: formData 
+              formData: formData,
+              skillLevels: skillLevels
             } 
           });
         }, 500);
@@ -235,6 +277,7 @@ const DashboardPage = () => {
           email: prev.email,
           phone: prev.phone,
           location: prev.location,
+          dateOfBirth: prev.dateOfBirth,
           stream: '',
           field: '',
           userType: '',
@@ -243,6 +286,12 @@ const DashboardPage = () => {
           skills: '',
           prompt: ''
         }));
+        // Reset skill levels to default
+        setSkillLevels({
+          technical: 'intermediate',
+          soft: 'intermediate',
+          tools: 'intermediate'
+        });
       } else {
         const errorText = await response.text();
         let errorMessage = 'Failed to generate resume';
@@ -263,7 +312,8 @@ const DashboardPage = () => {
         navigate('/editor', { 
           state: { 
             resumeData: fallbackData,
-            formData: formData 
+            formData: formData,
+            skillLevels: skillLevels
           } 
         });
       }, 500);
@@ -291,12 +341,20 @@ const DashboardPage = () => {
         ${formData.email ? `- Email: ${formData.email}` : ''}
         ${formData.phone ? `- Phone: ${formData.phone}` : ''}
         ${formData.location ? `- Location: ${formData.location}` : ''}
+        ${formData.dateOfBirth ? `- Date of Birth: ${formData.dateOfBirth}` : ''}
         ${formData.stream ? `- Background: ${formData.stream}` : ''}
         ${formData.field ? `- Field: ${formData.field}` : ''}
         ${formData.userType ? `- User Type: ${formData.userType}` : ''}
         ${formData.experienceLevel ? `- Experience: ${formData.experienceLevel}` : ''}
         ${formData.targetRole ? `- Target Role: ${formData.targetRole}` : ''}
-        ${formData.skills ? `- Skills: ${formData.skills}` : ''}
+        ${formData.skills ? `- User Skills: ${formData.skills}` : ''}
+        
+        SKILL PROFICIENCY REQUIREMENTS:
+        - Technical Skills Level: ${skillLevels.technical} (Programming languages, frameworks, technical expertise)
+        - Soft Skills Level: ${skillLevels.soft} (Communication, teamwork, leadership, problem-solving)
+        - Tools & Software Level: ${skillLevels.tools} (Development tools, software applications, platforms)
+        
+        Generate skills appropriate for the user's background and target role at the specified proficiency levels.
         
         IMPORTANT: Generate a COMPLETE, professional resume with all necessary sections.
         Return as valid JSON that can be parsed by JSON.parse()
@@ -344,6 +402,12 @@ const DashboardPage = () => {
         if (formData.location) {
           resumeData.location = formData.location;
         }
+        if (formData.dateOfBirth) {
+          resumeData.dateOfBirth = formData.dateOfBirth;
+        }
+
+        // Add skill levels to resume data
+        resumeData.skillLevels = skillLevels;
 
         // Save resume to local storage
         const newResume = {
@@ -369,7 +433,8 @@ const DashboardPage = () => {
           navigate('/editor', { 
             state: { 
               resumeData: resumeData,
-              formData: formData 
+              formData: formData,
+              skillLevels: skillLevels
             } 
           });
         }, 500);
@@ -429,6 +494,7 @@ const DashboardPage = () => {
       email: formData.email || 'your.email@example.com',
       phone: formData.phone || '+1 234 567 8900',
       location: formData.location || 'Your City, Country',
+      dateOfBirth: formData.dateOfBirth || '',
       jobTitle: formData.targetRole || 'Professional Title',
       summary: `Experienced ${formData.field || 'professional'} with background in ${formData.stream || 'relevant field'}. Seeking ${formData.targetRole || 'new opportunities'} where I can apply my skills in ${formData.skills || 'relevant areas'}.`,
       
@@ -563,11 +629,16 @@ const DashboardPage = () => {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
+        style={{ background: darkMode ? '#0f172a' : '#ffffff', minHeight: '100vh' }}
       >
         {/* Header */}
         <motion.header 
           className="dashboard-header"
           variants={itemVariants}
+          style={{ 
+            background: darkMode ? '#1e293b' : '#ffffff',
+            borderBottom: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+          }}
         >
           <div className="header-content">
             <div className="brand-section">
@@ -593,17 +664,24 @@ const DashboardPage = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                style={{
+                  background: darkMode ? '#334155' : '#f1f5f9',
+                  border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
+                }}
               >
                 {darkMode ? <Icons.Sun /> : <Icons.Moon />}
               </motion.button>
               
-              <div className="user-section">
+              <div className="user-section" style={{
+                background: darkMode ? '#334155' : '#f8fafc',
+                border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
+              }}>
                 <div className="user-avatar">
                   {userName.charAt(0).toUpperCase()}
                 </div>
                 <div className="user-details">
-                  <span className="user-greeting">Welcome back,</span>
-                  <span className="user-name">{userName}</span>
+                  <span className="user-greeting" style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Welcome back,</span>
+                  <span className="user-name" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{userName}</span>
                 </div>
                 <motion.button 
                   className="logout-btn"
@@ -624,8 +702,8 @@ const DashboardPage = () => {
           variants={itemVariants}
         >
           <div className="section-header">
-            <h2>Quick Actions</h2>
-            <p>Start creating your professional resume</p>
+            <h2 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Quick Actions</h2>
+            <p style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Start creating your professional resume</p>
           </div>
           <div className="actions-grid">
             <motion.button 
@@ -634,15 +712,19 @@ const DashboardPage = () => {
               variants={cardVariants}
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.98 }}
+              style={{
+                background: darkMode ? '#1e293b' : '#ffffff',
+                border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+              }}
             >
               <div className="action-icon">
                 <Icons.Create />
               </div>
               <div className="action-content">
-                <h3>Create Resume</h3>
-                <p>Build from scratch with our template</p>
+                <h3 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Create Resume</h3>
+                <p style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Build from scratch with our template</p>
               </div>
-              <div className="action-arrow">→</div>
+              <div className="action-arrow" style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>→</div>
             </motion.button>
 
             <motion.button 
@@ -651,15 +733,19 @@ const DashboardPage = () => {
               variants={cardVariants}
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.98 }}
+              style={{
+                background: darkMode ? '#1e293b' : '#ffffff',
+                border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+              }}
             >
               <div className="action-icon">
                 <Icons.AI />
               </div>
               <div className="action-content">
-                <h3>AI Assistant</h3>
-                <p>Generate with artificial intelligence</p>
+                <h3 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>AI Assistant</h3>
+                <p style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Generate with artificial intelligence</p>
               </div>
-              <div className="action-arrow">→</div>
+              <div className="action-arrow" style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>→</div>
             </motion.button>
           </div>
         </motion.section>
@@ -670,8 +756,8 @@ const DashboardPage = () => {
           variants={containerVariants}
         >
           <div className="section-header">
-            <h2>My Resumes</h2>
-            <p>Manage and edit your created resumes</p>
+            <h2 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>My Resumes</h2>
+            <p style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Manage and edit your created resumes</p>
           </div>
           
           <AnimatePresence>
@@ -682,12 +768,19 @@ const DashboardPage = () => {
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
+                style={{
+                  background: darkMode ? '#1e293b' : '#f8fafc',
+                  border: darkMode ? '2px dashed #334155' : '2px dashed #e2e8f0'
+                }}
               >
-                <div className="empty-icon">
+                <div className="empty-icon" style={{
+                  background: darkMode ? '#334155' : '#f1f5f9',
+                  color: darkMode ? '#cbd5e1' : '#64748b'
+                }}>
                   <Icons.Document />
                 </div>
-                <h3>No resumes yet</h3>
-                <p>Create your first professional resume to get started</p>
+                <h3 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>No resumes yet</h3>
+                <p style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Create your first professional resume to get started</p>
                 <motion.button 
                   className="create-first-btn"
                   onClick={openCreatePopup}
@@ -714,6 +807,11 @@ const DashboardPage = () => {
                       exit="hidden"
                       whileTap={{ scale: 0.95 }}
                       layout
+                      style={{
+                        background: darkMode ? '#1e293b' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        boxShadow: darkMode ? '0 4px 6px rgba(0, 0, 0, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.1)'
+                      }}
                     >
                       <div className="card-header">
                         <div className="card-badge">
@@ -726,6 +824,11 @@ const DashboardPage = () => {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             title="Edit resume"
+                            style={{
+                              background: darkMode ? '#334155' : '#f1f5f9',
+                              border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
+                              color: darkMode ? '#cbd5e1' : '#64748b'
+                            }}
                           >
                             <Icons.Edit />
                           </motion.button>
@@ -735,14 +838,19 @@ const DashboardPage = () => {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             title="Delete resume"
+                            style={{
+                              background: darkMode ? '#334155' : '#f1f5f9',
+                              border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
+                              color: darkMode ? '#cbd5e1' : '#64748b'
+                            }}
                           >
                             <Icons.Delete />
                           </motion.button>
                         </div>
                       </div>
                       <div className="card-content">
-                        <h3 className="card-title">{resume.title}</h3>
-                        <p className="card-date">
+                        <h3 className="card-title" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{resume.title}</h3>
+                        <p className="card-date" style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>
                           <Icons.Calendar />
                           Created {resume.created}
                         </p>
@@ -780,11 +888,18 @@ const DashboardPage = () => {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
+                style={{
+                  background: darkMode ? '#1e293b' : '#ffffff',
+                  border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+                }}
               >
-                <div className="popup-header">
+                <div className="popup-header" style={{
+                  background: darkMode ? '#334155' : '#f8fafc',
+                  borderBottom: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
+                }}>
                   <div className="popup-title">
                     <Icons.Create />
-                    <h2>Create New Resume</h2>
+                    <h2 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Create New Resume</h2>
                   </div>
                   <motion.button 
                     className="close-btn"
@@ -792,6 +907,11 @@ const DashboardPage = () => {
                     disabled={loading}
                     whileHover={{ scale: 1.1, rotate: 90 }}
                     whileTap={{ scale: 0.9 }}
+                    style={{
+                      background: darkMode ? '#475569' : '#f1f5f9',
+                      border: darkMode ? '1px solid #64748b' : '1px solid #e2e8f0',
+                      color: darkMode ? '#cbd5e1' : '#64748b'
+                    }}
                   >
                     <Icons.Close />
                   </motion.button>
@@ -799,128 +919,113 @@ const DashboardPage = () => {
 
                 <form onSubmit={handleCreateResume} className="resume-form">
                   <div className="form-section">
-                    <h3>Personal Information</h3>
+                    <h3 style={{ color: darkMode ? '#f1f5f9' : '#1e293b', borderBottom: darkMode ? '2px solid #334155' : '2px solid #e2e8f0' }}>Personal Information</h3>
                     <div className="form-grid">
-                      <div className="form-group">
-                        <label>Full Name</label>
-                        <input
-                          type="text"
-                          name="fullName"
-                          value={formData.fullName}
-                          onChange={handleInputChange}
-                          placeholder="Your full name"
-                          disabled={loading}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Email</label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          placeholder="your.email@example.com"
-                          disabled={loading}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Phone</label>
-                        <input
-                          type="tel"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          placeholder="+1 234 567 8900"
-                          disabled={loading}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Location</label>
-                        <input
-                          type="text"
-                          name="location"
-                          value={formData.location}
-                          onChange={handleInputChange}
-                          placeholder="City, Country"
-                          disabled={loading}
-                        />
-                      </div>
+                      {['fullName', 'email', 'phone', 'location', 'dateOfBirth'].map((field) => (
+                        <div className="form-group" key={field}>
+                          <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>
+                            {field === 'fullName' ? 'Full Name' : 
+                             field === 'email' ? 'Email' :
+                             field === 'phone' ? 'Phone' : 
+                             field === 'location' ? 'Location' : 'Date of Birth'}
+                          </label>
+                          <input
+                            type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : field === 'dateOfBirth' ? 'date' : 'text'}
+                            name={field}
+                            value={formData[field]}
+                            onChange={handleInputChange}
+                            placeholder={
+                              field === 'fullName' ? 'Your full name' :
+                              field === 'email' ? 'your.email@example.com' :
+                              field === 'phone' ? '+1 234 567 8900' : 
+                              field === 'location' ? 'City, Country' : 'YYYY-MM-DD'
+                            }
+                            disabled={loading}
+                            style={{
+                              background: darkMode ? '#0f172a' : '#ffffff',
+                              border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                              color: darkMode ? '#f1f5f9' : '#1e293b'
+                            }}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
 
                   <div className="form-section">
-                    <h3>Professional Information</h3>
+                    <h3 style={{ color: darkMode ? '#f1f5f9' : '#1e293b', borderBottom: darkMode ? '2px solid #334155' : '2px solid #e2e8f0' }}>Professional Information</h3>
                     <div className="form-grid">
-                      <div className="form-group">
-                        <label>Stream/Background *</label>
-                        <select 
-                          name="stream" 
-                          value={formData.stream} 
-                          onChange={handleInputChange}
-                          required
-                          disabled={loading}
-                        >
-                          <option value="">Select Stream</option>
-                          <option value="engineering">Engineering</option>
-                          <option value="computer-science">Computer Science</option>
-                          <option value="business">Business</option>
-                          <option value="arts">Arts & Humanities</option>
-                          <option value="science">Science</option>
-                          <option value="medical">Medical</option>
-                          <option value="other">Other</option>
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Specific Field *</label>
-                        <input
-                          type="text"
-                          name="field"
-                          value={formData.field}
-                          onChange={handleInputChange}
-                          placeholder="e.g., Software Development, Marketing, Data Science"
-                          required
-                          disabled={loading}
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label>You are a *</label>
-                        <select 
-                          name="userType" 
-                          value={formData.userType} 
-                          onChange={handleInputChange}
-                          required
-                          disabled={loading}
-                        >
-                          <option value="">Select</option>
-                          <option value="student">Student</option>
-                          <option value="fresh-graduate">Fresh Graduate</option>
-                          <option value="experienced">Experienced Professional</option>
-                          <option value="career-changer">Career Changer</option>
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Experience Level *</label>
-                        <select 
-                          name="experienceLevel" 
-                          value={formData.experienceLevel} 
-                          onChange={handleInputChange}
-                          required
-                          disabled={loading}
-                        >
-                          <option value="">Select Experience</option>
-                          <option value="no-experience">No Experience</option>
-                          <option value="0-2">0-2 Years</option>
-                          <option value="2-5">2-5 Years</option>
-                          <option value="5-10">5-10 Years</option>
-                          <option value="10+">10+ Years</option>
-                        </select>
-                      </div>
+                      {['stream', 'field', 'userType', 'experienceLevel'].map((field) => (
+                        <div className="form-group" key={field}>
+                          <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>
+                            {field === 'stream' ? 'Stream/Background *' :
+                             field === 'field' ? 'Specific Field *' :
+                             field === 'userType' ? 'You are a *' : 'Experience Level *'}
+                          </label>
+                          {field === 'stream' || field === 'userType' || field === 'experienceLevel' ? (
+                            <select 
+                              name={field} 
+                              value={formData[field]} 
+                              onChange={handleInputChange}
+                              required
+                              disabled={loading}
+                              style={{
+                                background: darkMode ? '#0f172a' : '#ffffff',
+                                border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                                color: darkMode ? '#f1f5f9' : '#1e293b'
+                              }}
+                            >
+                              <option value="">Select {field === 'stream' ? 'Stream' : field === 'userType' ? '' : 'Experience'}</option>
+                              {field === 'stream' && (
+                                <>
+                                  <option value="engineering">Engineering</option>
+                                  <option value="computer-science">Computer Science</option>
+                                  <option value="business">Business</option>
+                                  <option value="arts">Arts & Humanities</option>
+                                  <option value="science">Science</option>
+                                  <option value="medical">Medical</option>
+                                  <option value="other">Other</option>
+                                </>
+                              )}
+                              {field === 'userType' && (
+                                <>
+                                  <option value="student">Student</option>
+                                  <option value="fresh-graduate">Fresh Graduate</option>
+                                  <option value="experienced">Experienced Professional</option>
+                                  <option value="career-changer">Career Changer</option>
+                                </>
+                              )}
+                              {field === 'experienceLevel' && (
+                                <>
+                                  <option value="no-experience">No Experience</option>
+                                  <option value="0-2">0-2 Years</option>
+                                  <option value="2-5">2-5 Years</option>
+                                  <option value="5-10">5-10 Years</option>
+                                  <option value="10+">10+ Years</option>
+                                </>
+                              )}
+                            </select>
+                          ) : (
+                            <input
+                              type="text"
+                              name={field}
+                              value={formData[field]}
+                              onChange={handleInputChange}
+                              placeholder={field === 'field' ? "e.g., Software Development, Marketing, Data Science" : ""}
+                              required
+                              disabled={loading}
+                              style={{
+                                background: darkMode ? '#0f172a' : '#ffffff',
+                                border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                                color: darkMode ? '#f1f5f9' : '#1e293b'
+                              }}
+                            />
+                          )}
+                        </div>
+                      ))}
 
                       <div className="form-group full-width">
-                        <label>Target Role *</label>
+                        <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>Target Role *</label>
                         <input
                           type="text"
                           name="targetRole"
@@ -929,23 +1034,111 @@ const DashboardPage = () => {
                           placeholder="e.g., Frontend Developer, Marketing Manager"
                           required
                           disabled={loading}
+                          style={{
+                            background: darkMode ? '#0f172a' : '#ffffff',
+                            border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                            color: darkMode ? '#f1f5f9' : '#1e293b'
+                          }}
                         />
                       </div>
 
                       <div className="form-group full-width">
-                        <label>Key Skills (comma separated)</label>
+                        <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>Key Skills (comma separated) - Optional</label>
                         <input
                           type="text"
                           name="skills"
                           value={formData.skills}
                           onChange={handleInputChange}
-                          placeholder="e.g., JavaScript, React, Project Management"
+                          placeholder="e.g., JavaScript, React, Project Management (Leave empty for AI to generate skills)"
                           disabled={loading}
+                          style={{
+                            background: darkMode ? '#0f172a' : '#ffffff',
+                            border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                            color: darkMode ? '#f1f5f9' : '#1e293b'
+                          }}
                         />
                       </div>
 
+                      {/* Skill Levels Section - ALWAYS VISIBLE */}
                       <div className="form-group full-width">
-                        <label>Additional Instructions / Prompt</label>
+                        <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>Skill Proficiency Levels *</label>
+                        <div className="skill-levels-container">
+                          {[
+                            { 
+                              category: 'technical', 
+                              label: 'Technical Skills',
+                              description: 'Programming languages, frameworks, technical expertise'
+                            },
+                            { 
+                              category: 'soft', 
+                              label: 'Soft Skills',
+                              description: 'Communication, teamwork, leadership, problem-solving'
+                            },
+                            { 
+                              category: 'tools', 
+                              label: 'Tools & Software',
+                              description: 'Development tools, software applications, platforms'
+                            }
+                          ].map(({ category, label, description }) => (
+                            <div key={category} className="skill-level-category">
+                              <div className="skill-category-header">
+                                <span className="skill-category-label" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>
+                                  {label}
+                                </span>
+                                <span className="skill-category-description" style={{ color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.875rem' }}>
+                                  {description}
+                                </span>
+                              </div>
+                              <div className="skill-level-options">
+                                {[
+                                  { level: 'basic', label: 'Basic', desc: 'Fundamental understanding' },
+                                  { level: 'intermediate', label: 'Intermediate', desc: 'Practical experience' },
+                                  { level: 'advanced', label: 'Advanced', desc: 'Expert proficiency' }
+                                ].map(({ level, label, desc }) => (
+                                  <label key={level} className="skill-level-option">
+                                    <input
+                                      type="radio"
+                                      name={`skill-${category}`}
+                                      value={level}
+                                      checked={skillLevels[category] === level}
+                                      onChange={() => handleSkillLevelChange(category, level)}
+                                      disabled={loading}
+                                    />
+                                    <div 
+                                      className={`skill-level-btn ${skillLevels[category] === level ? 'active' : ''}`}
+                                      style={{
+                                        background: skillLevels[category] === level 
+                                          ? (darkMode ? '#3b82f6' : '#2563eb')
+                                          : (darkMode ? '#334155' : '#f1f5f9'),
+                                        border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
+                                        color: skillLevels[category] === level 
+                                          ? '#ffffff' 
+                                          : (darkMode ? '#cbd5e1' : '#475569')
+                                      }}
+                                    >
+                                      <div className="skill-level-label">{label}</div>
+                                      <div className="skill-level-desc" style={{ 
+                                        color: skillLevels[category] === level 
+                                          ? '#e2e8f0' 
+                                          : (darkMode ? '#94a3b8' : '#64748b'),
+                                        fontSize: '0.75rem'
+                                      }}>
+                                        {desc}
+                                      </div>
+                                    </div>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <p style={{ color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.875rem', marginTop: '8px' }}>
+                          AI will generate appropriate skills based on your stream and selected proficiency levels
+                        </p>
+                      </div>
+
+                      <div className="form-group full-width">
+                        <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>Additional Instructions / Prompt</label>
                         <textarea
                           name="prompt"
                           value={formData.prompt}
@@ -953,12 +1146,17 @@ const DashboardPage = () => {
                           placeholder="Any specific requirements, achievements, or additional information..."
                           rows="4"
                           disabled={loading}
+                          style={{
+                            background: darkMode ? '#0f172a' : '#ffffff',
+                            border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                            color: darkMode ? '#f1f5f9' : '#1e293b'
+                          }}
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div className="form-actions">
+                  <div className="form-actions" style={{ borderTop: darkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
                     <motion.button 
                       type="button" 
                       onClick={closeCreatePopup}
@@ -966,6 +1164,11 @@ const DashboardPage = () => {
                       className="cancel-btn"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
+                      style={{
+                        background: darkMode ? '#334155' : '#f1f5f9',
+                        border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}
                     >
                       Cancel
                     </motion.button>
@@ -1012,11 +1215,18 @@ const DashboardPage = () => {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
+                style={{
+                  background: darkMode ? '#1e293b' : '#ffffff',
+                  border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+                }}
               >
-                <div className="popup-header">
+                <div className="popup-header" style={{
+                  background: darkMode ? '#334155' : '#f8fafc',
+                  borderBottom: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
+                }}>
                   <div className="popup-title">
                     <Icons.Robot />
-                    <h2>AI Resume Assistant</h2>
+                    <h2 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>AI Resume Assistant</h2>
                   </div>
                   <motion.button 
                     className="close-btn"
@@ -1024,15 +1234,23 @@ const DashboardPage = () => {
                     disabled={aiLoading}
                     whileHover={{ scale: 1.1, rotate: 90 }}
                     whileTap={{ scale: 0.9 }}
+                    style={{
+                      background: darkMode ? '#475569' : '#f1f5f9',
+                      border: darkMode ? '1px solid #64748b' : '1px solid #e2e8f0',
+                      color: darkMode ? '#cbd5e1' : '#64748b'
+                    }}
                   >
                     <Icons.Close />
                   </motion.button>
                 </div>
 
                 <div className="ai-popup-content">
-                  <div className="ai-instructions">
-                    <p>Tell the AI assistant what kind of resume you want to create:</p>
-                    <ul>
+                  <div className="ai-instructions" style={{
+                    background: darkMode ? '#334155' : '#f8fafc',
+                    border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
+                  }}>
+                    <p style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Tell the AI assistant what kind of resume you want to create:</p>
+                    <ul style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>
                       <li>Describe your background and experience</li>
                       <li>Specify the job role you're targeting</li>
                       <li>Mention key skills and achievements</li>
@@ -1041,28 +1259,76 @@ const DashboardPage = () => {
                   </div>
 
                   <div className="ai-form-group">
-                    <label>Your Prompt:</label>
+                    <label style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Your Prompt:</label>
                     <textarea
                       value={aiPrompt}
                       onChange={handleAiPromptChange}
                       placeholder="e.g., Create a professional resume for a senior frontend developer with 5 years of experience in React and TypeScript. Include experience with modern web technologies and team leadership..."
                       rows="6"
                       disabled={aiLoading}
+                      style={{
+                        background: darkMode ? '#0f172a' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: darkMode ? '#f1f5f9' : '#1e293b'
+                      }}
                     />
                   </div>
 
-                  <div className="current-info">
-                    <h4>Current Information:</h4>
+                  <div className="current-info" style={{
+                    background: darkMode ? '#334155' : '#f8fafc',
+                    border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
+                  }}>
+                    <h4 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Current Information:</h4>
                     <div className="info-grid">
-                      {formData.fullName && <span>Name: {formData.fullName}</span>}
-                      {formData.email && <span>Email: {formData.email}</span>}
-                      {formData.targetRole && <span>Target Role: {formData.targetRole}</span>}
-                      {formData.field && <span>Field: {formData.field}</span>}
-                      {formData.experienceLevel && <span>Experience: {formData.experienceLevel}</span>}
+                      {formData.fullName && <span style={{
+                        background: darkMode ? '#1e293b' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}>Name: {formData.fullName}</span>}
+                      {formData.email && <span style={{
+                        background: darkMode ? '#1e293b' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}>Email: {formData.email}</span>}
+                      {formData.dateOfBirth && <span style={{
+                        background: darkMode ? '#1e293b' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}>Date of Birth: {formData.dateOfBirth}</span>}
+                      {formData.targetRole && <span style={{
+                        background: darkMode ? '#1e293b' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}>Target Role: {formData.targetRole}</span>}
+                      {formData.field && <span style={{
+                        background: darkMode ? '#1e293b' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}>Field: {formData.field}</span>}
+                      {formData.experienceLevel && <span style={{
+                        background: darkMode ? '#1e293b' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}>Experience: {formData.experienceLevel}</span>}
+                      <span style={{
+                        background: darkMode ? '#1e293b' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}>Tech Skills: {skillLevels.technical}</span>
+                      <span style={{
+                        background: darkMode ? '#1e293b' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}>Soft Skills: {skillLevels.soft}</span>
+                      <span style={{
+                        background: darkMode ? '#1e293b' : '#ffffff',
+                        border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}>Tools Level: {skillLevels.tools}</span>
                     </div>
                   </div>
 
-                  <div className="ai-popup-actions">
+                  <div className="ai-popup-actions" style={{ borderTop: darkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
                     <motion.button 
                       type="button" 
                       onClick={closeAIPopup}
@@ -1070,6 +1336,11 @@ const DashboardPage = () => {
                       className="cancel-btn"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
+                      style={{
+                        background: darkMode ? '#334155' : '#f1f5f9',
+                        border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
+                        color: darkMode ? '#cbd5e1' : '#475569'
+                      }}
                     >
                       Cancel
                     </motion.button>

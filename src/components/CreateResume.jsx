@@ -42,54 +42,48 @@ const CreateResume = () => {
     setError('');
 
     try {
+      // Validate required fields
+      if (!personalInfo.fullName || !personalInfo.email) {
+        throw new Error('Full Name and Email are required');
+      }
+
+      if (!professionalInfo.stream || !professionalInfo.specificField || !professionalInfo.youAre) {
+        throw new Error('Please fill all professional information fields');
+      }
+
+      // Prepare form data for AI Prompt page
       const formData = {
-        prompt: additionalInstructions,
+        // Personal Info
         fullName: personalInfo.fullName,
         email: personalInfo.email,
         phone: personalInfo.phone,
         location: personalInfo.location,
+        
+        // Professional Info
         stream: professionalInfo.stream,
-        specificField: professionalInfo.specificField,
-        youAre: professionalInfo.youAre,
+        field: professionalInfo.specificField,
+        userType: professionalInfo.youAre,
         experienceLevel: professionalInfo.experienceLevel,
         targetRole: professionalInfo.targetRole,
-        keySkills: professionalInfo.keySkills
+        skills: professionalInfo.keySkills,
+        
+        // AI Prompt
+        userPrompt: additionalInstructions,
+        prompt: additionalInstructions
       };
 
-      console.log('🚀 Sending to backend:', formData);
+      console.log('🚀 Sending to AI Prompt page:', formData);
 
-      const response = await fetch('http://localhost:5000/api/generate-resume-from-prompt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      const responseData = await response.json();
-      console.log('📨 Response from backend:', responseData);
-
-      if (!response.ok) {
-        throw new Error(responseData.error || `HTTP error! status: ${response.status}`);
-      }
-
-      if (!responseData.resumeData) {
-        throw new Error('No resume data received from server');
-      }
-
-      // ✅ FIX: Save the AI-generated resume data to localStorage
-      localStorage.setItem('currentResume', JSON.stringify(responseData.resumeData));
-      localStorage.setItem('resumeFormData', JSON.stringify(formData));
-      
-      // ✅ FIX: Navigate to editor with state
-      navigate('/editor', { 
+      // Navigate to AI Prompt page with all data
+      navigate('/ai-prompt', { 
         state: { 
-          resumeData: responseData.resumeData,
-          formData: formData
+          formData: formData 
         }
       });
 
     } catch (err) {
-      console.error('❌ Error creating resume:', err);
-      setError(`Failed to create resume: ${err.message}`);
+      console.error('❌ Error:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -97,7 +91,10 @@ const CreateResume = () => {
 
   return (
     <div className="create-resume-container">
-      <h1>Create New Resume</h1>
+      <div className="create-resume-header">
+        <h1>Create New Resume</h1>
+        <p>Fill in your details and we'll help you create a professional resume with AI</p>
+      </div>
       
       {error && (
         <div className="error-message">
@@ -108,7 +105,7 @@ const CreateResume = () => {
       <form onSubmit={handleCreateResume} className="resume-form">
         {/* Personal Information Section */}
         <div className="form-section">
-          <h2>Personal Information</h2>
+          <h2>📝 Personal Information</h2>
           <div className="form-row">
             <div className="form-group">
               <label>Full Name *</label>
@@ -117,7 +114,7 @@ const CreateResume = () => {
                 name="fullName"
                 value={personalInfo.fullName}
                 onChange={handlePersonalInfoChange}
-                placeholder="MANAN"
+                placeholder="Enter your full name"
                 required
               />
             </div>
@@ -128,7 +125,7 @@ const CreateResume = () => {
                 name="email"
                 value={personalInfo.email}
                 onChange={handlePersonalInfoChange}
-                placeholder="manan@example.com"
+                placeholder="your.email@example.com"
                 required
               />
             </div>
@@ -141,7 +138,7 @@ const CreateResume = () => {
                 name="phone"
                 value={personalInfo.phone}
                 onChange={handlePersonalInfoChange}
-                placeholder="+919977001889"
+                placeholder="Phone number"
               />
             </div>
             <div className="form-group">
@@ -151,7 +148,7 @@ const CreateResume = () => {
                 name="location"
                 value={personalInfo.location}
                 onChange={handlePersonalInfoChange}
-                placeholder="IDR INDIA"
+                placeholder="City, Country"
               />
             </div>
           </div>
@@ -159,7 +156,7 @@ const CreateResume = () => {
 
         {/* Professional Information Section */}
         <div className="form-section">
-          <h2>Professional Information</h2>
+          <h2>💼 Professional Information</h2>
           <div className="form-row">
             <div className="form-group">
               <label>Stream/Background *</label>
@@ -174,6 +171,9 @@ const CreateResume = () => {
                 <option value="Commerce">Commerce</option>
                 <option value="Arts">Arts</option>
                 <option value="Engineering">Engineering</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Business">Business</option>
+                <option value="Other">Other</option>
               </select>
             </div>
             <div className="form-group">
@@ -183,7 +183,7 @@ const CreateResume = () => {
                 name="specificField"
                 value={professionalInfo.specificField}
                 onChange={handleProfessionalInfoChange}
-                placeholder="BCA"
+                placeholder="Your specific field of study/work"
                 required
               />
             </div>
@@ -201,6 +201,8 @@ const CreateResume = () => {
                 <option value="Student">Student</option>
                 <option value="Professional">Professional</option>
                 <option value="Fresher">Fresher</option>
+                <option value="Intern">Intern</option>
+                <option value="Career Changer">Career Changer</option>
               </select>
             </div>
             <div className="form-group">
@@ -228,7 +230,7 @@ const CreateResume = () => {
                 name="targetRole"
                 value={professionalInfo.targetRole}
                 onChange={handleProfessionalInfoChange}
-                placeholder="Software Testing"
+                placeholder="Desired job role"
                 required
               />
             </div>
@@ -239,7 +241,7 @@ const CreateResume = () => {
                 name="keySkills"
                 value={professionalInfo.keySkills}
                 onChange={handleProfessionalInfoChange}
-                placeholder="e.g., JavaScript, React, Testing"
+                placeholder="List your key skills"
               />
             </div>
           </div>
@@ -247,11 +249,11 @@ const CreateResume = () => {
 
         {/* Additional Instructions */}
         <div className="form-section">
-          <h2>Additional Instructions / Prompt</h2>
+          <h2>📋 Additional Information</h2>
           <textarea
             value={additionalInstructions}
             onChange={(e) => setAdditionalInstructions(e.target.value)}
-            placeholder="I AM STUDENT OF MEDICAPS UNIVERSITY 2024-27 BATCH AND PREV EDUCATION WAS 12TH CBSE BOARDS IN CHOITHRAM SCHOOL MANIK BAGH"
+            placeholder="Describe your education, projects, achievements, or any other relevant information..."
             rows="4"
             className="prompt-textarea"
           />
@@ -263,7 +265,7 @@ const CreateResume = () => {
           className="create-resume-btn"
           disabled={loading}
         >
-          {loading ? 'Creating Resume...' : 'Create Resume'}
+          {loading ? 'Processing...' : 'Continue to AI Assistant →'}
         </button>
       </form>
     </div>

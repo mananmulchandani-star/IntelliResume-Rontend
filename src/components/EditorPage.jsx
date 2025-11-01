@@ -4,12 +4,385 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import './EditorPage.css';
 
+// Skill Verification Popup Component
+const SkillVerificationPopup = ({ 
+  skills, 
+  onComplete, 
+  onClose, 
+  resumeData 
+}) => {
+  const [currentSkillIndex, setCurrentSkillIndex] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [userAnswers, setUserAnswers] = useState({});
+  const [timeLeft, setTimeLeft] = useState(20);
+  const [isLoading, setIsLoading] = useState(false);
+  const [results, setResults] = useState({});
+  const [showResults, setShowResults] = useState(false);
+  const [attemptedSkills, setAttemptedSkills] = useState([]);
+  const [timeoutOccurred, setTimeoutOccurred] = useState(false);
+
+  const currentSkill = skills[currentSkillIndex];
+
+  // Timer effect - 20 seconds
+  useEffect(() => {
+    if (!currentQuestion || showResults || timeoutOccurred) return;
+    
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          handleTimeUp();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [currentQuestion, showResults, timeoutOccurred]);
+
+  // Load question for current skill
+  useEffect(() => {
+    if (currentSkill && !showResults) {
+      loadQuestionForSkill(currentSkill);
+      setTimeoutOccurred(false); // Reset timeout flag for new question
+    }
+  }, [currentSkill, showResults]);
+
+  const loadQuestionForSkill = async (skill) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/generate-skill-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          skill: skill,
+          level: 'intermediate',
+          field: resumeData.personalInfo.jobTitle || 'general',
+          difficulty: 'basic'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentQuestion(data.question);
+        setTimeLeft(20); // Reset to 20 seconds
+      } else {
+        console.error('Failed to load question');
+        // Fallback question
+        setCurrentQuestion({
+          question: `What is the primary purpose of ${skill}?`,
+          options: {
+            A: "To solve problems efficiently",
+            B: "To manage databases", 
+            C: "To create user interfaces",
+            D: "To handle network security"
+          },
+          correct_answer: "A",
+          explanation: `${skill} is used to solve problems in its domain.`
+        });
+      }
+    } catch (error) {
+      console.error('Error loading question:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAnswerSelect = async (answer) => {
+    if (!currentQuestion || timeoutOccurred) return;
+
+    // Mark as attempted
+    setAttemptedSkills(prev => [...prev, currentSkill]);
+
+    // Verify answer with backend
+    try {
+      const response = await fetch('http://localhost:5000/api/verify-skill-answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question_data: currentQuestion,
+          user_answer: answer,
+          skill: currentSkill
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Store result
+        setResults(prev => ({
+          ...prev,
+          [currentSkill]: result.is_correct
+        }));
+
+        setUserAnswers(prev => ({
+          ...prev,
+          [currentSkill]: answer
+        }));
+
+        // Move to next skill after a brief delay
+        setTimeout(() => {
+          if (currentSkillIndex < skills.length - 1) {
+            setCurrentSkillIndex(prev => prev + 1);
+          } else {
+            // All skills completed
+            setShowResults(true);
+          }
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Error verifying answer:', error);
+    }
+  };
+
+  const handleTimeUp = () => {
+    // Mark as not attempted when time's up
+    setAttemptedSkills(prev => [...prev, currentSkill]);
+    setResults(prev => ({
+      ...prev,
+      [currentSkill]: 'not_attempted'
+    }));
+
+    // Set timeout flag to stop timer
+    setTimeoutOccurred(true);
+    
+    // Show timeout message but DON'T auto-proceed to next question
+    console.log(`Time's up for ${currentSkill}! Question marked as not attempted.`);
+  };
+
+  const handleProceedToNext = () => {
+    // Reset timeout flag
+    setTimeoutOccurred(false);
+    
+    // Move to next question
+    if (currentSkillIndex < skills.length - 1) {
+      setCurrentSkillIndex(prev => prev + 1);
+    } else {
+      // All skills completed
+      setShowResults(true);
+    }
+  };
+
+  const calculateScore = () => {
+    const attemptedResults = Object.entries(results)
+      .filter(([skill, result]) => attemptedSkills.includes(skill) && result !== 'not_attempted');
+    
+    if (attemptedResults.length === 0) return 0;
+    
+    const correctAnswers = attemptedResults.filter(([skill, result]) => result === true).length;
+    return Math.round((correctAnswers / attemptedResults.length) * 100);
+  };
+
+  const handleVerificationComplete = () => {
+    const score = calculateScore();
+    const passed = score >= 67; // 67% passing criteria
+    
+    // Track attempt
+    const attemptKey = `skill_attempts_${resumeData.personalInfo.fullName}`;
+    const currentAttempts = parseInt(localStorage.getItem(attemptKey) || '0');
+    localStorage.setItem(attemptKey, (currentAttempts + 1).toString());
+    
+    if (passed) {
+      // Store verification results
+      const verificationData = {
+        passed: true,
+        score: score,
+        results: results,
+        attemptedSkills: attemptedSkills,
+        verifiedSkills: Object.entries(results)
+          .filter(([skill, result]) => result === true)
+          .map(([skill]) => skill),
+        verifiedAt: new Date().toISOString()
+      };
+      localStorage.setItem(`resume_verified_${resumeData.personalInfo.fullName}`, JSON.stringify(verificationData));
+    }
+    
+    onComplete({
+      passed,
+      score,
+      results,
+      userAnswers,
+      attemptedSkills,
+      verifiedSkills: passed ? Object.entries(results)
+        .filter(([skill, result]) => result === true)
+        .map(([skill]) => skill) : []
+    });
+  };
+
+  const getAttemptText = () => {
+    const attempts = localStorage.getItem(`skill_attempts_${resumeData.personalInfo.fullName}`) || 0;
+    return `Attempt ${parseInt(attempts) + 1} of 3`;
+  };
+
+  const getResultStatus = (skill) => {
+    if (!attemptedSkills.includes(skill)) return 'pending';
+    if (results[skill] === 'not_attempted') return 'not_attempted';
+    return results[skill] ? 'correct' : 'incorrect';
+  };
+
+  if (showResults) {
+    const score = calculateScore();
+    const passed = score >= 67;
+
+    return (
+      <div className="skill-verification-popup">
+        <div className="popup-content">
+          <div className="popup-header">
+            <h2>Skill Verification Results</h2>
+            <button className="close-btn" onClick={onClose}>×</button>
+          </div>
+          
+          <div className="results-section">
+            <div className={`score-display ${passed ? 'passed' : 'failed'}`}>
+              <h3>{passed ? '🎉 Verification Passed!' : '❌ Verification Failed'}</h3>
+              <div className="score-circle">
+                <span>{score}%</span>
+              </div>
+              <p>Required: 67% | Your Score: {score}%</p>
+              <p className="attempted-info">
+                Based on {Object.entries(results).filter(([skill, result]) => attemptedSkills.includes(skill) && result !== 'not_attempted').length} attempted questions
+              </p>
+            </div>
+
+            <div className="skills-results">
+              <h4>Skill Results:</h4>
+              {skills.map((skill, index) => {
+                const status = getResultStatus(skill);
+                return (
+                  <div key={skill} className="skill-result-item">
+                    <span className="skill-name">{skill}</span>
+                    <span className={`result-badge ${status}`}>
+                      {status === 'correct' && '✅ Verified'}
+                      {status === 'incorrect' && '❌ Incorrect'}
+                      {status === 'not_attempted' && '⏰ Not Attempted (0 marks)'}
+                      {status === 'pending' && '⏳ Pending'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="popup-actions">
+              {passed ? (
+                <button 
+                  className="btn-success" 
+                  onClick={handleVerificationComplete}
+                >
+                  🎉 Continue to Download
+                </button>
+              ) : (
+                <div className="failed-actions">
+                  <p>You can retry in 24 hours. Attempts remaining: {3 - (parseInt(localStorage.getItem(`skill_attempts_${resumeData.personalInfo.fullName}`) || 0) + 1)}</p>
+                  <button className="btn-secondary" onClick={onClose}>
+                    Close
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="skill-verification-popup">
+      <div className="popup-content">
+        <div className="popup-header">
+          <h2>Skill Verification</h2>
+          <div className="attempt-info">{getAttemptText()}</div>
+        </div>
+
+        <div className="verification-progress">
+          <div className="progress-bar">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${((currentSkillIndex) / skills.length) * 100}%` }}
+            ></div>
+          </div>
+          <div className="progress-text">
+            Skill {currentSkillIndex + 1} of {skills.length}: {currentSkill}
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="loading-question">
+            <div className="spinner"></div>
+            <p>Generating question...</p>
+          </div>
+        ) : currentQuestion ? (
+          <div className="question-section">
+            <div className="timer-section">
+              <div className={`timer-circle ${timeoutOccurred ? 'timeout' : ''}`}>
+                <span>{timeLeft}s</span>
+              </div>
+              <p className="timer-note">20 seconds per question</p>
+            </div>
+
+            <div className="question-content">
+              <h3>{currentQuestion.question}</h3>
+              
+              {timeoutOccurred ? (
+                <div className="timeout-message">
+                  <div className="timeout-alert">
+                    <h4>⏰ Time's Up!</h4>
+                    <p>This question has been marked as <strong>"Not Attempted"</strong> and will receive <strong>0 marks</strong>.</p>
+                    <p>Click the button below to proceed to the next question.</p>
+                  </div>
+                  <button 
+                    className="proceed-btn"
+                    onClick={handleProceedToNext}
+                  >
+                    Next Question →
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="options-grid">
+                    {Object.entries(currentQuestion.options).map(([key, value]) => (
+                      <button
+                        key={key}
+                        className="option-btn"
+                        onClick={() => handleAnswerSelect(key)}
+                        disabled={attemptedSkills.includes(currentSkill)}
+                      >
+                        <span className="option-key">{key}</span>
+                        <span className="option-text">{value}</span>
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="time-warning">
+                    <p>⚠️ If time runs out, this question will be marked as "Not Attempted" and will receive 0 marks.</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="error-state">
+            <p>Failed to load question. Please try again.</p>
+            <button onClick={() => loadQuestionForSkill(currentSkill)}>
+              Retry
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Main EditorPage Component
 const EditorPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const resumeRef = useRef();
   
-  // Default resume structure WITH ALL NEW SECTIONS
+  // Default resume structure WITH ALL NEW SECTIONS INCLUDING DOB
   const defaultResumeData = {
     personalInfo: {
       fullName: 'Your Name',
@@ -17,6 +390,7 @@ const EditorPage = () => {
       email: 'your.email@example.com',
       phone: '+1 234 567 8900',
       location: 'Your City, Country',
+      dateOfBirth: '', // Added DOB field
       about: 'Professional summary about your background, skills, and career objectives.',
       photo: null
     },
@@ -53,6 +427,12 @@ const EditorPage = () => {
   const [saveMessage, setSaveMessage] = useState('');
   const [isFromAI, setIsFromAI] = useState(false);
   const [skillRecommendations, setSkillRecommendations] = useState([]);
+  
+  // Skill Verification States
+  const [showSkillVerification, setShowSkillVerification] = useState(false);
+  const [verificationResults, setVerificationResults] = useState(null);
+  const [verifiedSkills, setVerifiedSkills] = useState([]);
+  const [isVerificationComplete, setIsVerificationComplete] = useState(false);
 
   // ✅ FIXED: Enhanced data loading with better error handling
   useEffect(() => {
@@ -131,6 +511,18 @@ const EditorPage = () => {
     // Small delay to ensure everything is loaded properly
     setTimeout(loadData, 100);
   }, [location.state]);
+
+  // Check for existing verification on component load
+  useEffect(() => {
+    const storedVerification = localStorage.getItem(`resume_verified_${resumeData.personalInfo.fullName}`);
+    if (storedVerification) {
+      const verificationData = JSON.parse(storedVerification);
+      if (verificationData.passed) {
+        setVerifiedSkills(verificationData.verifiedSkills || []);
+        setIsVerificationComplete(true);
+      }
+    }
+  }, [resumeData.personalInfo.fullName]);
 
   // ✅ Professional Title Generator
   const generateProfessionalTitle = () => {
@@ -211,7 +603,7 @@ const EditorPage = () => {
     setSkillRecommendations(recommendations);
   }, [resumeData.personalInfo.jobTitle, resumeData.skills]);
 
-  // ✅ FIXED: Transform AI data to editor format WITH ALL NEW SECTIONS
+  // ✅ FIXED: Transform AI data to editor format WITH ALL NEW SECTIONS INCLUDING DOB
   const transformAIDataToEditorFormat = (aiData, formData = {}) => {
     return {
       personalInfo: {
@@ -220,6 +612,7 @@ const EditorPage = () => {
         email: aiData.email || formData.email || 'your.email@example.com',
         phone: aiData.phone || formData.phone || '+1 234 567 8900',
         location: aiData.location || formData.location || 'Your Location',
+        dateOfBirth: aiData.dateOfBirth || formData.dateOfBirth || '', // Added DOB
         about: aiData.summary || `A motivated ${formData.experienceLevel || 'individual'} with background in ${formData.stream || 'general studies'}. Currently pursuing ${formData.specificField || 'education'} and seeking opportunities in ${formData.targetRole || 'professional field'}.`,
         photo: null
       },
@@ -276,8 +669,8 @@ const EditorPage = () => {
     }
   };
 
-  // Download PDF functionality
-  const handleDownloadPDF = async () => {
+  // Separate PDF generation function
+  const generateAndDownloadPDF = async () => {
     try {
       const element = resumeRef.current;
       const canvas = await html2canvas(element, {
@@ -306,6 +699,59 @@ const EditorPage = () => {
       setSaveMessage('Error generating PDF');
       setTimeout(() => setSaveMessage(''), 3000);
     }
+  };
+
+  // Modified Download PDF function to trigger verification
+  const handleDownloadPDF = async () => {
+    // Check if skills are already verified
+    const storedVerification = localStorage.getItem(`resume_verified_${resumeData.personalInfo.fullName}`);
+    
+    if (storedVerification) {
+      const verificationData = JSON.parse(storedVerification);
+      if (verificationData.passed && verificationData.verifiedSkills.length > 0) {
+        // Skills already verified, proceed with download
+        await generateAndDownloadPDF();
+        return;
+      }
+    }
+
+    // Check attempt limits
+    const attemptKey = `skill_attempts_${resumeData.personalInfo.fullName}`;
+    const currentAttempts = parseInt(localStorage.getItem(attemptKey) || '0');
+    
+    if (currentAttempts >= 3) {
+      alert('You have used all 3 attempts. Please try again after 24 hours.');
+      return;
+    }
+
+    // If not verified, show verification popup
+    if (resumeData.skills && resumeData.skills.length > 0) {
+      setShowSkillVerification(true);
+    } else {
+      alert('Please add skills to your resume before verification.');
+    }
+  };
+
+  // Skill Verification Handlers
+  const handleVerificationComplete = (results) => {
+    setVerificationResults(results);
+    setShowSkillVerification(false);
+    
+    if (results.passed) {
+      setVerifiedSkills(results.verifiedSkills);
+      setIsVerificationComplete(true);
+      // Automatically download after successful verification
+      setTimeout(() => {
+        generateAndDownloadPDF();
+      }, 1000);
+    } else {
+      setSaveMessage(`Verification failed! Score: ${results.score}%. ${3 - (parseInt(localStorage.getItem(`skill_attempts_${resumeData.personalInfo.fullName}`) || 0))} attempts remaining.`);
+      setTimeout(() => setSaveMessage(''), 5000);
+    }
+  };
+
+  const handleVerificationClose = () => {
+    setShowSkillVerification(false);
   };
 
   // Input handlers
@@ -676,8 +1122,12 @@ const EditorPage = () => {
       localStorage.removeItem('resumeData');
       localStorage.removeItem('currentResume');
       localStorage.removeItem('resumeFormData');
+      localStorage.removeItem(`resume_verified_${resumeData.personalInfo.fullName}`);
+      localStorage.removeItem(`skill_attempts_${resumeData.personalInfo.fullName}`);
       setResumeData(defaultResumeData);
       setIsFromAI(false);
+      setVerifiedSkills([]);
+      setIsVerificationComplete(false);
       setSaveMessage('All data cleared!');
       setTimeout(() => setSaveMessage(''), 3000);
     } catch (error) {
@@ -727,13 +1177,20 @@ const EditorPage = () => {
     <div className="editor-page">
       <div className="editor-header">
         <div className="header-left">
-          <h1>IntelliResume Editor</h1>
+          <h1>InsightResume Editor</h1>
           <p>AI-Powered Resume Builder - A4 Format Ready</p>
           
           {/* AI Generated Badge */}
           {isFromAI && (
             <div className="ai-badge">
               🚀 AI-Generated Resume - Ready to Customize!
+            </div>
+          )}
+          
+          {/* Verification Status Badge */}
+          {isVerificationComplete && verifiedSkills.length > 0 && (
+            <div className="verification-badge">
+              ✅ Skills Verified! {verifiedSkills.length} skills certified
             </div>
           )}
           
@@ -746,8 +1203,11 @@ const EditorPage = () => {
           <button className="btn-primary" onClick={handleSaveResume}>
             Save Resume
           </button>
-          <button className="btn-success" onClick={handleDownloadPDF}>
-            Download PDF (A4)
+          <button 
+            className={`btn-success ${isVerificationComplete ? 'verified' : ''}`}
+            onClick={handleDownloadPDF}
+          >
+            {isVerificationComplete ? '✅ Download Verified PDF' : 'Download PDF (A4)'}
           </button>
         </div>
       </div>
@@ -817,6 +1277,25 @@ const EditorPage = () => {
               Based on your education and skills
             </p>
           </div>
+
+          {/* ✅ NEW: Skill Verification Status */}
+          {resumeData.skills && resumeData.skills.length > 0 && (
+            <div className="verification-status-section">
+              <h4>Skill Verification</h4>
+              {isVerificationComplete ? (
+                <div className="verification-success">
+                  <p>✅ {verifiedSkills.length} skills verified</p>
+                  <p>Ready for download!</p>
+                </div>
+              ) : (
+                <div className="verification-pending">
+                  <p>Skills need verification</p>
+                  <p>Click Download to start</p>
+                  <p className="verification-note">20 seconds per question</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Center Panel - Live Preview */}
@@ -827,16 +1306,16 @@ const EditorPage = () => {
               className={`resume-preview ${resumeData.selectedTemplate.toLowerCase().replace(' ', '-')}-template a4-page`}
             >
               {resumeData.selectedTemplate === 'Professional' && (
-                <ProfessionalTemplate data={resumeData} />
+                <ProfessionalTemplate data={resumeData} verifiedSkills={verifiedSkills} />
               )}
               {resumeData.selectedTemplate === 'Modern' && (
-                <ModernTemplate data={resumeData} />
+                <ModernTemplate data={resumeData} verifiedSkills={verifiedSkills} />
               )}
               {resumeData.selectedTemplate === 'Creative' && (
-                <CreativeTemplate data={resumeData} />
+                <CreativeTemplate data={resumeData} verifiedSkills={verifiedSkills} />
               )}
               {resumeData.selectedTemplate === 'IRM Special' && (
-                <IRMSpecialTemplate data={resumeData} />
+                <IRMSpecialTemplate data={resumeData} verifiedSkills={verifiedSkills} />
               )}
             </div>
           </div>
@@ -877,12 +1356,22 @@ const EditorPage = () => {
           />
         </div>
       </div>
+
+      {/* Skill Verification Popup */}
+      {showSkillVerification && (
+        <SkillVerificationPopup
+          skills={resumeData.skills || []}
+          onComplete={handleVerificationComplete}
+          onClose={handleVerificationClose}
+          resumeData={resumeData}
+        />
+      )}
     </div>
   );
 };
 
-// Professional Template Component - UPDATED WITH ALL SECTIONS
-const ProfessionalTemplate = ({ data }) => {
+// Professional Template Component - UPDATED WITH VERIFIED SKILLS AND DOB
+const ProfessionalTemplate = ({ data, verifiedSkills = [] }) => {
   const { personalInfo, education, skills, projects, certifications, achievements, workExperience, internships, extracurriculars, languages } = data;
   
   // Ensure all data is safe to render
@@ -909,6 +1398,7 @@ const ProfessionalTemplate = ({ data }) => {
           <span>📞 {personalInfo.phone || "Phone"}</span>
           <span>📧 {personalInfo.email || "Email"}</span>
           <span>📍 {personalInfo.location || "Location"}</span>
+          {personalInfo.dateOfBirth && <span>📆 {personalInfo.dateOfBirth}</span>}
         </div>
       </div>
 
@@ -1002,9 +1492,17 @@ const ProfessionalTemplate = ({ data }) => {
           <div className="section-content">
             <div className="skills-grid">
               {safeSkills.map((skill, index) => (
-                <span key={index} className="skill-tag">{skill}</span>
+                <span key={index} className={`skill-tag ${verifiedSkills.includes(skill) ? 'verified' : ''}`}>
+                  {skill}
+                  {verifiedSkills.includes(skill) && <span className="verified-badge">✅</span>}
+                </span>
               ))}
             </div>
+            {verifiedSkills.length > 0 && (
+              <div className="verification-note">
+                <small>✅ Verified skills certified by InsightResume</small>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1073,8 +1571,8 @@ const ProfessionalTemplate = ({ data }) => {
   );
 };
 
-// Modern Template Component - UPDATED WITH ALL SECTIONS
-const ModernTemplate = ({ data }) => {
+// Modern Template Component - UPDATED WITH VERIFIED SKILLS AND DOB
+const ModernTemplate = ({ data, verifiedSkills = [] }) => {
   const { personalInfo, education, skills, projects, workExperience, internships, extracurriculars, languages } = data;
   const safeWorkExperience = Array.isArray(workExperience) ? workExperience.filter(exp => exp && (exp.company || exp.position)) : [];
   const safeInternships = Array.isArray(internships) ? internships.filter(intern => intern && (intern.company || intern.position)) : [];
@@ -1096,6 +1594,7 @@ const ModernTemplate = ({ data }) => {
           <span>{personalInfo.email || "Email"}</span>
           <span>{personalInfo.phone || "Phone"}</span>
           <span>{personalInfo.location || "Location"}</span>
+          {personalInfo.dateOfBirth && <span>📆 {personalInfo.dateOfBirth}</span>}
         </div>
       </div>
       
@@ -1162,9 +1661,17 @@ const ModernTemplate = ({ data }) => {
           <h2>SKILLS</h2>
           <div className="modern-skills">
             {safeSkills.map((skill, index) => (
-              <span key={index} className="modern-skill-tag">{skill}</span>
+              <span key={index} className={`modern-skill-tag ${verifiedSkills.includes(skill) ? 'verified' : ''}`}>
+                {skill}
+                {verifiedSkills.includes(skill) && <span className="verified-badge">✅</span>}
+              </span>
             ))}
           </div>
+          {verifiedSkills.length > 0 && (
+            <div className="verification-note">
+              <small>✅ Verified skills certified by InsightResume</small>
+            </div>
+          )}
         </div>
       )}
 
@@ -1199,8 +1706,8 @@ const ModernTemplate = ({ data }) => {
   );
 };
 
-// Creative Template Component - UPDATED WITH ALL SECTIONS
-const CreativeTemplate = ({ data }) => {
+// Creative Template Component - UPDATED WITH VERIFIED SKILLS AND DOB
+const CreativeTemplate = ({ data, verifiedSkills = [] }) => {
   const { personalInfo, education, skills, projects, workExperience, internships, extracurriculars, languages } = data;
   const safeWorkExperience = Array.isArray(workExperience) ? workExperience.filter(exp => exp && (exp.company || exp.position)) : [];
   const safeInternships = Array.isArray(internships) ? internships.filter(intern => intern && (intern.company || intern.position)) : [];
@@ -1222,6 +1729,7 @@ const CreativeTemplate = ({ data }) => {
           <span>📧 {personalInfo.email || "Email"}</span>
           <span>📞 {personalInfo.phone || "Phone"}</span>
           <span>📍 {personalInfo.location || "Location"}</span>
+          {personalInfo.dateOfBirth && <span>📆 {personalInfo.dateOfBirth}</span>}
         </div>
       </div>
       
@@ -1288,9 +1796,17 @@ const CreativeTemplate = ({ data }) => {
           <h2>Skills</h2>
           <div className="creative-skills">
             {safeSkills.map((skill, index) => (
-              <span key={index} className="creative-skill-tag">{skill}</span>
+              <span key={index} className={`creative-skill-tag ${verifiedSkills.includes(skill) ? 'verified' : ''}`}>
+                {skill}
+                {verifiedSkills.includes(skill) && <span className="verified-badge">✅</span>}
+              </span>
             ))}
           </div>
+          {verifiedSkills.length > 0 && (
+            <div className="verification-note">
+              <small>✅ Verified skills certified by InsightResume</small>
+            </div>
+          )}
         </div>
       )}
 
@@ -1325,8 +1841,8 @@ const CreativeTemplate = ({ data }) => {
   );
 };
 
-// IRM Special Template Component - UPDATED WITH ALL SECTIONS
-const IRMSpecialTemplate = ({ data }) => {
+// IRM Special Template Component - UPDATED WITH VERIFIED SKILLS AND DOB
+const IRMSpecialTemplate = ({ data, verifiedSkills = [] }) => {
   const { personalInfo, education, skills, projects, workExperience, internships, extracurriculars, languages } = data;
   
   // Ensure skills are safe to render
@@ -1363,6 +1879,7 @@ const IRMSpecialTemplate = ({ data }) => {
             <span>📞 {personalInfo.phone || "Phone"}</span>
             <span>📧 {personalInfo.email || "Email"}</span>
             <span>📍 {personalInfo.location || "Location"}</span>
+            {personalInfo.dateOfBirth && <span>📆 {personalInfo.dateOfBirth}</span>}
           </div>
         </div>
       </div>
@@ -1456,9 +1973,17 @@ const IRMSpecialTemplate = ({ data }) => {
           <div className="irm-section-content">
             <div className="irm-skills-grid">
               {safeSkills.map((skill, index) => (
-                <span key={index} className="irm-skill-tag">{skill}</span>
+                <span key={index} className={`irm-skill-tag ${verifiedSkills.includes(skill) ? 'verified' : ''}`}>
+                  {skill}
+                  {verifiedSkills.includes(skill) && <span className="verified-badge">✅</span>}
+                </span>
               ))}
             </div>
+            {verifiedSkills.length > 0 && (
+              <div className="verification-note">
+                <small>✅ Verified skills certified by InsightResume</small>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1499,7 +2024,7 @@ const IRMSpecialTemplate = ({ data }) => {
   );
 };
 
-// Resume Form Component for Editing - UPDATED WITH ALL NEW SECTIONS
+// Resume Form Component for Editing - UPDATED WITH ALL NEW SECTIONS INCLUDING DOB
 const ResumeForm = ({ 
   data, 
   onChange, 
@@ -1604,6 +2129,13 @@ const ResumeForm = ({
           placeholder="Location"
           value={data.personalInfo.location || ""}
           onChange={(e) => onChange('personalInfo', 'location', e.target.value)}
+        />
+        {/* ✅ NEW: Date of Birth Field */}
+        <input
+          type="date"
+          placeholder="Date of Birth"
+          value={data.personalInfo.dateOfBirth || ""}
+          onChange={(e) => onChange('personalInfo', 'dateOfBirth', e.target.value)}
         />
         <textarea
           placeholder="Professional Summary"
