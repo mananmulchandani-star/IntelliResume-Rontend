@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Homepage.css";
 
-function HomePage() {
+function Homepage() {
   const navigate = useNavigate();
   const [showTemplates, setShowTemplates] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -290,4 +290,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default Homepage;
