@@ -16,6 +16,12 @@ const AIPromptPage = () => {
     location: ''
   });
 
+  // Get backend URL from environment variable with localhost fallback
+  const getBackendUrl = () => {
+    // Use environment variable if available, otherwise fallback to localhost
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  };
+
   // ✅ CRITICAL FIX: Load formData from Dashboard navigation state
   useEffect(() => {
     console.log('📍 AIPrompt Location State:', location.state);
@@ -83,7 +89,7 @@ Generate a complete resume with professional summary, education, skills, project
     }));
   };
 
-  // ✅ CRITICAL FIX: Auto-navigate to Editor after AI generation
+  // ✅ UPDATED: Backend connection with environment variable support
   const generateResumeWithAI = async () => {
     if (!prompt.trim()) {
       setError('Please enter a prompt describing your resume');
@@ -95,9 +101,11 @@ Generate a complete resume with professional summary, education, skills, project
     setResumeData(null);
 
     try {
-      console.log('🚀 Sending AI request with prompt:', prompt);
+      const backendUrl = getBackendUrl();
+      console.log('🚀 Sending AI request to:', backendUrl);
+      console.log('📝 Prompt:', prompt);
 
-      const response = await fetch('http://localhost:5000/api/generate-resume-from-prompt', {
+      const response = await fetch(`${backendUrl}/api/generate-resume-from-prompt`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +146,7 @@ Generate a complete resume with professional summary, education, skills, project
 
     } catch (error) {
       console.error('❌ Error generating resume:', error);
-      setError(`Failed to generate resume: ${error.message}`);
+      setError(`Failed to generate resume: ${error.message}. Using template instead...`);
       
       // Fallback: Create a basic resume structure with user info and auto-navigate
       const fallbackData = createFallbackResume(basicInfo, prompt);
