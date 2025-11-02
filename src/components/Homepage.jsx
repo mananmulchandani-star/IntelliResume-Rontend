@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Homepage.css";
 
 function Homepage() {
   const navigate = useNavigate();
@@ -27,239 +26,277 @@ function Homepage() {
     navigate('/auth', { state: { selectedTemplate: templateName } });
   };
 
+  // Inline styles to replace CSS
+  const styles = {
+    homepage: {
+      minHeight: '100vh',
+      opacity: isVisible ? 1 : 0,
+      transform: `translateY(${isVisible ? 0 : '20px'})`,
+      transition: 'all 1s cubic-bezier(0.4, 0, 0.2, 1)',
+      background: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    },
+    backgroundElements: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      pointerEvents: 'none',
+      zIndex: -1
+    },
+    floatingShape: {
+      position: 'absolute',
+      borderRadius: '50%',
+      background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+      opacity: 0.03,
+      animation: 'float 6s ease-in-out infinite'
+    },
+    modernHeader: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      background: 'rgba(255, 255, 255, 0.8)',
+      backdropFilter: 'blur(20px)',
+      borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+      zIndex: 1000,
+      padding: '1rem 0'
+    },
+    headerContent: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '0 2rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    },
+    logoBox: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.75rem'
+    },
+    logoOrb: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+      borderRadius: '12px',
+      animation: 'orbGlow 3s ease-in-out infinite'
+    },
+    getStartedBtn: {
+      background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+      color: 'white',
+      padding: '0.75rem 1.5rem',
+      border: 'none',
+      borderRadius: '12px',
+      fontWeight: 600,
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)'
+    },
+    // Add more styles as needed...
+  };
+
   return (
-    <div className={`homepage ${isVisible ? 'visible' : ''}`}>
+    <div style={styles.homepage}>
       {/* Animated Background Elements */}
-      <div className="background-elements">
-        <div className="floating-shape shape-1"></div>
-        <div className="floating-shape shape-2"></div>
-        <div className="floating-shape shape-3"></div>
-        <div className="floating-shape shape-4"></div>
+      <div style={styles.backgroundElements}>
+        <div style={{...styles.floatingShape, width: '300px', height: '300px', top: '10%', left: '5%'}}></div>
+        <div style={{...styles.floatingShape, width: '200px', height: '200px', top: '60%', right: '10%', animationDelay: '2s'}}></div>
+        <div style={{...styles.floatingShape, width: '150px', height: '150px', bottom: '20%', left: '20%', animationDelay: '4s'}}></div>
+        <div style={{...styles.floatingShape, width: '250px', height: '250px', top: '30%', right: '20%', animationDelay: '1s'}}></div>
       </div>
 
       {/* Header */}
-      <header className="homepage-header modern-header">
-        <div className="header-content">
-          <div className="logo-box">
-            <div className="logo-icon-wrapper">
-              <div className="logo-orb"></div>
-              <span className="logo-text">IR</span>
+      <header style={styles.modernHeader}>
+        <div style={styles.headerContent}>
+          <div style={styles.logoBox}>
+            <div style={{position: 'relative', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+              <div style={styles.logoOrb}></div>
+              <span style={{position: 'relative', color: 'white', fontWeight: 800, fontSize: '0.9rem'}}>IR</span>
             </div>
-            <span className="site-title">InsightResume</span>
+            <span style={{fontSize: '1.5rem', fontWeight: 800, background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>InsightResume</span>
           </div>
           
-          <nav className="nav-links">
-            <a href="#features" className="nav-link">Features</a>
-            <a href="#templates" className="nav-link">Templates</a>
-            <a href="#about" className="nav-link">About</a>
+          <nav style={{display: 'flex', gap: '2rem'}}>
+            <a href="#features" style={{color: '#475569', textDecoration: 'none', fontWeight: 500, transition: 'all 0.3s ease'}}>Features</a>
+            <a href="#templates" style={{color: '#475569', textDecoration: 'none', fontWeight: 500, transition: 'all 0.3s ease'}}>Templates</a>
+            <a href="#about" style={{color: '#475569', textDecoration: 'none', fontWeight: 500, transition: 'all 0.3s ease'}}>About</a>
           </nav>
 
           <button 
-            className="get-started-btn modern-btn" 
+            style={styles.getStartedBtn}
             onClick={handleAuthRedirect}
           >
-            <span className="btn-sparkle">✨</span>
+            <span>✨</span>
             Get Started
-            <span className="btn-arrow">→</span>
+            <span>→</span>
           </button>
         </div>
       </header>
 
       {/* Main Hero Section */}
-      <main className="homepage-main">
-        <div className="hero-container">
+      <main style={{paddingTop: '100px', minHeight: '100vh', display: 'flex', alignItems: 'center'}}>
+        <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 2rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center'}}>
           {/* Left Content */}
-          <div className="hero-content">
-            <div className="badge">
-              <span className="badge-dot"></span>
+          <div>
+            <div style={{display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(37, 99, 235, 0.1)', color: '#2563eb', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 600, marginBottom: '2rem'}}>
+              <span style={{width: '6px', height: '6px', background: '#2563eb', borderRadius: '50%'}}></span>
               AI-Powered Resume Builder
             </div>
 
-            <h1 className="hero-title">
-              <span className="title-line">Craft Resumes That</span>
-              <span className="title-gradient">
-                Get You <span className="text-underline">Hired</span>
+            <h1 style={{fontSize: '3.5rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '1.5rem'}}>
+              <span style={{display: 'block', color: '#0f172a'}}>Craft Resumes That</span>
+              <span style={{background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
+                Get You <span style={{position: 'relative'}}>Hired</span>
               </span>
             </h1>
 
-            <p className="hero-description">
+            <p style={{fontSize: '1.2rem', color: '#475569', lineHeight: 1.6, marginBottom: '2.5rem'}}>
               Transform your career story into a compelling resume with AI-powered insights, 
               modern templates, and professional guidance—all in one platform.
             </p>
 
-            <div className="hero-buttons">
+            <div style={{display: 'flex', gap: '1rem', marginBottom: '3rem'}}>
               <button 
-                className="cta-primary modern-btn" 
+                style={{background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', color: 'white', padding: '1.25rem 2.5rem', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 8px 40px rgba(0, 0, 0, 0.12)'}}
                 onClick={handleAuthRedirect}
               >
-                <span className="btn-sparkle">🚀</span>
+                <span>🚀</span>
                 Start Building Free
-                <div className="btn-shine"></div>
               </button>
               
               <button 
-                className="cta-secondary modern-btn" 
+                style={{background: 'white', color: '#0f172a', padding: '1.25rem 2rem', border: '1px solid rgba(226, 232, 240, 0.8)', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)'}}
                 onClick={handleViewTemplates}
               >
-                <span className="btn-icon">👁️</span>
+                <span>👁️</span>
                 Browse Templates
               </button>
             </div>
 
             {/* Stats */}
-            <div className="hero-stats">
-              <div className="stat">
-                <div className="stat-number">10K+</div>
-                <div className="stat-label">Resumes Created</div>
+            <div style={{display: 'flex', gap: '2rem'}}>
+              <div style={{textAlign: 'center'}}>
+                <div style={{fontSize: '1.5rem', fontWeight: 800, color: '#2563eb', marginBottom: '0.25rem'}}>10K+</div>
+                <div style={{fontSize: '0.9rem', color: '#64748b', fontWeight: 500}}>Resumes Created</div>
               </div>
-              <div className="stat">
-                <div className="stat-number">95%</div>
-                <div className="stat-label">Success Rate</div>
+              <div style={{textAlign: 'center'}}>
+                <div style={{fontSize: '1.5rem', fontWeight: 800, color: '#2563eb', marginBottom: '0.25rem'}}>95%</div>
+                <div style={{fontSize: '0.9rem', color: '#64748b', fontWeight: 500}}>Success Rate</div>
               </div>
-              <div className="stat">
-                <div className="stat-number">2min</div>
-                <div className="stat-label">Average Time</div>
+              <div style={{textAlign: 'center'}}>
+                <div style={{fontSize: '1.5rem', fontWeight: 800, color: '#2563eb', marginBottom: '0.25rem'}}>2min</div>
+                <div style={{fontSize: '0.9rem', color: '#64748b', fontWeight: 500}}>Average Time</div>
               </div>
             </div>
           </div>
 
-          {/* Right Visual */}
-          <div className="hero-visual">
-            <div className="floating-card card-1">
-              <div className="card-header"></div>
-              <div className="card-content">
-                <div className="content-line"></div>
-                <div className="content-line short"></div>
-                <div className="content-dots">
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                </div>
-              </div>
-            </div>
-            <div className="floating-card card-2">
-              <div className="card-header"></div>
-              <div className="card-content">
-                <div className="content-line short"></div>
-                <div className="content-line"></div>
-                <div className="content-line short"></div>
-              </div>
-            </div>
-            <div className="floating-card card-3">
-              <div className="card-header"></div>
-              <div className="card-content">
-                <div className="content-line"></div>
-                <div className="content-dots">
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                </div>
-              </div>
+          {/* Right Visual - Simplified for now */}
+          <div style={{position: 'relative', height: '500px', background: 'rgba(255,255,255,0.5)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <div style={{textAlign: 'center', color: '#64748b'}}>
+              <div style={{fontSize: '3rem', marginBottom: '1rem'}}>🎨</div>
+              <p>Template Preview</p>
             </div>
           </div>
         </div>
       </main>
 
       {/* Features Section */}
-      <section className="features-section" id="features">
-        <div className="section-header">
-          <h2>Why Choose InsightResume?</h2>
-          <p>Everything you need to create a job-winning resume</p>
+      <section style={{padding: '8rem 2rem', background: 'white'}}>
+        <div style={{textAlign: 'center', maxWidth: '600px', margin: '0 auto 4rem auto'}}>
+          <h2 style={{fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem', background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>Why Choose InsightResume?</h2>
+          <p style={{fontSize: '1.1rem', color: '#475569'}}>Everything you need to create a job-winning resume</p>
         </div>
 
-        <div className="features-grid-modern">
-          <div className="feature-modern">
-            <div className="feature-icon-wrapper">
-              <div className="feature-orb"></div>
-              <span className="feature-emoji">🤖</span>
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1000px', margin: '0 auto'}}>
+          {[
+            { emoji: '🤖', title: 'AI-Powered Content', desc: 'Smart suggestions and professional phrasing tailored to your industry' },
+            { emoji: '🎨', title: 'Modern Templates', desc: 'Professionally designed templates that pass ATS and impress recruiters' },
+            { emoji: '⚡', title: 'Instant Optimization', desc: 'Real-time feedback and optimization tips as you build your resume' }
+          ].map((feature, index) => (
+            <div key={index} style={{background: 'white', padding: '2.5rem 2rem', borderRadius: '20px', textAlign: 'center', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)', border: '1px solid rgba(226, 232, 240, 0.8)', transition: 'all 0.3s ease'}}>
+              <div style={{width: '80px', height: '80px', background: 'rgba(37, 99, 235, 0.1)', borderRadius: '50%', margin: '0 auto 1.5rem auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem'}}>
+                {feature.emoji}
+              </div>
+              <h3 style={{fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', color: '#0f172a'}}>{feature.title}</h3>
+              <p style={{color: '#475569', lineHeight: 1.6}}>{feature.desc}</p>
             </div>
-            <h3>AI-Powered Content</h3>
-            <p>Smart suggestions and professional phrasing tailored to your industry</p>
-            <div className="feature-highlight"></div>
-          </div>
-
-          <div className="feature-modern">
-            <div className="feature-icon-wrapper">
-              <div className="feature-orb"></div>
-              <span className="feature-emoji">🎨</span>
-            </div>
-            <h3>Modern Templates</h3>
-            <p>Professionally designed templates that pass ATS and impress recruiters</p>
-            <div className="feature-highlight"></div>
-          </div>
-
-          <div className="feature-modern">
-            <div className="feature-icon-wrapper">
-              <div className="feature-orb"></div>
-              <span className="feature-emoji">⚡</span>
-            </div>
-            <h3>Instant Optimization</h3>
-            <p>Real-time feedback and optimization tips as you build your resume</p>
-            <div className="feature-highlight"></div>
-          </div>
+          ))}
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="cta-section">
-        <div className="cta-container">
-          <h2>Ready to Transform Your Career?</h2>
-          <p>Join thousands of professionals who landed their dream jobs with InsightResume</p>
-          <button className="cta-final modern-btn" onClick={handleAuthRedirect}>
-            <span className="btn-sparkle">🎯</span>
+      <section style={{padding: '6rem 2rem', background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', color: 'white', textAlign: 'center'}}>
+        <div>
+          <h2 style={{fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem'}}>Ready to Transform Your Career?</h2>
+          <p style={{fontSize: '1.2rem', opacity: 0.9, marginBottom: '2rem', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto'}}>Join thousands of professionals who landed their dream jobs with InsightResume</p>
+          <button 
+            style={{background: 'white', color: '#2563eb', padding: '1.25rem 3rem', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '0.5rem'}}
+            onClick={handleAuthRedirect}
+          >
+            <span>🎯</span>
             Create Your Resume Now
-            <div className="btn-pulse"></div>
           </button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="modern-footer">
-        <div className="footer-content">
-          <div className="footer-brand">
-            <div className="logo-box">
-              <div className="logo-icon-wrapper">
-                <div className="logo-orb"></div>
-                <span className="logo-text">IR</span>
+      <footer style={{background: '#0f172a', color: 'white', padding: '4rem 2rem 2rem 2rem'}}>
+        <div style={{maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr auto', gap: '4rem', marginBottom: '2rem'}}>
+          <div>
+            <div style={styles.logoBox}>
+              <div style={{position: 'relative', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <div style={styles.logoOrb}></div>
+                <span style={{position: 'relative', color: 'white', fontWeight: 800, fontSize: '0.9rem'}}>IR</span>
               </div>
-              <span className="site-title">InsightResume</span>
+              <span style={{fontSize: '1.5rem', fontWeight: 800, color: 'white'}}>InsightResume</span>
             </div>
-            <p>Crafting career success stories</p>
+            <p style={{color: '#94a3b8', marginTop: '0.5rem'}}>Crafting career success stories</p>
           </div>
           
-          <div className="footer-links">
-            <div className="link-group">
-              <h4>Product</h4>
-              <a href="#features">Features</a>
-              <a href="#templates">Templates</a>
-              <a href="#pricing">Pricing</a>
+          <div style={{display: 'flex', gap: '3rem'}}>
+            <div>
+              <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600}}>Product</h4>
+              <a href="#features" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem'}}>Features</a>
+              <a href="#templates" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem'}}>Templates</a>
+              <a href="#pricing" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem'}}>Pricing</a>
             </div>
-            <div className="link-group">
-              <h4>Company</h4>
-              <a href="#about">About</a>
-              <a href="#careers">Careers</a>
-              <a href="#contact">Contact</a>
+            <div>
+              <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600}}>Company</h4>
+              <a href="#about" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem'}}>About</a>
+              <a href="#careers" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem'}}>Careers</a>
+              <a href="#contact" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem'}}>Contact</a>
             </div>
           </div>
         </div>
         
-        <div className="footer-bottom">
-          <span className="made-with">Crafted with 💙 by M</span>
+        <div style={{maxWidth: '1200px', margin: '0 auto', paddingTop: '2rem', borderTop: '1px solid #334155', textAlign: 'center', color: '#94a3b8'}}>
+          <span>Crafted with 💙 by M</span>
         </div>
       </footer>
 
       {/* Templates Modal */}
       {showTemplates && (
-        <div className="templates-overlay-modern">
-          <div className="templates-modal-modern">
-            <div className="modal-header">
-              <h2>Choose Your Style</h2>
-              <p>Select a template that matches your personality and industry</p>
-              <button className="close-btn-modern" onClick={closeTemplates}>
-                <span>×</span>
+        <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '2rem'}}>
+          <div style={{background: 'white', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)', width: '100%', maxWidth: '1000px', maxHeight: '90vh', overflowY: 'auto'}}>
+            <div style={{padding: '3rem 3rem 1rem 3rem', textAlign: 'center', borderBottom: '1px solid rgba(226, 232, 240, 0.8)'}}>
+              <h2 style={{fontSize: '2.2rem', fontWeight: 800, marginBottom: '0.5rem', background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>Choose Your Style</h2>
+              <p style={{color: '#475569', fontSize: '1.1rem'}}>Select a template that matches your personality and industry</p>
+              <button 
+                style={{position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#f1f5f9', border: 'none', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.2rem'}}
+                onClick={closeTemplates}
+              >
+                ×
               </button>
             </div>
             
-            <div className="templates-grid-modern">
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', padding: '2rem 3rem 3rem 3rem'}}>
               {[
                 { name: 'modern', title: 'Modern', desc: 'Clean, contemporary design', emoji: '💎' },
                 { name: 'professional', title: 'Professional', desc: 'Classic corporate style', emoji: '👔' },
@@ -270,22 +307,31 @@ function Homepage() {
               ].map((template) => (
                 <div 
                   key={template.name}
-                  className="template-card-modern" 
+                  style={{background: 'white', padding: '2rem 1.5rem', borderRadius: '16px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid rgba(226, 232, 240, 0.8)'}}
                   onClick={() => handleTemplateSelect(template.name)}
                 >
-                  <div className="template-preview-modern">
-                    <div className="template-emoji">{template.emoji}</div>
-                    <div className="template-glow"></div>
+                  <div style={{width: '80px', height: '80px', background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', borderRadius: '16px', margin: '0 auto 1.5rem auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem'}}>
+                    {template.emoji}
                   </div>
-                  <h3>{template.title}</h3>
-                  <p>{template.desc}</p>
-                  <div className="template-hover-effect"></div>
+                  <h3 style={{fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem', color: '#0f172a'}}>{template.title}</h3>
+                  <p style={{color: '#475569', fontSize: '0.9rem', lineHeight: 1.4}}>{template.desc}</p>
                 </div>
               ))}
             </div>
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        @keyframes orbGlow {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.8; }
+        }
+      `}</style>
     </div>
   );
 }
