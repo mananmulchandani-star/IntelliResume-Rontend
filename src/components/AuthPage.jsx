@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { createClient } from '@supabase/supabase-js';
 import './AuthPage.css';
 
-// ✅ Initialize Supabase client directly in frontend
 const supabase = createClient(
   'https://lpgdolynzbgisbqbfwrf.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwZ2RvbHluemJnaXNicWJmd3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzkzOTAsImV4cCI6MjA3NzgxNTM5MH0.usuPeETruTUTvUDmH18O87qPgHg1xVHfufMqdRHdvBM'
@@ -30,7 +29,7 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        // ✅ DIRECT Supabase login - NO CORS issues!
+        // ✅ LOGIN: Direct Supabase login
         const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
@@ -39,43 +38,33 @@ const AuthPage = () => {
         if (error) {
           setError(error.message);
         } else {
-          // Get user profile from users table
-          const { data: userData } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
+          // ✅ Get or create user profile
+          let userProfile = await getUserProfile(data.user.id);
+          
+          if (!userProfile) {
+            // If no profile exists, create one
+            userProfile = await createUserProfile(data.user.id, data.user.email);
+          }
 
           localStorage.setItem('token', data.session.access_token);
-          localStorage.setItem('user', JSON.stringify({
-            id: data.user.id,
-            email: data.user.email,
-            name: userData?.name || formData.email.split('@')[0]
-          }));
+          localStorage.setItem('user', JSON.stringify(userProfile));
           
-          login({
-            id: data.user.id,
-            email: data.user.email,
-            name: userData?.name || formData.email.split('@')[0]
-          }, data.session.access_token);
-          
+          login(userProfile, data.session.access_token);
           navigate('/app');
         }
       } else {
-        // ✅ DIRECT Supabase signup - NO CORS issues!
+        // ✅ SIGNUP: Direct Supabase signup
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
-          options: {
-            data: {
-              name: formData.name
-            }
-          }
         });
 
         if (error) {
           setError(error.message);
         } else {
+          // ✅ Create user profile in users table
+          await createUserProfile(data.user.id, formData.email, formData.name);
+          
           // Auto-login after successful signup
           const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
             email: formData.email,
@@ -85,19 +74,16 @@ const AuthPage = () => {
           if (loginError) {
             setError('Account created but login failed. Please try logging in.');
           } else {
+            const userProfile = {
+              id: loginData.user.id,
+              email: loginData.user.email,
+              name: formData.name
+            };
+
             localStorage.setItem('token', loginData.session.access_token);
-            localStorage.setItem('user', JSON.stringify({
-              id: loginData.user.id,
-              email: loginData.user.email,
-              name: formData.name
-            }));
+            localStorage.setItem('user', JSON.stringify(userProfile));
             
-            login({
-              id: loginData.user.id,
-              email: loginData.user.email,
-              name: formData.name
-            }, loginData.session.access_token);
-            
+            login(userProfile, loginData.session.access_token);
             navigate('/app');
           }
         }
@@ -108,6 +94,50 @@ const AuthPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ Get user profile from users table
+  const getUserProfile = async (userId) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.log('No user profile found:', error.message);
+      return null;
+    }
+    
+    return data;
+  };
+
+  // ✅ Create user profile in users table
+  const createUserProfile = async (userId, email, name = '') => {
+    const { data, error } = await supabase
+      .from('users')
+      .insert([
+        {
+          id: userId,
+          email: email,
+          name: name || email.split('@')[0], // Use email prefix if no name
+          created_at: new Date().toISOString()
+        }
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating user profile:', error.message);
+      // Return basic profile even if DB insert fails
+      return {
+        id: userId,
+        email: email,
+        name: name || email.split('@')[0]
+      };
+    }
+    
+    return data;
   };
 
   const handleChange = (e) => {

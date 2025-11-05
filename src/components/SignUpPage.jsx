@@ -19,6 +19,43 @@ function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // ✅ Create user profile in users table
+  const createUserProfile = async (userId, email, name = '') => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .insert([
+          {
+            id: userId,
+            email: email,
+            name: name || email.split('@')[0],
+            created_at: new Date().toISOString()
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating user profile:', error.message);
+        // Return basic profile even if DB insert fails
+        return {
+          id: userId,
+          email: email,
+          name: name || email.split('@')[0]
+        };
+      }
+      
+      return data;
+    } catch (err) {
+      console.error('Error in createUserProfile:', err);
+      return {
+        id: userId,
+        email: email,
+        name: name || email.split('@')[0]
+      };
+    }
+  };
+
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError(""); // Clear error when user starts typing
@@ -45,15 +82,36 @@ function SignupPage() {
       if (error) {
         setError(error.message);
       } else {
+        // ✅ CREATE USER PROFILE in users table (critical for login)
+        if (data.user?.id) {
+          await createUserProfile(data.user.id, form.email.trim().toLowerCase(), form.name.trim());
+        }
+
+        // ✅ Auto-login after signup to get session
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+          email: form.email.trim().toLowerCase(),
+          password: form.password,
+        });
+
+        if (loginError) {
+          console.log('Auto-login failed, but account created. User can login manually.');
+        }
+
         // ✅ Save user data to localStorage
-        localStorage.setItem('user', JSON.stringify({
-          id: data.user?.id,
+        const userData = {
+          id: data.user?.id || loginData?.user?.id,
           name: form.name.trim(),
           email: form.email.trim().toLowerCase()
-        }));
+        };
+
+        localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('loggedInEmail', form.email.trim().toLowerCase());
         
-        console.log('✅ Signup successful:', data);
+        if (loginData?.session?.access_token) {
+          localStorage.setItem('token', loginData.session.access_token);
+        }
+        
+        console.log('✅ Signup successful, profile created:', userData);
         
         // Navigate to dashboard
         navigate("/Dashboard");
