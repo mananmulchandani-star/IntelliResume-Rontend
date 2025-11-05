@@ -24,7 +24,7 @@ function SignupPage() {
 
     try {
       // Call your Supabase backend
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch('https://intelli-resume-backend.vercel.app/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -24,7 +24,7 @@ const AuthPage = () => {
     try {
       if (isLogin) {
         // Login logic
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch('https://intelli-resume-backend.vercel.app/api/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ const AuthPage = () => {
         }
       } else {
         // Signup logic
-        const response = await fetch('/api/auth/signup', {
+        const response = await fetch('https://intelli-resume-backend.vercel.app/api/auth/signup', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
