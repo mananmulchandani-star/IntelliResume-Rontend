@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
 import './LoginPage.css';
+
+// ✅ Initialize Supabase client directly in frontend
+const supabase = createClient(
+  'https://lpgdolynzbgisbqbfwrf.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwZ2RvbHluemJnaXNicWJmd3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzkzOTAsImV4cCI6MjA3NzgxNTM5MH0.usuPeETruTUTvUDmH18O87qPgHg1xVHfufMqdRHdvBM'
+);
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -15,20 +22,31 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      // ✅ DIRECT Supabase login - NO backend API calls!
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password: password,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        navigate('/dashboard');
+      if (error) {
+        setError(error.message);
       } else {
-        setError('Invalid email or password');
+        // ✅ Get user profile from users table
+        const { data: userProfile } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        // ✅ Save to localStorage
+        localStorage.setItem('token', data.session.access_token);
+        localStorage.setItem('user', JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          name: userProfile?.name || email.split('@')[0]
+        }));
+
+        navigate('/dashboard');
       }
     } catch (err) {
       setError('Login failed. Please try again.');
