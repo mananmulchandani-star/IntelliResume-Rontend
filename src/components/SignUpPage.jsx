@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createClient } from '@supabase/supabase-js';
 import "./SignupPage.css";
+
+// ✅ Initialize Supabase client directly in frontend
+const supabase = createClient(
+  'https://lpgdolynzbgisbqbfwrf.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwZ2RvbHluemJnaXNicWJmd3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzkzOTAsImV4cCI6MjA3NzgxNTM5MH0.usuPeETruTUTvUDmH18O87qPgHg1xVHfufMqdRHdvBM'
+);
 
 function SignupPage() {
   const navigate = useNavigate();
@@ -23,32 +30,36 @@ function SignupPage() {
     setError("");
 
     try {
-      // Call your Supabase backend
-      const response = await fetch('https://intelli-resume-backend.vercel.app/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim().toLowerCase(),
-          password: form.password
-        }),
+      // ✅ DIRECT Supabase signup - NO CORS issues!
+      const { data, error } = await supabase.auth.signUp({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+        options: {
+          data: {
+            name: form.name.trim(),
+            email: form.email.trim().toLowerCase()
+          }
+        }
       });
 
-      const result = await response.json();
-
-      if (result.success) {
-        // Save user data to localStorage
-        localStorage.setItem('user', JSON.stringify(result.user));
-        localStorage.setItem('loggedInEmail', result.user.email);
+      if (error) {
+        setError(error.message);
+      } else {
+        // ✅ Save user data to localStorage
+        localStorage.setItem('user', JSON.stringify({
+          id: data.user?.id,
+          name: form.name.trim(),
+          email: form.email.trim().toLowerCase()
+        }));
+        localStorage.setItem('loggedInEmail', form.email.trim().toLowerCase());
+        
+        console.log('✅ Signup successful:', data);
         
         // Navigate to dashboard
         navigate("/Dashboard");
-      } else {
-        setError(result.error || "Signup failed. Please try again.");
       }
     } catch (err) {
+      console.error('Signup error:', err);
       setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
