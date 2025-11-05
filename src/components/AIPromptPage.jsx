@@ -16,10 +16,9 @@ const AIPromptPage = () => {
     location: ''
   });
 
-  // Get backend URL from environment variable with localhost fallback
+  // ✅ FIXED: Use your actual deployed backend URL
   const getBackendUrl = () => {
-    // Use environment variable if available, otherwise fallback to localhost
-    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+    return 'https://intelli-resume-backend.vercel.app';
   };
 
   // ✅ CRITICAL FIX: Load formData from Dashboard navigation state
@@ -89,7 +88,7 @@ Generate a complete resume with professional summary, education, skills, project
     }));
   };
 
-  // ✅ UPDATED: Backend connection with environment variable support
+  // ✅ FIXED: Now using your actual deployed backend
   const generateResumeWithAI = async () => {
     if (!prompt.trim()) {
       setError('Please enter a prompt describing your resume');
