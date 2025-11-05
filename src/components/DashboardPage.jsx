@@ -193,7 +193,7 @@ const DashboardPage = () => {
     try {
       console.log("Sending request to backend with prompt:", comprehensivePrompt);
       
-      const response = await fetch('http://localhost:5000/api/generate-resume-from-prompt', {
+      const response = await fetch('https://intelli-resume-backend.vercel.app/api/generate-resume-from-prompt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -360,7 +360,7 @@ const DashboardPage = () => {
         Return as valid JSON that can be parsed by JSON.parse()
       `;
 
-      const response = await fetch('https://your-backend-domain.vercel.app/api/generate-resume-from-prompt', {
+      const response = await fetch('https://intelli-resume-backend.vercel.app/api/generate-resume-from-prompt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
