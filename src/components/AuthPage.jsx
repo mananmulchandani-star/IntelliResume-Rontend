@@ -24,31 +24,68 @@ const AuthPage = () => {
     try {
       if (isLogin) {
         // Login logic
-        const result = await login(formData.email, formData.password);
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password
+          }),
+        });
+
+        const result = await response.json();
+        
         if (result.success) {
-          // Redirect directly to dashboard
+          localStorage.setItem('token', result.session.access_token);
+          localStorage.setItem('user', JSON.stringify(result.user));
+          login(result.user, result.session.access_token); // ← ADDED TOKEN PARAMETER
           navigate('/app');
         } else {
           setError(result.error);
         }
       } else {
         // Signup logic
-        const response = await fetch('/api/signup', {
+        const response = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password
+          }),
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          // Redirect directly to dashboard after signup
-          navigate('/app');
+        const result = await response.json();
+
+        if (result.success) {
+          // For signup, we need to login separately since Supabase may require email verification
+          const loginResponse = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              password: formData.password
+            }),
+          });
+
+          const loginResult = await loginResponse.json();
+
+          if (loginResult.success) {
+            localStorage.setItem('token', loginResult.session.access_token);
+            localStorage.setItem('user', JSON.stringify(result.user));
+            login(result.user, loginResult.session.access_token); // ← ADDED TOKEN PARAMETER
+            navigate('/app');
+          } else {
+            setError('Account created but login failed. Please try logging in.');
+          }
         } else {
-          setError('Signup failed. Please try again.');
+          setError(result.error);
         }
       }
     } catch (err) {

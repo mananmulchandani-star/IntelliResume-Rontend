@@ -17,35 +17,42 @@ function SignupPage() {
     setError(""); // Clear error when user starts typing
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      let users = JSON.parse(localStorage.getItem("users") || "[]");
-      const signupEmail = form.email.trim().toLowerCase();
+    setError("");
 
-      if (users.some(u => u.email === signupEmail)) {
-        setError("Email already registered. Please sign in.");
-        setLoading(false);
-        return;
-      }
-      
-      users.push({
-        name: form.name.trim(),
-        email: signupEmail,
-        password: form.password
+    try {
+      // Call your Supabase backend
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim().toLowerCase(),
+          password: form.password
+        }),
       });
-      localStorage.setItem("users", JSON.stringify(users));
-      localStorage.setItem("resume_user", JSON.stringify({
-        name: form.name.trim(),
-        email: signupEmail
-      }));
-      localStorage.setItem("loggedInEmail", signupEmail);
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Save user data to localStorage
+        localStorage.setItem('user', JSON.stringify(result.user));
+        localStorage.setItem('loggedInEmail', result.user.email);
+        
+        // Navigate to dashboard
+        navigate("/Dashboard");
+      } else {
+        setError(result.error || "Signup failed. Please try again.");
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    } finally {
       setLoading(false);
-      navigate("/Dashboard");
-    }, 1000);
+    }
   };
 
   return (
