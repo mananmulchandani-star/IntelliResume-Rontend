@@ -65,6 +65,11 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const aiPopupRef = useRef(null);
 
+  // ✅ FIXED: Add backend URL function
+  const getBackendUrl = () => {
+    return 'https://intelli-resume-backend.vercel.app';
+  };
+
   // Theme provider value
   const themeValue = {
     darkMode,
@@ -193,7 +198,9 @@ const DashboardPage = () => {
     try {
       console.log("Sending request to backend with prompt:", comprehensivePrompt);
       
-      const response = await fetch('https://intelli-resume-backend.vercel.app/api/generate-resume-from-prompt', {
+      // ✅ FIXED: Use the backend URL function
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/generate-resume-from-prompt`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -360,7 +367,9 @@ const DashboardPage = () => {
         Return as valid JSON that can be parsed by JSON.parse()
       `;
 
-      const response = await fetch('https://intelli-resume-backend.vercel.app/api/generate-resume-from-prompt', {
+      // ✅ FIXED: Use the backend URL function
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/generate-resume-from-prompt`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
