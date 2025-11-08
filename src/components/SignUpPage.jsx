@@ -63,6 +63,18 @@ function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // ✅ Validate form before submission
+    if (!form.name.trim() || !form.email.trim() || !form.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+    
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -81,47 +93,76 @@ function SignupPage() {
 
       if (error) {
         setError(error.message);
-      } else {
-        // ✅ CREATE USER PROFILE in users table (critical for login)
-        if (data.user?.id) {
-          await createUserProfile(data.user.id, form.email.trim().toLowerCase(), form.name.trim());
-        }
+        setLoading(false);
+        return;
+      }
 
-        // ✅ Auto-login after signup to get session
-        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+      if (!data.user) {
+        setError("Signup failed - no user data returned");
+        setLoading(false);
+        return;
+      }
+
+      // ✅ CREATE USER PROFILE in users table (critical for login)
+      try {
+        await createUserProfile(data.user.id, form.email.trim().toLowerCase(), form.name.trim());
+        console.log('✅ User profile created successfully');
+      } catch (profileError) {
+        console.error('Profile creation failed:', profileError);
+        // Continue even if profile creation fails
+      }
+
+      // ✅ Auto-login after signup to get session
+      let loginData = null;
+      try {
+        const { data: loginResponse, error: loginError } = await supabase.auth.signInWithPassword({
           email: form.email.trim().toLowerCase(),
           password: form.password,
         });
 
         if (loginError) {
           console.log('Auto-login failed, but account created. User can login manually.');
+        } else {
+          loginData = loginResponse;
         }
-
-        // ✅ Save user data to localStorage
-        const userData = {
-          id: data.user?.id || loginData?.user?.id,
-          name: form.name.trim(),
-          email: form.email.trim().toLowerCase()
-        };
-
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('loggedInEmail', form.email.trim().toLowerCase());
-        
-        if (loginData?.session?.access_token) {
-          localStorage.setItem('token', loginData.session.access_token);
-        }
-        
-        console.log('✅ Signup successful, profile created:', userData);
-        
-        // Navigate to dashboard
-        navigate("/Dashboard");
+      } catch (loginErr) {
+        console.log('Auto-login attempt failed:', loginErr);
       }
+
+      // ✅ Save user data to localStorage
+      const userData = {
+        id: data.user?.id || loginData?.user?.id,
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase()
+      };
+
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('loggedInEmail', form.email.trim().toLowerCase());
+      
+      if (loginData?.session?.access_token) {
+        localStorage.setItem('token', loginData.session.access_token);
+      }
+      
+      console.log('✅ Signup successful, profile created:', userData);
+      
+      // ✅ FIXED: Navigate to correct path - lowercase 'dashboard'
+      navigate("/dashboard");
+      
     } catch (err) {
       console.error('Signup error:', err);
       setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ FIXED: Navigate to correct login path
+  const goToLogin = () => {
+    navigate('/login'); // Changed from '/auth'
+  };
+
+  const goToHome = () => {
+    navigate('/');
   };
 
   return (
@@ -135,7 +176,7 @@ function SignupPage() {
 
       {/* Header */}
       <header className="signup-header">
-        <div className="logo-box" onClick={() => navigate('/')}>
+        <div className="logo-box" onClick={goToHome}>
           <div className="logo-icon-wrapper">
             <div className="logo-orb"></div>
             <span className="logo-text">IR</span>
@@ -185,7 +226,7 @@ function SignupPage() {
                   required
                   disabled={loading}
                 />
-                <span className="input-icon"></span>
+                <span className="input-icon">👤</span>
               </div>
             </div>
 
@@ -202,7 +243,7 @@ function SignupPage() {
                   required
                   disabled={loading}
                 />
-                <span className="input-icon"></span>
+                <span className="input-icon">📧</span>
               </div>
             </div>
 
@@ -213,13 +254,17 @@ function SignupPage() {
                   type="password"
                   name="password"
                   className="form-input"
-                  placeholder="Enter your password"
+                  placeholder="Enter your password (min. 6 characters)"
                   value={form.password}
                   onChange={handleChange}
                   required
+                  minLength="6"
                   disabled={loading}
                 />
-                <span className="input-icon"></span>
+                <span className="input-icon">🔒</span>
+              </div>
+              <div className="password-hint">
+                Must be at least 6 characters long
               </div>
             </div>
 
@@ -235,7 +280,7 @@ function SignupPage() {
                 </>
               ) : (
                 <>
-                  <span className="btn-sparkle"></span>
+                  <span className="btn-sparkle">✨</span>
                   Create Account
                 </>
               )}
@@ -250,7 +295,7 @@ function SignupPage() {
             <button 
               type="button" 
               className="signup-toggle-btn"
-              onClick={() => navigate('/auth')}
+              onClick={goToLogin}
             >
               Sign In
             </button>
