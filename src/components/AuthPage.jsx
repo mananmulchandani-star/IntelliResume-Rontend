@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { createClient } from '@supabase/supabase-js';
+import { useAuth } from './AuthContext'; // Fixed import path
+import { supabase } from '../services/supabase'; // Import from central service
 import './AuthPage.css';
-
-const supabase = createClient(
-  'https://lpgdolynzbgisbqbfwrf.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwZ2RvbHluemJnaXNicWJmd3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzkzOTAsImV4cCI6MjA3NzgxNTM5MH0.usuPeETruTUTvUDmH18O87qPgHg1xVHfufMqdRHdvBM'
-);
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -29,68 +24,38 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        // ✅ LOGIN: Direct Supabase login
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-
-        if (error) {
-          setError(error.message);
-        } else {
-          // ✅ Get or create user profile
-          let userProfile = await getUserProfile(data.user.id);
-          
-          if (!userProfile) {
-            // If no profile exists, create one
-            userProfile = await createUserProfile(data.user.id, data.user.email);
-          }
-
-          localStorage.setItem('token', data.session.access_token);
-          localStorage.setItem('user', JSON.stringify(userProfile));
-          
-          login(userProfile, data.session.access_token);
-          navigate('/app');
+        // ✅ LOGIN: Use AuthContext login
+        const result = await login(formData.email, formData.password);
+        
+        // Get user profile
+        let userProfile = await getUserProfile(result.user.id);
+        
+        if (!userProfile) {
+          // If no profile exists, create one
+          userProfile = await createUserProfile(result.user.id, result.user.email);
         }
+
+        localStorage.setItem('token', result.session.access_token);
+        localStorage.setItem('user', JSON.stringify(userProfile));
+        
+        navigate('/dashboard'); // Fixed navigation path
       } else {
-        // ✅ SIGNUP: Direct Supabase signup
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-        });
-
-        if (error) {
-          setError(error.message);
-        } else {
+        // ✅ SIGNUP: Use AuthContext signUp
+        const result = await signUp(formData.email, formData.password);
+        
+        if (result.user) {
           // ✅ Create user profile in users table
-          await createUserProfile(data.user.id, formData.email, formData.name);
+          await createUserProfile(result.user.id, formData.email, formData.name);
           
-          // Auto-login after successful signup
-          const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
-
-          if (loginError) {
-            setError('Account created but login failed. Please try logging in.');
-          } else {
-            const userProfile = {
-              id: loginData.user.id,
-              email: loginData.user.email,
-              name: formData.name
-            };
-
-            localStorage.setItem('token', loginData.session.access_token);
-            localStorage.setItem('user', JSON.stringify(userProfile));
-            
-            login(userProfile, loginData.session.access_token);
-            navigate('/app');
-          }
+          // Show success message for email confirmation
+          setError('Check your email for confirmation link! You can login after confirming your email.');
+          setIsLogin(true); // Switch to login form
+          setFormData(prev => ({ ...prev, password: '' })); // Clear password
         }
       }
     } catch (err) {
       console.error('Auth error:', err);
-      setError('An error occurred. Please try again.');
+      setError(err.message || 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -98,46 +63,66 @@ const AuthPage = () => {
 
   // ✅ Get user profile from users table
   const getUserProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (error) {
-      console.log('No user profile found:', error.message);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.log('No user profile found:', error.message);
+        return null;
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error getting user profile:', error);
       return null;
     }
-    
-    return data;
   };
 
   // ✅ Create user profile in users table
   const createUserProfile = async (userId, email, name = '') => {
-    const { data, error } = await supabase
-      .from('users')
-      .insert([
-        {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .insert([
+          {
+            id: userId,
+            email: email,
+            name: name || email.split('@')[0], // Use email prefix if no name
+            created_at: new Date().toISOString()
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating user profile:', error.message);
+        // Return basic profile even if DB insert fails
+        return {
           id: userId,
           email: email,
-          name: name || email.split('@')[0], // Use email prefix if no name
-          created_at: new Date().toISOString()
-        }
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error creating user profile:', error.message);
-      // Return basic profile even if DB insert fails
+          name: name || email.split('@')[0]
+        };
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error creating user profile:', error);
       return {
         id: userId,
         email: email,
         name: name || email.split('@')[0]
       };
     }
-    
-    return data;
+  };
+
+  // ✅ Sign up function using AuthContext
+  const signUp = async (email, password) => {
+    const { signUp } = useAuth();
+    return await signUp(email, password);
   };
 
   const handleChange = (e) => {
@@ -151,52 +136,110 @@ const AuthPage = () => {
     <div className="auth-container">
       <div className="auth-form">
         <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
-        {error && <div className="error-message">{error}</div>}
+        {error && (
+          <div className={`message ${error.includes('Check your email') ? 'success-message' : 'error-message'}`}>
+            {error}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit}>
           {!isLogin && (
+            <div className="form-group">
+              <input
+                type="text"
+                name="name"
+                placeholder="Full Name"
+                value={formData.name}
+                onChange={handleChange}
+                required={!isLogin}
+                disabled={loading}
+              />
+            </div>
+          )}
+          <div className="form-group">
             <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={formData.name}
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
               onChange={handleChange}
               required
+              disabled={loading}
             />
-          )}
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <button type="submit" disabled={loading}>
-            {loading ? 'Processing...' : (isLogin ? 'Login' : 'Sign Up')}
+          </div>
+          <div className="form-group">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              minLength={6}
+            />
+          </div>
+          <button 
+            type="submit" 
+            disabled={loading}
+            className={`auth-button ${loading ? 'loading' : ''}`}
+          >
+            {loading ? (
+              <>
+                <span className="spinner"></span>
+                Processing...
+              </>
+            ) : (
+              isLogin ? 'Login' : 'Sign Up'
+            )}
           </button>
         </form>
 
-        <p>
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <span 
-            className="toggle-link" 
-            onClick={() => setIsLogin(!isLogin)}
-          >
-            {isLogin ? 'Sign Up' : 'Login'}
-          </span>
-        </p>
+        <div className="auth-toggle">
+          <p>
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <span 
+              className="toggle-link" 
+              onClick={() => !loading && setIsLogin(!isLogin)}
+            >
+              {isLogin ? 'Sign Up' : 'Login'}
+            </span>
+          </p>
+        </div>
+
+        {/* Forgot password link */}
+        {isLogin && (
+          <div className="forgot-password">
+            <span 
+              className="toggle-link"
+              onClick={() => !loading && handleForgotPassword()}
+            >
+              Forgot your password?
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
+
+  // ✅ Forgot password handler
+  async function handleForgotPassword() {
+    if (!formData.email) {
+      setError('Please enter your email address to reset password');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { resetPassword } = useAuth();
+      await resetPassword(formData.email);
+      setError('Password reset email sent! Check your inbox.');
+    } catch (error) {
+      setError(error.message || 'Failed to send reset email. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
 };
 
 export default AuthPage;
