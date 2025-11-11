@@ -16,9 +16,9 @@ const AIPromptPage = () => {
     location: ''
   });
 
-  // ✅ FIXED: Use your actual deployed backend URL
+  // ✅ FIXED: Updated to Railway backend URL
   const getBackendUrl = () => {
-    return 'https://intelli-resume-backend.vercel.app';
+    return 'https://insightr-backend-production.up.railway.app';
   };
 
   // ✅ CRITICAL FIX: Load formData from Dashboard navigation state
@@ -88,7 +88,7 @@ Generate a complete resume with professional summary, education, skills, project
     }));
   };
 
-  // ✅ FIXED: Now using your actual deployed backend
+  // ✅ FIXED: Now using your Railway backend
   const generateResumeWithAI = async () => {
     if (!prompt.trim()) {
       setError('Please enter a prompt describing your resume');
