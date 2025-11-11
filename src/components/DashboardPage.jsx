@@ -58,9 +58,9 @@ const DashboardPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme(); // Now this works!
 
-  // ✅ Backend URL function
+  // ✅ Backend URL function - UPDATED TO RAILWAY
   const getBackendUrl = () => {
-    return 'https://intelli-resume-backend.vercel.app';
+    return 'https://insightr-backend-production.up.railway.app';
   };
 
   // Load user's existing resumes and user name
