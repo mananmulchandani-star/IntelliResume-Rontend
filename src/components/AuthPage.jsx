@@ -25,10 +25,15 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        // ✅ LOGIN: Use AuthContext login
+        // ✅ LOGIN: Use AuthContext login with SAFE data access
         const result = await login(formData.email, formData.password);
         
-        // Get user profile
+        // ✅ SAFE: Check if result and user exist
+        if (!result || !result.user || !result.user.id) {
+          throw new Error('Login failed: No user data received');
+        }
+
+        // ✅ SAFE: Get user profile with error handling
         let userProfile = await getUserProfile(result.user.id);
         
         if (!userProfile) {
@@ -36,15 +41,20 @@ const AuthPage = () => {
           userProfile = await createUserProfile(result.user.id, result.user.email);
         }
 
-        localStorage.setItem('token', result.session.access_token);
-        localStorage.setItem('user', JSON.stringify(userProfile));
-        
-        navigate('/dashboard');
+        // ✅ SAFE: Check if session exists
+        if (result.session && result.session.access_token) {
+          localStorage.setItem('token', result.session.access_token);
+          localStorage.setItem('user', JSON.stringify(userProfile));
+          navigate('/dashboard');
+        } else {
+          throw new Error('Login successful but no session token received');
+        }
       } else {
-        // ✅ SIGNUP: Use AuthContext signUp (from top level)
+        // ✅ SIGNUP: Use AuthContext signUp with SAFE data access
         const result = await signUp(formData.email, formData.password);
         
-        if (result.user) {
+        // ✅ SAFE: Check if user exists in result
+        if (result && result.user) {
           // ✅ Create user profile in users table
           await createUserProfile(result.user.id, formData.email, formData.name);
           
@@ -52,6 +62,8 @@ const AuthPage = () => {
           setError('Check your email for confirmation link! You can login after confirming your email.');
           setIsLogin(true); // Switch to login form
           setFormData(prev => ({ ...prev, password: '' })); // Clear password
+        } else {
+          throw new Error('Signup failed: No user data received');
         }
       }
     } catch (err) {
