@@ -653,16 +653,12 @@ const DashboardPage = () => {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      style={{ background: darkMode ? '#0f172a' : '#ffffff', minHeight: '100vh' }}
+      style={{ minHeight: '100vh' }}
     >
       {/* Header */}
       <motion.header 
         className="dashboard-header"
         variants={itemVariants}
-        style={{ 
-          background: darkMode ? '#1e293b' : '#ffffff',
-          borderBottom: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
-        }}
       >
         <div className="header-content">
           <div className="brand-section">
@@ -688,24 +684,17 @@ const DashboardPage = () => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              style={{
-                background: darkMode ? '#334155' : '#f1f5f9',
-                border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
-              }}
             >
               {darkMode ? <Icons.Sun /> : <Icons.Moon />}
             </motion.button>
             
-            <div className="user-section" style={{
-              background: darkMode ? '#334155' : '#f8fafc',
-              border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
-            }}>
+            <div className="user-section">
               <div className="user-avatar">
                 {userName.charAt(0).toUpperCase()}
               </div>
               <div className="user-details">
-                <span className="user-greeting" style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Welcome back,</span>
-                <span className="user-name" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{userName}</span>
+                <span className="user-greeting">Welcome back,</span>
+                <span className="user-name">{userName}</span>
               </div>
               <motion.button 
                 className="logout-btn"
@@ -726,8 +715,8 @@ const DashboardPage = () => {
         variants={itemVariants}
       >
         <div className="section-header">
-          <h2 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Quick Actions</h2>
-          <p style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Start creating your professional resume</p>
+          <h2>Quick Actions</h2>
+          <p>Start creating your professional resume</p>
         </div>
         <div className="actions-grid">
           <motion.button 
@@ -736,19 +725,15 @@ const DashboardPage = () => {
             variants={cardVariants}
             whileHover={{ y: -4 }}
             whileTap={{ scale: 0.98 }}
-            style={{
-              background: darkMode ? '#1e293b' : '#ffffff',
-              border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
-            }}
           >
             <div className="action-icon">
               <Icons.Create />
             </div>
             <div className="action-content">
-              <h3 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Create Resume</h3>
-              <p style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Build from scratch with our template</p>
+              <h3>Create Resume</h3>
+              <p>Build from scratch with our template</p>
             </div>
-            <div className="action-arrow" style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>→</div>
+            <div className="action-arrow">→</div>
           </motion.button>
 
           <motion.button 
@@ -757,19 +742,15 @@ const DashboardPage = () => {
             variants={cardVariants}
             whileHover={{ y: -4 }}
             whileTap={{ scale: 0.98 }}
-            style={{
-              background: darkMode ? '#1e293b' : '#ffffff',
-              border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
-            }}
           >
             <div className="action-icon">
               <Icons.AI />
             </div>
             <div className="action-content">
-              <h3 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>AI Assistant</h3>
-              <p style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Generate with artificial intelligence</p>
+              <h3>AI Assistant</h3>
+              <p>Generate with artificial intelligence</p>
             </div>
-            <div className="action-arrow" style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>→</div>
+            <div className="action-arrow">→</div>
           </motion.button>
         </div>
       </motion.section>
@@ -780,8 +761,8 @@ const DashboardPage = () => {
         variants={containerVariants}
       >
         <div className="section-header">
-          <h2 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>My Resumes</h2>
-          <p style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Manage and edit your created resumes</p>
+          <h2>My Resumes</h2>
+          <p>Manage and edit your created resumes</p>
         </div>
         
         <AnimatePresence>
@@ -792,19 +773,12 @@ const DashboardPage = () => {
               initial="hidden"
               animate="visible"
               exit="hidden"
-              style={{
-                background: darkMode ? '#1e293b' : '#f8fafc',
-                border: darkMode ? '2px dashed #334155' : '2px dashed #e2e8f0'
-              }}
             >
-              <div className="empty-icon" style={{
-                background: darkMode ? '#334155' : '#f1f5f9',
-                color: darkMode ? '#cbd5e1' : '#64748b'
-              }}>
+              <div className="empty-icon">
                 <Icons.Document />
               </div>
-              <h3 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>No resumes yet</h3>
-              <p style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>Create your first professional resume to get started</p>
+              <h3>No resumes yet</h3>
+              <p>Create your first professional resume to get started</p>
               <motion.button 
                 className="create-first-btn"
                 onClick={openCreatePopup}
@@ -831,11 +805,6 @@ const DashboardPage = () => {
                     exit="hidden"
                     whileTap={{ scale: 0.95 }}
                     layout
-                    style={{
-                      background: darkMode ? '#1e293b' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      boxShadow: darkMode ? '0 4px 6px rgba(0, 0, 0, 0.3)' : '0 4px 6px rgba(0, 0, 0, 0.1)'
-                    }}
                   >
                     <div className="card-header">
                       <div className="card-badge">
@@ -848,11 +817,6 @@ const DashboardPage = () => {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           title="Edit resume"
-                          style={{
-                            background: darkMode ? '#334155' : '#f1f5f9',
-                            border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
-                            color: darkMode ? '#cbd5e1' : '#64748b'
-                          }}
                         >
                           <Icons.Edit />
                         </motion.button>
@@ -862,19 +826,14 @@ const DashboardPage = () => {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           title="Delete resume"
-                          style={{
-                            background: darkMode ? '#334155' : '#f1f5f9',
-                            border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
-                            color: darkMode ? '#cbd5e1' : '#64748b'
-                          }}
                         >
                           <Icons.Delete />
                         </motion.button>
                       </div>
                     </div>
                     <div className="card-content">
-                      <h3 className="card-title" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{resume.title}</h3>
-                      <p className="card-date" style={{ color: darkMode ? '#cbd5e1' : '#64748b' }}>
+                      <h3 className="card-title">{resume.title}</h3>
+                      <p className="card-date">
                         <Icons.Calendar />
                         Created {resume.created}
                       </p>
@@ -912,18 +871,11 @@ const DashboardPage = () => {
               initial="hidden"
               animate="visible"
               exit="exit"
-              style={{
-                background: darkMode ? '#1e293b' : '#ffffff',
-                border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
-              }}
             >
-              <div className="popup-header" style={{
-                background: darkMode ? '#334155' : '#f8fafc',
-                borderBottom: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
-              }}>
+              <div className="popup-header">
                 <div className="popup-title">
                   <Icons.Create />
-                  <h2 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Create New Resume</h2>
+                  <h2>Create New Resume</h2>
                 </div>
                 <motion.button 
                   className="close-btn"
@@ -931,11 +883,6 @@ const DashboardPage = () => {
                   disabled={loading}
                   whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
-                  style={{
-                    background: darkMode ? '#475569' : '#f1f5f9',
-                    border: darkMode ? '1px solid #64748b' : '1px solid #e2e8f0',
-                    color: darkMode ? '#cbd5e1' : '#64748b'
-                  }}
                 >
                   <Icons.Close />
                 </motion.button>
@@ -943,11 +890,11 @@ const DashboardPage = () => {
 
               <form onSubmit={handleCreateResume} className="resume-form">
                 <div className="form-section">
-                  <h3 style={{ color: darkMode ? '#f1f5f9' : '#1e293b', borderBottom: darkMode ? '2px solid #334155' : '2px solid #e2e8f0' }}>Personal Information</h3>
+                  <h3>Personal Information</h3>
                   <div className="form-grid">
                     {['fullName', 'email', 'phone', 'location', 'dateOfBirth'].map((field) => (
                       <div className="form-group" key={field}>
-                        <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>
+                        <label>
                           {field === 'fullName' ? 'Full Name' : 
                            field === 'email' ? 'Email' :
                            field === 'phone' ? 'Phone' : 
@@ -965,11 +912,6 @@ const DashboardPage = () => {
                             field === 'location' ? 'City, Country' : 'YYYY-MM-DD'
                           }
                           disabled={loading}
-                          style={{
-                            background: darkMode ? '#0f172a' : '#ffffff',
-                            border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                            color: darkMode ? '#f1f5f9' : '#1e293b'
-                          }}
                         />
                       </div>
                     ))}
@@ -977,11 +919,11 @@ const DashboardPage = () => {
                 </div>
 
                 <div className="form-section">
-                  <h3 style={{ color: darkMode ? '#f1f5f9' : '#1e293b', borderBottom: darkMode ? '2px solid #334155' : '2px solid #e2e8f0' }}>Professional Information</h3>
+                  <h3>Professional Information</h3>
                   <div className="form-grid">
                     {['stream', 'field', 'userType', 'experienceLevel'].map((field) => (
                       <div className="form-group" key={field}>
-                        <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>
+                        <label>
                           {field === 'stream' ? 'Stream/Background *' :
                            field === 'field' ? 'Specific Field *' :
                            field === 'userType' ? 'You are a *' : 'Experience Level *'}
@@ -993,11 +935,6 @@ const DashboardPage = () => {
                             onChange={handleInputChange}
                             required
                             disabled={loading}
-                            style={{
-                              background: darkMode ? '#0f172a' : '#ffffff',
-                              border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                              color: darkMode ? '#f1f5f9' : '#1e293b'
-                            }}
                           >
                             <option value="">Select {field === 'stream' ? 'Stream' : field === 'userType' ? '' : 'Experience'}</option>
                             {field === 'stream' && (
@@ -1038,18 +975,13 @@ const DashboardPage = () => {
                             placeholder={field === 'field' ? "e.g., Software Development, Marketing, Data Science" : ""}
                             required
                             disabled={loading}
-                            style={{
-                              background: darkMode ? '#0f172a' : '#ffffff',
-                              border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                              color: darkMode ? '#f1f5f9' : '#1e293b'
-                            }}
                           />
                         )}
                       </div>
                     ))}
 
                     <div className="form-group full-width">
-                      <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>Target Role *</label>
+                      <label>Target Role *</label>
                       <input
                         type="text"
                         name="targetRole"
@@ -1058,16 +990,11 @@ const DashboardPage = () => {
                         placeholder="e.g., Frontend Developer, Marketing Manager"
                         required
                         disabled={loading}
-                        style={{
-                          background: darkMode ? '#0f172a' : '#ffffff',
-                          border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                          color: darkMode ? '#f1f5f9' : '#1e293b'
-                        }}
                       />
                     </div>
 
                     <div className="form-group full-width">
-                      <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>Key Skills (comma separated) - Optional</label>
+                      <label>Key Skills (comma separated) - Optional</label>
                       <input
                         type="text"
                         name="skills"
@@ -1075,17 +1002,12 @@ const DashboardPage = () => {
                         onChange={handleInputChange}
                         placeholder="e.g., JavaScript, React, Project Management (Leave empty for AI to generate skills)"
                         disabled={loading}
-                        style={{
-                          background: darkMode ? '#0f172a' : '#ffffff',
-                          border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                          color: darkMode ? '#f1f5f9' : '#1e293b'
-                        }}
                       />
                     </div>
 
                     {/* Skill Levels Section */}
                     <div className="form-group full-width">
-                      <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>Skill Proficiency Levels *</label>
+                      <label>Skill Proficiency Levels *</label>
                       <div className="skill-levels-container">
                         {[
                           { 
@@ -1106,10 +1028,10 @@ const DashboardPage = () => {
                         ].map(({ category, label, description }) => (
                           <div key={category} className="skill-level-category">
                             <div className="skill-category-header">
-                              <span className="skill-category-label" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>
+                              <span className="skill-category-label">
                                 {label}
                               </span>
-                              <span className="skill-category-description" style={{ color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.875rem' }}>
+                              <span className="skill-category-description">
                                 {description}
                               </span>
                             </div>
@@ -1130,23 +1052,10 @@ const DashboardPage = () => {
                                   />
                                   <div 
                                     className={`skill-level-btn ${skillLevels[category] === level ? 'active' : ''}`}
-                                    style={{
-                                      background: skillLevels[category] === level 
-                                        ? (darkMode ? '#3b82f6' : '#2563eb')
-                                        : (darkMode ? '#334155' : '#f1f5f9'),
-                                      border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
-                                      color: skillLevels[category] === level 
-                                        ? '#ffffff' 
-                                        : (darkMode ? '#cbd5e1' : '#475569')
-                                    }}
+                                    data-level={level}
                                   >
                                     <div className="skill-level-label">{label}</div>
-                                    <div className="skill-level-desc" style={{ 
-                                      color: skillLevels[category] === level 
-                                        ? '#e2e8f0' 
-                                        : (darkMode ? '#94a3b8' : '#64748b'),
-                                      fontSize: '0.75rem'
-                                    }}>
+                                    <div className="skill-level-desc">
                                       {desc}
                                     </div>
                                   </div>
@@ -1156,13 +1065,13 @@ const DashboardPage = () => {
                           </div>
                         ))}
                       </div>
-                      <p style={{ color: darkMode ? '#94a3b8' : '#64748b', fontSize: '0.875rem', marginTop: '8px' }}>
+                      <p className="skill-proficiency-note">
                         AI will generate appropriate skills based on your stream and selected proficiency levels
                       </p>
                     </div>
 
                     <div className="form-group full-width">
-                      <label style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>Additional Instructions / Prompt</label>
+                      <label>Additional Instructions / Prompt</label>
                       <textarea
                         name="prompt"
                         value={formData.prompt}
@@ -1170,17 +1079,12 @@ const DashboardPage = () => {
                         placeholder="Any specific requirements, achievements, or additional information..."
                         rows="4"
                         disabled={loading}
-                        style={{
-                          background: darkMode ? '#0f172a' : '#ffffff',
-                          border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                          color: darkMode ? '#f1f5f9' : '#1e293b'
-                        }}
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="form-actions" style={{ borderTop: darkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
+                <div className="form-actions">
                   <motion.button 
                     type="button" 
                     onClick={closeCreatePopup}
@@ -1188,11 +1092,6 @@ const DashboardPage = () => {
                     className="cancel-btn"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    style={{
-                      background: darkMode ? '#334155' : '#f1f5f9',
-                      border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}
                   >
                     Cancel
                   </motion.button>
@@ -1239,18 +1138,11 @@ const DashboardPage = () => {
               initial="hidden"
               animate="visible"
               exit="exit"
-              style={{
-                background: darkMode ? '#1e293b' : '#ffffff',
-                border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
-              }}
             >
-              <div className="popup-header" style={{
-                background: darkMode ? '#334155' : '#f8fafc',
-                borderBottom: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
-              }}>
+              <div className="popup-header">
                 <div className="popup-title">
                   <Icons.Robot />
-                  <h2 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>AI Resume Assistant</h2>
+                  <h2>AI Resume Assistant</h2>
                 </div>
                 <motion.button 
                   className="close-btn"
@@ -1258,23 +1150,15 @@ const DashboardPage = () => {
                   disabled={aiLoading}
                   whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
-                  style={{
-                    background: darkMode ? '#475569' : '#f1f5f9',
-                    border: darkMode ? '1px solid #64748b' : '1px solid #e2e8f0',
-                    color: darkMode ? '#cbd5e1' : '#64748b'
-                  }}
                 >
                   <Icons.Close />
                 </motion.button>
               </div>
 
               <div className="ai-popup-content">
-                <div className="ai-instructions" style={{
-                  background: darkMode ? '#334155' : '#f8fafc',
-                  border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
-                }}>
-                  <p style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Tell the AI assistant what kind of resume you want to create:</p>
-                  <ul style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>
+                <div className="ai-instructions">
+                  <p>Tell the AI assistant what kind of resume you want to create:</p>
+                  <ul>
                     <li>Describe your background and experience</li>
                     <li>Specify the job role you're targeting</li>
                     <li>Mention key skills and achievements</li>
@@ -1283,76 +1167,32 @@ const DashboardPage = () => {
                 </div>
 
                 <div className="ai-form-group">
-                  <label style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Your Prompt:</label>
+                  <label>Your Prompt:</label>
                   <textarea
                     value={aiPrompt}
                     onChange={handleAiPromptChange}
                     placeholder="e.g., Create a professional resume for a senior frontend developer with 5 years of experience in React and TypeScript. Include experience with modern web technologies and team leadership..."
                     rows="6"
                     disabled={aiLoading}
-                    style={{
-                      background: darkMode ? '#0f172a' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      color: darkMode ? '#f1f5f9' : '#1e293b'
-                    }}
                   />
                 </div>
 
-                <div className="current-info" style={{
-                  background: darkMode ? '#334155' : '#f8fafc',
-                  border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0'
-                }}>
-                  <h4 style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Current Information:</h4>
+                <div className="current-info">
+                  <h4>Current Information:</h4>
                   <div className="info-grid">
-                    {formData.fullName && <span style={{
-                      background: darkMode ? '#1e293b' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}>Name: {formData.fullName}</span>}
-                    {formData.email && <span style={{
-                      background: darkMode ? '#1e293b' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}>Email: {formData.email}</span>}
-                    {formData.dateOfBirth && <span style={{
-                      background: darkMode ? '#1e293b' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}>Date of Birth: {formData.dateOfBirth}</span>}
-                    {formData.targetRole && <span style={{
-                      background: darkMode ? '#1e293b' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}>Target Role: {formData.targetRole}</span>}
-                    {formData.field && <span style={{
-                      background: darkMode ? '#1e293b' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}>Field: {formData.field}</span>}
-                    {formData.experienceLevel && <span style={{
-                      background: darkMode ? '#1e293b' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}>Experience: {formData.experienceLevel}</span>}
-                    <span style={{
-                      background: darkMode ? '#1e293b' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}>Tech Skills: {skillLevels.technical}</span>
-                    <span style={{
-                      background: darkMode ? '#1e293b' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}>Soft Skills: {skillLevels.soft}</span>
-                    <span style={{
-                      background: darkMode ? '#1e293b' : '#ffffff',
-                      border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}>Tools Level: {skillLevels.tools}</span>
+                    {formData.fullName && <span>Name: {formData.fullName}</span>}
+                    {formData.email && <span>Email: {formData.email}</span>}
+                    {formData.dateOfBirth && <span>Date of Birth: {formData.dateOfBirth}</span>}
+                    {formData.targetRole && <span>Target Role: {formData.targetRole}</span>}
+                    {formData.field && <span>Field: {formData.field}</span>}
+                    {formData.experienceLevel && <span>Experience: {formData.experienceLevel}</span>}
+                    <span>Tech Skills: {skillLevels.technical}</span>
+                    <span>Soft Skills: {skillLevels.soft}</span>
+                    <span>Tools Level: {skillLevels.tools}</span>
                   </div>
                 </div>
 
-                <div className="ai-popup-actions" style={{ borderTop: darkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
+                <div className="ai-popup-actions">
                   <motion.button 
                     type="button" 
                     onClick={closeAIPopup}
@@ -1360,11 +1200,6 @@ const DashboardPage = () => {
                     className="cancel-btn"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    style={{
-                      background: darkMode ? '#334155' : '#f1f5f9',
-                      border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
-                      color: darkMode ? '#cbd5e1' : '#475569'
-                    }}
                   >
                     Cancel
                   </motion.button>
