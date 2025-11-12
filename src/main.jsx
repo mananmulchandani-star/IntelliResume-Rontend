@@ -7,8 +7,9 @@ import LoginPage from './components/LoginPage.jsx'
 import Homepage from './components/Homepage.jsx'
 import DashboardPage from './components/DashboardPage.jsx'
 import EditorPage from './components/EditorPage.jsx'
-import AiPromptPage from './components/AIPromptPage.jsx' // ✅ ADD THIS IMPORT
-import CreateResume from './components/CreateResume.jsx' // <-- added import
+import AiPromptPage from './components/AIPromptPage.jsx'
+import CreateResume from './components/CreateResume.jsx'
+import { AuthProvider } from './contexts/AuthContext' // ✅ ADD THIS IMPORT
 import './index.css'
 
 // Debug Component
@@ -209,25 +210,25 @@ const AdminPortalPage = () => {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Router>
-      <Routes>
-        <Route path="/" element={<Homepage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/login" element={<AuthPage />} />
-        <Route path="/signup" element={<AuthPage />} />
-        <Route path="/editor" element={<EditorPage />} />
-        <Route path="/input" element={<SignUpPage />} />
-        <Route path="/adminportal" element={<AdminPortalPage />} />
-        <Route path="/ai-prompt" element={<AiPromptPage />} />
-        <Route path="/create-resume" element={<CreateResume />} />
-        {/* ✅ ADDED DEBUG ROUTE */}
-        <Route path="/debug" element={<DebugPage />} />
-        {/* ✅ KEEP ONLY ONE CATCH-ALL ROUTE */}
-        <Route path="*" element={<div>Page not found - 404 Error</div>} />
-        <Route path="/" element={<CreateResume />} />
-
-      </Routes>
-    </Router>
+    {/* ✅ WRAP EVERYTHING WITH AuthProvider */}
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Homepage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/auth" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/editor" element={<EditorPage />} />
+          <Route path="/input" element={<SignUpPage />} />
+          <Route path="/adminportal" element={<AdminPortalPage />} />
+          <Route path="/ai-prompt" element={<AiPromptPage />} />
+          <Route path="/create-resume" element={<CreateResume />} />
+          <Route path="/debug" element={<DebugPage />} />
+          <Route path="*" element={<div>Page not found - 404 Error</div>} />
+        </Routes>
+      </Router>
+    </AuthProvider>
+    {/* ✅ END OF AuthProvider WRAPPER */}
   </React.StrictMode>
 )
