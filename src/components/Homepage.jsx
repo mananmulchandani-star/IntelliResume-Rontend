@@ -19,7 +19,9 @@ function Homepage() {
   };
 
   const handleSignupRedirect = () => {
-    navigate('/auth'); // Changed back to '/auth' to match your route structure
+    // Add timestamp to completely bypass cache
+    navigate('/auth?t=' + Date.now());
+    console.log('🚀 FORCE NAVIGATING TO /auth - Cache busted at:', new Date().toISOString());
   };
 
   const handleViewTemplates = () => {
