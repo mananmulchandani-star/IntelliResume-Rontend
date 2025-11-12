@@ -9,7 +9,7 @@ import Homepage from './components/Homepage.jsx';
 import AuthPage from './components/AuthPage.jsx';
 import AiPromptPage from './components/AIPromptPage.jsx';
 import CreateResume from './components/CreateResume.jsx';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider } from '../contexts/AuthContext';
 import './App.css';
 
 // AdminPortalPage Component (moved from main.jsx)
