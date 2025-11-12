@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { supabase } from '../services/supabase';
 import './AuthPage.css';
@@ -17,6 +17,15 @@ const AuthPage = () => {
   // ✅ ALL HOOKS AT TOP LEVEL
   const { login, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // ✅ Check if we're coming from template selection
+  useEffect(() => {
+    if (location.state?.selectedTemplate) {
+      // If template was selected, show signup form by default
+      setIsLogin(false);
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,23 +34,19 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        // ✅ LOGIN: Use AuthContext login with SAFE data access
+        // ✅ LOGIN
         const result = await login(formData.email, formData.password);
         
-        // ✅ SAFE: Check if result and user exist
         if (!result || !result.user || !result.user.id) {
           throw new Error('Login failed: No user data received');
         }
 
-        // ✅ SAFE: Get user profile with error handling
         let userProfile = await getUserProfile(result.user.id);
         
         if (!userProfile) {
-          // If no profile exists, create one
           userProfile = await createUserProfile(result.user.id, result.user.email);
         }
 
-        // ✅ SAFE: Check if session exists
         if (result.session && result.session.access_token) {
           localStorage.setItem('token', result.session.access_token);
           localStorage.setItem('user', JSON.stringify(userProfile));
@@ -50,18 +55,22 @@ const AuthPage = () => {
           throw new Error('Login successful but no session token received');
         }
       } else {
-        // ✅ SIGNUP: Use AuthContext signUp with SAFE data access
+        // ✅ SIGNUP
         const result = await signUp(formData.email, formData.password);
         
-        // ✅ SAFE: Check if user exists in result
         if (result && result.user) {
-          // ✅ Create user profile in users table
           await createUserProfile(result.user.id, formData.email, formData.name);
           
-          // Show success message for email confirmation
+          // If template was selected, pass it to the next page
+          const templateData = location.state?.selectedTemplate;
+          
           setError('Check your email for confirmation link! You can login after confirming your email.');
-          setIsLogin(true); // Switch to login form
-          setFormData(prev => ({ ...prev, password: '' })); // Clear password
+          setIsLogin(true);
+          setFormData(prev => ({ ...prev, password: '' }));
+          
+          // Optional: You can navigate directly to editor with template data
+          // if you want to skip email confirmation for demo
+          // navigate('/editor', { state: { template: templateData } });
         } else {
           throw new Error('Signup failed: No user data received');
         }
@@ -104,7 +113,7 @@ const AuthPage = () => {
           {
             id: userId,
             email: email,
-            name: name || email.split('@')[0], // Use email prefix if no name
+            name: name || email.split('@')[0],
             created_at: new Date().toISOString()
           }
         ])
@@ -113,7 +122,6 @@ const AuthPage = () => {
 
       if (error) {
         console.error('Error creating user profile:', error.message);
-        // Return basic profile even if DB insert fails
         return {
           id: userId,
           email: email,
@@ -157,12 +165,29 @@ const AuthPage = () => {
     });
   };
 
+  // ✅ Quick navigation to signup (for when user clicks "Get Started")
+  const handleQuickSignup = () => {
+    setIsLogin(false);
+  };
+
   return (
     <div className="auth-container">
       <div className="auth-form">
-        <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
+        {/* Show template selection info if coming from homepage */}
+        {location.state?.selectedTemplate && (
+          <div className="template-info">
+            <p>🎨 Selected Template: <strong>{location.state.selectedTemplate}</strong></p>
+            <p>Complete signup to start building your resume!</p>
+          </div>
+        )}
+        
+        <h2>{isLogin ? 'Welcome Back' : 'Create Your Account'}</h2>
+        <p className="auth-subtitle">
+          {isLogin ? 'Sign in to your account' : 'Join thousands of professionals'}
+        </p>
+        
         {error && (
-          <div className={`message ${error.includes('Check your email') ? 'success-message' : 'error-message'}`}>
+          <div className={`message ${error.includes('Check your email') || error.includes('sent') ? 'success-message' : 'error-message'}`}>
             {error}
           </div>
         )}
@@ -185,7 +210,7 @@ const AuthPage = () => {
             <input
               type="email"
               name="email"
-              placeholder="Email"
+              placeholder="Email address"
               value={formData.email}
               onChange={handleChange}
               required
@@ -215,7 +240,7 @@ const AuthPage = () => {
                 Processing...
               </>
             ) : (
-              isLogin ? 'Login' : 'Sign Up'
+              isLogin ? 'Sign In' : 'Create Account'
             )}
           </button>
         </form>
@@ -227,12 +252,11 @@ const AuthPage = () => {
               className="toggle-link" 
               onClick={() => !loading && setIsLogin(!isLogin)}
             >
-              {isLogin ? 'Sign Up' : 'Login'}
+              {isLogin ? 'Sign up' : 'Sign in'}
             </span>
           </p>
         </div>
 
-        {/* Forgot password link */}
         {isLogin && (
           <div className="forgot-password">
             <span 
@@ -243,6 +267,11 @@ const AuthPage = () => {
             </span>
           </div>
         )}
+
+        {/* Demo quick action */}
+        <div className="demo-notes">
+          <p>💡 <strong>Demo Tip:</strong> Use any email & password (6+ chars) to test</p>
+        </div>
       </div>
     </div>
   );
