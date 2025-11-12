@@ -19,7 +19,7 @@ function Homepage() {
   };
 
   const handleSignupRedirect = () => {
-    navigate('/signup'); // Changed from '/auth' to '/signup'
+    navigate('/auth'); // ✅ CHANGED: from '/signup' to '/auth'
   };
 
   const handleViewTemplates = () => {
@@ -31,7 +31,7 @@ function Homepage() {
   };
 
   const handleTemplateSelect = (templateName) => {
-    navigate('/signup', { state: { selectedTemplate: templateName } }); // Changed to '/signup'
+    navigate('/auth', { state: { selectedTemplate: templateName } }); // ✅ CHANGED: from '/signup' to '/auth'
   };
 
   // Responsive styles
@@ -158,7 +158,7 @@ function Homepage() {
 
           <button 
             style={styles.getStartedBtn}
-            onClick={handleSignupRedirect} // Updated to use signup redirect
+            onClick={handleSignupRedirect} // ✅ Now redirects to '/auth'
           >
             <span>✨</span>
             {isMobile ? 'Start' : 'Get Started'}
@@ -241,7 +241,7 @@ function Homepage() {
                   gap: '0.5rem', 
                   boxShadow: '0 8px 40px rgba(0, 0, 0, 0.12)'
                 }}
-                onClick={handleSignupRedirect} // Updated to use signup redirect
+                onClick={handleSignupRedirect} // ✅ Now redirects to '/auth'
               >
                 <span>🚀</span>
                 Start Building Free
@@ -433,7 +433,7 @@ function Homepage() {
               alignItems: 'center', 
               gap: '0.5rem'
             }}
-            onClick={handleSignupRedirect} // Updated to use signup redirect
+            onClick={handleSignupRedirect} // ✅ Now redirects to '/auth'
           >
             <span>🎯</span>
             Create Your Resume Now
