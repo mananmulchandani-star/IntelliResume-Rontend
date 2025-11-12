@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createClient } from '@supabase/supabase-js';
+import { useAuth } from './AuthContext'; // ✅ ADD THIS IMPORT
 import "./SignupPage.css";
 
 // ✅ Initialize Supabase client directly in frontend
@@ -11,6 +12,7 @@ const supabase = createClient(
 
 function SignupPage() {
   const navigate = useNavigate();
+  const { signUp } = useAuth(); // ✅ USE THE AUTH CONTEXT
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -18,6 +20,7 @@ function SignupPage() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
 
   // ✅ Create user profile in users table
   const createUserProfile = async (userId, email, name = '') => {
@@ -59,6 +62,7 @@ function SignupPage() {
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError(""); // Clear error when user starts typing
+    setSuccess(""); // Clear success message
   };
 
   const handleSubmit = async (e) => {
@@ -75,63 +79,38 @@ function SignupPage() {
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email.trim())) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     setLoading(true);
     setError("");
+    setSuccess("");
 
     try {
-      // ✅ DIRECT Supabase signup - NO CORS issues!
-      const { data, error } = await supabase.auth.signUp({
-        email: form.email.trim().toLowerCase(),
-        password: form.password,
-        options: {
-          data: {
-            name: form.name.trim(),
-            email: form.email.trim().toLowerCase()
-          }
-        }
-      });
-
-      if (error) {
-        setError(error.message);
-        setLoading(false);
-        return;
-      }
-
-      if (!data.user) {
+      // ✅ USE AUTH CONTEXT FOR SIGNUP (Recommended)
+      const result = await signUp(form.email.trim().toLowerCase(), form.password);
+      
+      if (!result || !result.user) {
         setError("Signup failed - no user data returned");
-        setLoading(false);
         return;
       }
 
-      // ✅ CREATE USER PROFILE in users table (critical for login)
+      // ✅ CREATE USER PROFILE in users table
       try {
-        await createUserProfile(data.user.id, form.email.trim().toLowerCase(), form.name.trim());
+        await createUserProfile(result.user.id, form.email.trim().toLowerCase(), form.name.trim());
         console.log('✅ User profile created successfully');
       } catch (profileError) {
         console.error('Profile creation failed:', profileError);
         // Continue even if profile creation fails
       }
 
-      // ✅ Auto-login after signup to get session
-      let loginData = null;
-      try {
-        const { data: loginResponse, error: loginError } = await supabase.auth.signInWithPassword({
-          email: form.email.trim().toLowerCase(),
-          password: form.password,
-        });
-
-        if (loginError) {
-          console.log('Auto-login failed, but account created. User can login manually.');
-        } else {
-          loginData = loginResponse;
-        }
-      } catch (loginErr) {
-        console.log('Auto-login attempt failed:', loginErr);
-      }
-
       // ✅ Save user data to localStorage
       const userData = {
-        id: data.user?.id || loginData?.user?.id,
+        id: result.user.id,
         name: form.name.trim(),
         email: form.email.trim().toLowerCase()
       };
@@ -139,30 +118,35 @@ function SignupPage() {
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('loggedInEmail', form.email.trim().toLowerCase());
       
-      if (loginData?.session?.access_token) {
-        localStorage.setItem('token', loginData.session.access_token);
-      }
-      
       console.log('✅ Signup successful, profile created:', userData);
       
-      // ✅ FIXED: Navigate to correct path - lowercase 'dashboard'
-      navigate("/dashboard");
+      // ✅ Show success message and redirect
+      setSuccess("Account created successfully! Redirecting to dashboard...");
+      
+      // ✅ Delay redirect to show success message
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 2000);
       
     } catch (err) {
       console.error('Signup error:', err);
-      setError("An error occurred. Please try again.");
+      setError(err.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ FIXED: Navigate to correct login path
+  // ✅ Navigate to login
   const goToLogin = () => {
-    navigate('/login'); // Changed from '/auth'
+    navigate('/login');
   };
 
   const goToHome = () => {
     navigate('/');
+  };
+
+  const goToAuth = () => {
+    navigate('/auth'); // Alternative navigation
   };
 
   return (
@@ -183,6 +167,16 @@ function SignupPage() {
           </div>
           <span className="site-title">InsightResume</span>
         </div>
+        
+        {/* Quick Navigation */}
+        <div className="header-actions">
+          <button className="back-home-btn" onClick={goToHome}>
+            ← Home
+          </button>
+          <button className="login-btn" onClick={goToLogin}>
+            Sign In
+          </button>
+        </div>
       </header>
 
       {/* Main Signup Container */}
@@ -202,6 +196,14 @@ function SignupPage() {
               Start building your professional resume in minutes
             </p>
           </div>
+
+          {/* Success Message */}
+          {success && (
+            <div className="success-message">
+              <span className="success-icon">✅</span>
+              {success}
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -287,6 +289,11 @@ function SignupPage() {
             </button>
           </form>
 
+          {/* Demo Notes */}
+          <div className="demo-notes">
+            <p>💡 <strong>Demo Tip:</strong> Use any email & password to test</p>
+          </div>
+
           {/* Signup Footer */}
           <div className="signup-footer">
             <span className="signup-footer-text">
@@ -296,8 +303,20 @@ function SignupPage() {
               type="button" 
               className="signup-toggle-btn"
               onClick={goToLogin}
+              disabled={loading}
             >
               Sign In
+            </button>
+          </div>
+
+          {/* Alternative Navigation */}
+          <div className="alternative-nav">
+            <button 
+              className="alt-nav-btn"
+              onClick={goToAuth}
+              disabled={loading}
+            >
+              Or use combined Login/Signup page
             </button>
           </div>
         </div>
