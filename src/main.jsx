@@ -6,7 +6,7 @@ import DashboardPage from './components/DashboardPage.jsx'
 import EditorPage from './components/EditorPage.jsx'
 import AiPromptPage from './components/AIPromptPage.jsx'
 import CreateResume from './components/CreateResume.jsx'
-import { AuthProvider } from './contexts/AuthContext'
+import { AuthProvider } from './components/AuthContext'
 import AuthPage from './components/AuthPage.jsx' // ✅ Use AuthPage for both login/signup
 import './index.css'
 
