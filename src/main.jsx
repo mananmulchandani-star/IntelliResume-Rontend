@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import App from './App.jsx'
-import SignUpPage from './components/SignUpPage.jsx'
 import LoginPage from './components/LoginPage.jsx'
 import Homepage from './components/Homepage.jsx'
 import DashboardPage from './components/DashboardPage.jsx'
@@ -31,7 +30,6 @@ const DebugPage = () => {
           <li>✅ /dashboard - DashboardPage</li>
           <li>✅ /auth - LoginPage</li>
           <li>✅ /login - LoginPage</li>
-          <li>✅ /signup - SignUpPage</li>
           <li>✅ /editor - EditorPage</li>
           <li>✅ /input - SignUpPage</li>
           <li>✅ /adminportal - AdminPortalPage</li>
@@ -218,9 +216,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/auth" element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
           <Route path="/editor" element={<EditorPage />} />
-          <Route path="/input" element={<SignUpPage />} />
           <Route path="/adminportal" element={<AdminPortalPage />} />
           <Route path="/ai-prompt" element={<AiPromptPage />} />
           <Route path="/create-resume" element={<CreateResume />} />
