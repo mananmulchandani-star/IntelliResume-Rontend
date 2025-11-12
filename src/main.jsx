@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import App from './App.jsx'
-import LoginPage from './components/LoginPage.jsx'
 import Homepage from './components/Homepage.jsx'
 import DashboardPage from './components/DashboardPage.jsx'
 import EditorPage from './components/EditorPage.jsx'
 import AiPromptPage from './components/AIPromptPage.jsx'
 import CreateResume from './components/CreateResume.jsx'
-import { AuthProvider } from './contexts/AuthContext' // ✅ ADD THIS IMPORT
-import AuthPage from './components/AuthPage.jsx' // ✅ Only AuthPage
+import { AuthProvider } from './contexts/AuthContext'
+import AuthPage from './components/AuthPage.jsx' // ✅ Use AuthPage for both login/signup
 import './index.css'
 
 // Debug Component
@@ -29,10 +27,10 @@ const DebugPage = () => {
         <ul style={{ listStyle: 'none', padding: 0 }}>
           <li>✅ / - Homepage</li>
           <li>✅ /dashboard - DashboardPage</li>
-          <li>✅ /auth - LoginPage</li>
-          <li>✅ /login - LoginPage</li>
+          <li>✅ /auth - AuthPage</li> {/* ✅ FIXED: Changed from LoginPage to AuthPage */}
+          <li>✅ /login - AuthPage</li> {/* ✅ FIXED: Changed from LoginPage to AuthPage */}
           <li>✅ /editor - EditorPage</li>
-          <li>✅ /input - SignUpPage</li>
+          <li>❌ /input - (Removed - use /auth instead)</li> {/* ✅ FIXED: Removed invalid route */}
           <li>✅ /adminportal - AdminPortalPage</li>
           <li>✅ /ai-prompt - AiPromptPage</li>
           <li>✅ /create-resume - CreateResume</li>
@@ -209,14 +207,13 @@ const AdminPortalPage = () => {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* ✅ WRAP EVERYTHING WITH AuthProvider */}
     <AuthProvider>
       <Router>
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/auth" element={<LoginPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth" element={<AuthPage />} /> {/* ✅ FIXED: Use AuthPage */}
+          <Route path="/login" element={<AuthPage />} /> {/* ✅ FIXED: Use AuthPage */}
           <Route path="/editor" element={<EditorPage />} />
           <Route path="/adminportal" element={<AdminPortalPage />} />
           <Route path="/ai-prompt" element={<AiPromptPage />} />
@@ -226,6 +223,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </Routes>
       </Router>
     </AuthProvider>
-    {/* ✅ END OF AuthProvider WRAPPER */}
   </React.StrictMode>
 )
