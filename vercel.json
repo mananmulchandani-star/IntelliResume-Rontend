@@ -3,40 +3,13 @@
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
+      "use": "@vercel/static-build"
     }
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "headers": {
-        "cache-control": "s-maxage=31536000,immutable"
-      }
-    },
-    {
-      "src": "/asset-manifest.json",
-      "headers": {
-        "cache-control": "s-maxage=0"
-      }
-    },
-    {
-      "src": "/manifest.json",
-      "headers": {
-        "cache-control": "s-maxage=0"
-      }
-    },
-    {
       "src": "/(.*)",
       "dest": "/index.html"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }
