@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext'; // Fixed import path
-import { supabase } from '../services/supabase'; // Import from central service
+import { useAuth } from './AuthContext';
+import { supabase } from '../services/supabase';
 import './AuthPage.css';
 
 const AuthPage = () => {
@@ -14,7 +14,8 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { login } = useAuth();
+  // ✅ ALL HOOKS AT TOP LEVEL
+  const { login, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -38,9 +39,9 @@ const AuthPage = () => {
         localStorage.setItem('token', result.session.access_token);
         localStorage.setItem('user', JSON.stringify(userProfile));
         
-        navigate('/dashboard'); // Fixed navigation path
+        navigate('/dashboard');
       } else {
-        // ✅ SIGNUP: Use AuthContext signUp
+        // ✅ SIGNUP: Use AuthContext signUp (from top level)
         const result = await signUp(formData.email, formData.password);
         
         if (result.user) {
@@ -119,10 +120,22 @@ const AuthPage = () => {
     }
   };
 
-  // ✅ Sign up function using AuthContext
-  const signUp = async (email, password) => {
-    const { signUp } = useAuth();
-    return await signUp(email, password);
+  // ✅ Forgot password handler
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      setError('Please enter your email address to reset password');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await resetPassword(formData.email);
+      setError('Password reset email sent! Check your inbox.');
+    } catch (error) {
+      setError(error.message || 'Failed to send reset email. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -221,25 +234,6 @@ const AuthPage = () => {
       </div>
     </div>
   );
-
-  // ✅ Forgot password handler
-  async function handleForgotPassword() {
-    if (!formData.email) {
-      setError('Please enter your email address to reset password');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { resetPassword } = useAuth();
-      await resetPassword(formData.email);
-      setError('Password reset email sent! Check your inbox.');
-    } catch (error) {
-      setError(error.message || 'Failed to send reset email. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }
 };
 
 export default AuthPage;
