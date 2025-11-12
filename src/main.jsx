@@ -9,6 +9,7 @@ import EditorPage from './components/EditorPage.jsx'
 import AiPromptPage from './components/AIPromptPage.jsx'
 import CreateResume from './components/CreateResume.jsx'
 import { AuthProvider } from './contexts/AuthContext' // ✅ ADD THIS IMPORT
+import AuthPage from './components/AuthPage.jsx' // ✅ Only AuthPage
 import './index.css'
 
 // Debug Component
