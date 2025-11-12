@@ -1,29 +1,30 @@
-// AuthContext.jsx - DEBUG VERSION
+// AuthContext.jsx - FIXED VERSION
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from '../services/supabase';
 
-console.log('🔄 AuthContext.jsx is loading...'); // Debug log
+console.log('🔄 AuthContext.jsx is loading...');
 
 const AuthContext = createContext(undefined);
 
 export function AuthProvider({ children }) {
-  console.log('🔄 AuthProvider is rendering...'); // Debug log
+  console.log('🔄 AuthProvider is rendering...');
   
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('🔄 AuthProvider useEffect running...'); // Debug log
+    console.log('🔄 AuthProvider useEffect running...');
     
     let isMounted = true;
+    let subscription;
 
     const initializeAuth = async () => {
       try {
-        console.log('🔄 Getting initial session...'); // Debug log
+        console.log('🔄 Getting initial session...');
         const { data: { session } } = await supabase.auth.getSession();
         
         if (isMounted) {
-          console.log('🔄 Session loaded:', session?.user?.email); // Debug log
+          console.log('🔄 Session loaded:', session?.user?.email);
           setUser(session?.user ?? null);
           setLoading(false);
         }
@@ -37,22 +38,38 @@ export function AuthProvider({ children }) {
 
     initializeAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('🔄 Auth state changed:', session?.user?.email); // Debug log
+    // ✅ SAFE SUBSCRIPTION SETUP
+    try {
+      const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+        console.log('🔄 Auth state changed:', session?.user?.email);
+        if (isMounted) {
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      });
+
+      subscription = authListener?.subscription;
+    } catch (error) {
+      console.error('Error setting up auth listener:', error);
       if (isMounted) {
-        setUser(session?.user ?? null);
         setLoading(false);
       }
-    });
+    }
 
     return () => {
-      console.log('🔄 AuthProvider cleanup...'); // Debug log
+      console.log('🔄 AuthProvider cleanup...');
       isMounted = false;
-      subscription.unsubscribe();
+      
+      // ✅ SAFE UNSUBSCRIBE
+      if (subscription) {
+        try {
+          subscription.unsubscribe();
+        } catch (error) {
+          console.error('Error unsubscribing auth listener:', error);
+        }
+      }
     };
   }, []);
-
-  // ... rest of your functions (login, signUp, etc.) ...
 
   const value = {
     user,
@@ -86,7 +103,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  console.log('🔄 AuthProvider rendering children, context value:', value); // Debug log
+  console.log('🔄 AuthProvider rendering children, context value:', value);
 
   return (
     <AuthContext.Provider value={value}>
@@ -96,17 +113,17 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-  console.log('🔄 useAuth hook called...'); // Debug log
+  console.log('🔄 useAuth hook called...');
   
   const context = useContext(AuthContext);
   
-  console.log('🔄 useAuth context value:', context); // Debug log
+  console.log('🔄 useAuth context value:', context);
   
   if (context === undefined) {
-    console.error('❌ useAuth error: Context is undefined!'); // Debug log
+    console.error('❌ useAuth error: Context is undefined!');
     throw new Error('useAuth must be used within an AuthProvider');
   }
   
-  console.log('🔄 useAuth returning context successfully'); // Debug log
+  console.log('🔄 useAuth returning context successfully');
   return context;
 }
