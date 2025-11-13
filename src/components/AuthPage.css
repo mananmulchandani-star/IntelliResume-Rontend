@@ -1,4 +1,4 @@
-/* AuthPage.css - ULTRA MODERN DESIGN */
+/* authpage.css - Combined Login and Signup Styles */
 
 :root {
   --primary-blue: #2563eb;
@@ -15,6 +15,8 @@
   --shadow-large: 0 20px 60px rgba(0, 0, 0, 0.15);
   --border-light: rgba(255, 255, 255, 0.2);
   --border-soft: rgba(226, 232, 240, 0.8);
+  --error-color: #ef4444;
+  --error-bg: #fef2f2;
 }
 
 * {
@@ -29,7 +31,7 @@ body {
   color: var(--text-primary);
 }
 
-/* Auth Page Layout */
+/* Common Layout Styles */
 .auth-page {
   min-height: 100vh;
   position: relative;
@@ -174,6 +176,15 @@ body {
 
 /* Main Auth Container */
 .auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 6rem 2rem 2rem 2rem;
+}
+
+/* Login-specific Grid Layout */
+.login-container {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 4rem;
@@ -244,8 +255,8 @@ body {
   line-height: 1.5;
 }
 
-/* Social Auth */
-.social-auth {
+/* Social Login (Login Page Only) */
+.social-login {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -276,7 +287,7 @@ body {
   font-size: 1.1rem;
 }
 
-/* Divider */
+/* Divider (Login Page Only) */
 .divider {
   position: relative;
   text-align: center;
@@ -299,6 +310,31 @@ body {
   background: white;
   padding: 0 1rem;
   position: relative;
+}
+
+/* Error Message */
+.error-message {
+  background: var(--error-bg);
+  color: var(--error-color);
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: shake 0.5s ease-in-out;
+}
+
+.error-icon {
+  font-size: 1.1rem;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 
 /* Form Styles */
@@ -332,6 +368,7 @@ body {
   font-size: 1rem;
   background: var(--bg-secondary);
   transition: all 0.3s ease;
+  font-family: inherit;
 }
 
 .form-input:focus {
@@ -339,6 +376,11 @@ body {
   border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   background: white;
+}
+
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .input-icon {
@@ -350,7 +392,7 @@ body {
   font-size: 1.1rem;
 }
 
-/* Form Options */
+/* Form Options (Login Page Only) */
 .form-options {
   display: flex;
   justify-content: space-between;
@@ -370,11 +412,13 @@ body {
   height: 16px;
   border-radius: 4px;
   border: 1px solid var(--border-soft);
+  cursor: pointer;
 }
 
 .checkbox-label {
   font-size: 0.9rem;
   color: var(--text-secondary);
+  cursor: pointer;
 }
 
 .forgot-password {
@@ -384,6 +428,7 @@ body {
   font-size: 0.9rem;
   cursor: pointer;
   text-decoration: underline;
+  font-family: inherit;
 }
 
 .forgot-password:hover {
@@ -408,16 +453,18 @@ body {
   gap: 0.5rem;
   margin-top: 1rem;
   overflow: hidden;
+  font-family: inherit;
 }
 
-.auth-submit-btn:hover:not(.loading) {
+.auth-submit-btn:hover:not(.loading):not(:disabled) {
   transform: translateY(-2px);
   box-shadow: var(--blue-glow);
 }
 
-.auth-submit-btn.loading {
+.auth-submit-btn.loading, .auth-submit-btn:disabled {
   opacity: 0.8;
   cursor: not-allowed;
+  transform: none !important;
 }
 
 .submit-spinner {
@@ -469,14 +516,15 @@ body {
   cursor: pointer;
   margin-left: 0.5rem;
   text-decoration: underline;
+  font-family: inherit;
 }
 
 .auth-toggle-btn:hover {
   color: #1e40af;
 }
 
-/* Feature Highlights */
-.auth-features {
+/* Feature Highlights (Login Page Only) */
+.login-features {
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -529,13 +577,13 @@ body {
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .auth-container {
+  .login-container {
     grid-template-columns: 1fr;
     justify-items: center;
     gap: 3rem;
   }
   
-  .auth-features {
+  .login-features {
     max-width: 440px;
     flex-direction: row;
     flex-wrap: wrap;
@@ -553,6 +601,10 @@ body {
   }
   
   .auth-container {
+    padding: 5rem 1rem 1rem 1rem;
+  }
+  
+  .login-container {
     padding: 6rem 1.5rem 2rem 1.5rem;
   }
   
@@ -564,7 +616,7 @@ body {
     font-size: 1.75rem;
   }
   
-  .social-auth {
+  .social-login {
     flex-direction: column;
   }
   
@@ -588,7 +640,37 @@ body {
     min-width: 100%;
   }
   
-  .auth-features {
+  .login-features {
     flex-direction: column;
   }
+}
+
+/* Focus States for Accessibility */
+.form-input:focus,
+.social-btn:focus,
+.auth-submit-btn:focus,
+.auth-toggle-btn:focus,
+.forgot-password:focus {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+/* Utility Classes for Specific Pages */
+.login-page .auth-container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4rem;
+  align-items: center;
+  min-height: 100vh;
+  padding: 8rem 3rem 3rem 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.signup-page .auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 6rem 2rem 2rem 2rem;
 }
