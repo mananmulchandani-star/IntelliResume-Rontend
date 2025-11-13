@@ -4,6 +4,11 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import './EditorPage.css';
 
+// ✅ Update this function to use your Railway backend
+const getBackendUrl = () => {
+  return 'https://insightr-backend-production.up.railway.app';
+};
+
 // Skill Verification Popup Component
 const SkillVerificationPopup = ({ 
   skills, 
@@ -51,7 +56,8 @@ const SkillVerificationPopup = ({
   const loadQuestionForSkill = async (skill) => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/generate-skill-question', {
+      // ✅ Updated to use Railway backend
+      const response = await fetch(`${getBackendUrl()}/api/generate-skill-question`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +104,8 @@ const SkillVerificationPopup = ({
 
     // Verify answer with backend
     try {
-      const response = await fetch('http://localhost:5000/api/verify-skill-answer', {
+      // ✅ Updated to use Railway backend
+      const response = await fetch(`${getBackendUrl()}/api/verify-skill-answer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
