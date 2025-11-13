@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './AuthContext';
-import { useTheme } from './ThemeProvider'; // Import from separate file
 import './DashboardPage.css';
 
 // Icons (you can replace with actual icon library like react-icons)
@@ -56,7 +55,6 @@ const DashboardPage = () => {
   
   // Auth context
   const { user, logout, loading: authLoading } = useAuth();
-  const { darkMode, toggleDarkMode } = useTheme(); // Now this works!
 
   // ✅ Backend URL function - UPDATED TO RAILWAY
   const getBackendUrl = () => {
@@ -474,7 +472,7 @@ const DashboardPage = () => {
   // Error animation function
   const showErrorAnimation = (message) => {
     const errorElement = document.createElement('div');
-    errorElement.className = `error-toast ${darkMode ? 'dark' : 'light'}`;
+    errorElement.className = 'error-toast light';
     errorElement.innerHTML = `
       <div class="error-content">
         <div class="error-icon">!</div>
@@ -678,16 +676,6 @@ const DashboardPage = () => {
           </div>
           
           <div className="header-actions">
-            <motion.button 
-              className="theme-toggle-btn"
-              onClick={toggleDarkMode}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {darkMode ? <Icons.Sun /> : <Icons.Moon />}
-            </motion.button>
-            
             <div className="user-section">
               <div className="user-avatar">
                 {userName.charAt(0).toUpperCase()}
