@@ -20,7 +20,10 @@
     "react-dom": "^19.1.1",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.9.3",
-    "react-to-print": "^3.1.1"
+    "react-to-print": "^3.1.1",
+    "@mui/material": "^5.15.0",
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
