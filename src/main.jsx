@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { ThemeProvider, createTheme } from '@mui/material/styles' // ✅ ADDED
-import CssBaseline from '@mui/material/CssBaseline' // ✅ ADDED
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
 import Homepage from './components/Homepage.jsx'
 import DashboardPage from './components/DashboardPage.jsx'
 import EditorPage from './components/EditorPage.jsx'
-import AiPromptPage from './components/AiPromptPage.jsx'
+import AIPromptPage from './components/AIPromptPage.jsx' // ✅ FIXED: Changed from AiPromptPage to AIPromptPage
 import CreateResume from './components/CreateResume.jsx'
 import { AuthProvider } from './components/AuthContext'
 import AuthPage from './components/AuthPage.jsx'
@@ -46,7 +46,7 @@ const DebugPage = () => {
           <li>✅ /editor - EditorPage</li>
           <li>❌ /input - (Removed - use /auth instead)</li>
           <li>✅ /adminportal - AdminPortalPage</li>
-          <li>✅ /ai-prompt - AiPromptPage</li>
+          <li>✅ /ai-prompt - AIPromptPage</li>
           <li>✅ /create-resume - CreateResume</li>
           <li>✅ /debug - This Debug Page</li>
         </ul>
@@ -233,7 +233,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="/login" element={<AuthPage />} />
             <Route path="/editor" element={<EditorPage />} />
             <Route path="/adminportal" element={<AdminPortalPage />} />
-            <Route path="/ai-prompt" element={<AiPromptPage />} />
+            <Route path="/ai-prompt" element={<AIPromptPage />} /> {/* ✅ FIXED: Changed from AiPromptPage to AIPromptPage */}
             <Route path="/create-resume" element={<CreateResume />} />
             <Route path="/debug" element={<DebugPage />} />
             <Route path="*" element={<div>Page not found - 404 Error</div>} />
