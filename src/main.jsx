@@ -1,14 +1,28 @@
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { ThemeProvider, createTheme } from '@mui/material/styles' // ✅ ADDED
+import CssBaseline from '@mui/material/CssBaseline' // ✅ ADDED
 import Homepage from './components/Homepage.jsx'
 import DashboardPage from './components/DashboardPage.jsx'
 import EditorPage from './components/EditorPage.jsx'
-import AiPromptPage from './components/AIPromptPage.jsx'
+import AiPromptPage from './components/AiPromptPage.jsx'
 import CreateResume from './components/CreateResume.jsx'
 import { AuthProvider } from './components/AuthContext'
-import AuthPage from './components/AuthPage.jsx' // ✅ Use AuthPage for both login/signup
+import AuthPage from './components/AuthPage.jsx'
 import './index.css'
+
+// ✅ CREATE MUI THEME
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#2563eb',
+    },
+    secondary: {
+      main: '#3b82f6',
+    },
+  },
+})
 
 // Debug Component
 const DebugPage = () => {
@@ -27,10 +41,10 @@ const DebugPage = () => {
         <ul style={{ listStyle: 'none', padding: 0 }}>
           <li>✅ / - Homepage</li>
           <li>✅ /dashboard - DashboardPage</li>
-          <li>✅ /auth - AuthPage</li> {/* ✅ FIXED: Changed from LoginPage to AuthPage */}
-          <li>✅ /login - AuthPage</li> {/* ✅ FIXED: Changed from LoginPage to AuthPage */}
+          <li>✅ /auth - AuthPage</li>
+          <li>✅ /login - AuthPage</li>
           <li>✅ /editor - EditorPage</li>
-          <li>❌ /input - (Removed - use /auth instead)</li> {/* ✅ FIXED: Removed invalid route */}
+          <li>❌ /input - (Removed - use /auth instead)</li>
           <li>✅ /adminportal - AdminPortalPage</li>
           <li>✅ /ai-prompt - AiPromptPage</li>
           <li>✅ /create-resume - CreateResume</li>
@@ -207,21 +221,25 @@ const AdminPortalPage = () => {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Homepage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/auth" element={<AuthPage />} /> {/* ✅ FIXED: Use AuthPage */}
-          <Route path="/login" element={<AuthPage />} /> {/* ✅ FIXED: Use AuthPage */}
-          <Route path="/editor" element={<EditorPage />} />
-          <Route path="/adminportal" element={<AdminPortalPage />} />
-          <Route path="/ai-prompt" element={<AiPromptPage />} />
-          <Route path="/create-resume" element={<CreateResume />} />
-          <Route path="/debug" element={<DebugPage />} />
-          <Route path="*" element={<div>Page not found - 404 Error</div>} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    {/* ✅ WRAP EVERYTHING WITH THEMEPROVIDER */}
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Homepage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/login" element={<AuthPage />} />
+            <Route path="/editor" element={<EditorPage />} />
+            <Route path="/adminportal" element={<AdminPortalPage />} />
+            <Route path="/ai-prompt" element={<AiPromptPage />} />
+            <Route path="/create-resume" element={<CreateResume />} />
+            <Route path="/debug" element={<DebugPage />} />
+            <Route path="*" element={<div>Page not found - 404 Error</div>} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>
 )
