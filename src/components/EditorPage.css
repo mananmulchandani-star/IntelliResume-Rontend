@@ -6,6 +6,209 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* ==========================================================================
+   PDF EXPORT OPTIMIZATION STYLES
+   ========================================================================== */
+
+/* PDF Export Base Styles */
+.pdf-export * {
+  box-sizing: border-box;
+  max-width: 100% !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+  color-adjust: exact !important;
+}
+
+.pdf-export {
+  font-family: Arial, Helvetica, sans-serif !important;
+  line-height: 1.4 !important;
+  width: 210mm !important;
+  min-height: 297mm !important;
+  margin: 0 !important;
+  padding: 20px !important;
+  background: white !important;
+  color: black !important;
+}
+
+/* Ensure text readability in PDF */
+.pdf-export p,
+.pdf-export span,
+.pdf-export div,
+.pdf-export li,
+.pdf-export td,
+.pdf-export th {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+/* Headings in PDF */
+.pdf-export h1,
+.pdf-export h2,
+.pdf-export h3,
+.pdf-export h4,
+.pdf-export h5,
+.pdf-export h6 {
+  font-family: Arial, Helvetica, sans-serif !important;
+  color: #000000 !important;
+  page-break-after: avoid !important;
+}
+
+/* Links in PDF */
+.pdf-export a {
+  color: #000000 !important;
+  text-decoration: none !important;
+}
+
+/* Remove interactive elements */
+.pdf-export button,
+.pdf-export .btn,
+.pdf-export .interactive,
+.pdf-export .download-btn,
+.pdf-export .edit-btn,
+.pdf-export .hover-effect,
+.pdf-export .tooltip {
+  display: none !important;
+}
+
+/* Remove shadows and effects */
+.pdf-export .shadow,
+.pdf-export .box-shadow,
+.pdf-export .gradient-bg,
+.pdf-export .blur,
+.pdf-export .backdrop-filter {
+  box-shadow: none !important;
+  background: white !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* Fix backgrounds for printing */
+.pdf-export .bg-primary,
+.pdf-export .bg-secondary,
+.pdf-export .bg-dark,
+.pdf-export .bg-light,
+.pdf-export .sidebar,
+.pdf-export .header {
+  background: white !important;
+  color: black !important;
+  border: 1px solid #cccccc !important;
+}
+
+/* Images in PDF */
+.pdf-export img {
+  max-width: 100% !important;
+  height: auto !important;
+  page-break-inside: avoid !important;
+}
+
+/* Page break control */
+.pdf-export .resume-section,
+.pdf-export .section,
+.pdf-export .page-break-avoid {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+
+.pdf-export .page-break-before {
+  page-break-before: always !important;
+}
+
+.pdf-export .page-break-after {
+  page-break-after: always !important;
+}
+
+/* Fix overflow issues */
+.pdf-export .container,
+.pdf-export .container-fluid,
+.pdf-export .row,
+.pdf-export .col {
+  overflow: visible !important;
+  max-width: 100% !important;
+}
+
+/* Remove animations and transitions */
+.pdf-export * {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+/* Table styles for PDF */
+.pdf-export table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+.pdf-export th,
+.pdf-export td {
+  border: 1px solid #000000 !important;
+  padding: 8px !important;
+  text-align: left !important;
+}
+
+/* List styles */
+.pdf-export ul,
+.pdf-export ol {
+  padding-left: 20px !important;
+}
+
+.pdf-export li {
+  margin-bottom: 5px !important;
+  page-break-inside: avoid !important;
+}
+
+/* Template-specific PDF fixes */
+.pdf-export .modern-template .sidebar {
+  position: relative !important;
+  width: 100% !important;
+  float: none !important;
+  display: block !important;
+  background: #f8f9fa !important;
+  border: 1px solid #dee2e6 !important;
+  margin-bottom: 20px !important;
+}
+
+.pdf-export .modern-template .main-content {
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+.pdf-export .irm-template .header-section {
+  text-align: center !important;
+  border-bottom: 2px solid #000000 !important;
+  padding-bottom: 15px !important;
+}
+
+/* PDF Utility Classes */
+.pdf-visible {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.pdf-hidden {
+  display: none !important;
+}
+
+/* PDF text alignment */
+.pdf-text-left { text-align: left !important; }
+.pdf-text-center { text-align: center !important; }
+.pdf-text-right { text-align: right !important; }
+
+/* PDF spacing utilities */
+.pdf-mt-0 { margin-top: 0 !important; }
+.pdf-mb-0 { margin-bottom: 0 !important; }
+.pdf-mt-1 { margin-top: 10px !important; }
+.pdf-mb-1 { margin-bottom: 10px !important; }
+.pdf-mt-2 { margin-top: 20px !important; }
+.pdf-mb-2 { margin-bottom: 20px !important; }
+
+/* ==========================================================================
+   EDITOR STYLES (Your existing styles)
+   ========================================================================== */
+
 /* Header Styles with Animation */
 .editor-header {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -75,6 +278,19 @@
   box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
 }
 
+.attempt-status-badge {
+  background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+  display: inline-block;
+  margin-left: 10px;
+  box-shadow: 0 4px 15px rgba(237, 137, 54, 0.3);
+}
+
 @keyframes pulse {
   0%, 100% {
     transform: scale(1);
@@ -107,6 +323,97 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Header Actions with Download Dropdown */
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.download-options {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropdown-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(66, 153, 225, 0.4);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  min-width: 280px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(66, 153, 225, 0.1);
+}
+
+.download-options:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  color: #4299e1;
+  transform: translateX(5px);
+}
+
+.dropdown-item.verified {
+  background: linear-gradient(135deg, #f0fff4 0%, #e6fffa 100%);
+  color: #38a169;
+  border: 1px solid #c6f6d5;
+}
+
+.dropdown-item.verified:hover {
+  background: linear-gradient(135deg, #e6fffa 0%, #d1fae5 100%);
+  transform: translateX(5px);
 }
 
 /* Button Styles with Hover Effects */
@@ -173,6 +480,62 @@
 .btn-success.verified {
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
   animation: pulse 2s infinite;
+}
+
+/* Quick Download Buttons */
+.quick-download-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.btn-download-quick,
+.btn-download-verified,
+.btn-download-verify {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  width: 100%;
+}
+
+.btn-download-quick {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+}
+
+.btn-download-quick:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4);
+}
+
+.btn-download-verified {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.btn-download-verified:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+}
+
+.btn-download-verify {
+  background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(237, 137, 54, 0.3);
+}
+
+.btn-download-verify:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(237, 137, 54, 0.4);
 }
 
 /* Main Editor Layout with Smooth Entrance */
@@ -352,6 +715,40 @@
 }
 
 .verification-pending p {
+  margin: 4px 0;
+}
+
+.verification-locked {
+  text-align: center;
+  color: #e53e3e;
+  font-size: 14px;
+}
+
+.verification-locked p {
+  margin: 4px 0;
+}
+
+.attempt-details-small {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(254, 215, 215, 0.2);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.attempt-details-small p {
+  margin: 2px 0;
+}
+
+.verification-note {
+  font-size: 12px;
+  color: #64748b;
+  margin: 4px 0;
+}
+
+.attempt-rules-note {
+  font-size: 11px;
+  color: #a0aec0;
   margin: 4px 0;
 }
 
@@ -1739,6 +2136,43 @@
   box-shadow: 0 4px 12px rgba(254, 178, 178, 0.4);
 }
 
+/* Attempt Progress */
+.attempt-progress {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.attempt-badges {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.attempt-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #64748b;
+  transition: all 0.3s ease;
+}
+
+.attempt-badge.active {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(66, 153, 225, 0.3);
+}
+
+.attempt-rules {
+  text-align: center;
+  color: #64748b;
+  font-size: 12px;
+}
+
 /* Verification Progress */
 .verification-progress {
   margin-bottom: 25px;
@@ -1791,6 +2225,17 @@
   font-weight: 700;
   box-shadow: 0 4px 15px rgba(66, 153, 225, 0.4);
   animation: pulse 2s infinite;
+}
+
+.timer-circle.timeout {
+  background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+  animation: none;
+}
+
+.timer-note {
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 8px;
 }
 
 .question-content h3 {
@@ -1849,6 +2294,65 @@
   color: #2d3748;
   font-size: 14px;
   line-height: 1.4;
+}
+
+.time-warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #fef5e7 100%);
+  border: 1px solid #f6e05e;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.time-warning p {
+  color: #d69e2e;
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+}
+
+/* Timeout Message */
+.timeout-message {
+  text-align: center;
+  padding: 20px;
+}
+
+.timeout-alert {
+  background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+  border: 2px solid #fc8181;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.timeout-alert h4 {
+  color: #c53030;
+  margin: 0 0 12px 0;
+  font-size: 18px;
+}
+
+.timeout-alert p {
+  color: #9b2c2c;
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.proceed-btn {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+}
+
+.proceed-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4);
 }
 
 /* Loading Question */
@@ -1934,6 +2438,43 @@
   margin: 0;
 }
 
+.attempted-info {
+  font-size: 12px !important;
+  color: #a0aec0 !important;
+  margin-top: 8px !important;
+}
+
+/* Attempt Summary */
+.attempt-summary {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.attempt-summary h4 {
+  color: #2d3748;
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.attempt-details {
+  font-size: 14px;
+}
+
+.attempt-details p {
+  margin: 4px 0;
+  color: #4a5568;
+}
+
+.warning-text {
+  color: #e53e3e !important;
+  font-weight: 600;
+}
+
+/* Skills Results */
 .skills-results {
   margin-bottom: 25px;
 }
@@ -1953,6 +2494,12 @@
   background: #f8fafc;
   border-radius: 8px;
   border-left: 4px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.skill-result-item:hover {
+  background: #edf2f7;
+  transform: translateX(5px);
 }
 
 .skill-name {
@@ -1961,22 +2508,38 @@
 }
 
 .result-badge {
-  padding: 4px 8px;
+  padding: 6px 12px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .result-badge.correct {
   background: #c6f6d5;
   color: #276749;
+  border: 1px solid #9ae6b4;
 }
 
 .result-badge.incorrect {
   background: #fed7d7;
   color: #c53030;
+  border: 1px solid #feb2b2;
 }
 
+.result-badge.not_attempted {
+  background: #fef5e7;
+  color: #d69e2e;
+  border: 1px solid #fbd38d;
+}
+
+.result-badge.pending {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: 1px solid #cbd5e0;
+}
+
+/* Popup Actions */
 .popup-actions {
   margin-top: 20px;
 }
@@ -1985,12 +2548,44 @@
   text-align: center;
 }
 
-.failed-actions p {
-  color: #64748b;
-  margin-bottom: 15px;
+.attempt-info {
+  background: linear-gradient(135deg, #fef5e7 0%, #fef3c7 100%);
+  border: 1px solid #f6e05e;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.attempt-info p {
+  color: #d69e2e;
+  margin: 4px 0;
   font-size: 14px;
 }
 
+/* Verification Locked State */
+.verification-locked {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.lock-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.verification-locked h3 {
+  color: #2d3748;
+  margin-bottom: 12px;
+  font-size: 20px;
+}
+
+.verification-locked p {
+  color: #64748b;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+/* Error State */
 .error-state {
   text-align: center;
   padding: 40px 20px;
@@ -2050,7 +2645,13 @@ select:focus-visible {
 .creative-skill-tag,
 .creative-language-tag,
 .btn-generate-title,
-.option-btn {
+.option-btn,
+.dropdown-toggle,
+.dropdown-item,
+.btn-download-quick,
+.btn-download-verified,
+.btn-download-verify,
+.proceed-btn {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -2142,6 +2743,28 @@ select:focus-visible {
     margin: 20px;
     padding: 20px;
   }
+  
+  .dropdown-menu {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    border-radius: 20px 20px 0 0;
+    max-width: none;
+  }
+  
+  .irm-header {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .irm-profile-photo,
+  .irm-default-photo {
+    margin: 0 auto;
+  }
 }
 
 /* Print Styles */
@@ -2178,4 +2801,139 @@ select:focus-visible {
     box-shadow: none;
     border: none;
   }
+}
+
+/* ==========================================================================
+   PRINT MEDIA QUERIES (Browser Print to PDF)
+   ========================================================================== */
+
+@media print {
+  /* Reset everything for print */
+  * {
+    box-sizing: border-box;
+    max-width: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  /* Base styles for print */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 12pt !important;
+    line-height: 1.4 !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+  }
+  
+  /* Hide interactive elements in print */
+  button, .btn, .no-print, .interactive,
+  .download-btn, .edit-btn, .tooltip,
+  nav, footer, .navbar, .header-actions {
+    display: none !important;
+  }
+  
+  /* Ensure proper page breaks */
+  .resume-section, .section, .experience-item,
+  .education-item, .project-item {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* Avoid breaking inside important elements */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid !important;
+  }
+  
+  /* Table printing fixes */
+  table {
+    page-break-inside: auto !important;
+  }
+  
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+  
+  /* Image printing fixes */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Link printing */
+  a {
+    color: #000000 !important;
+    text-decoration: underline !important;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")" !important;
+    font-size: 10pt !important;
+    color: #666666 !important;
+  }
+  
+  /* Remove shadows and backgrounds for better printing */
+  .shadow, .box-shadow, .gradient-bg {
+    box-shadow: none !important;
+    background: white !important;
+  }
+  
+  .bg-primary, .bg-secondary, .bg-dark {
+    background: #f8f9fa !important;
+    color: black !important;
+    border: 1px solid #cccccc !important;
+  }
+  
+  /* Fix flexbox/grid layouts for print */
+  .container, .row, .flex-container {
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  .col, .flex-item {
+    width: 100% !important;
+    float: none !important;
+    display: block !important;
+  }
+  
+  /* Specific template fixes for print */
+  .modern-template .sidebar {
+    position: relative !important;
+    width: 100% !important;
+    float: none !important;
+    display: block !important;
+    background: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .modern-template .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  .irm-template .header-section {
+    text-align: center !important;
+    border-bottom: 2px solid #000000 !important;
+    padding-bottom: 15px !important;
+  }
+  
+  /* Margin and padding adjustments for print */
+  .resume-content {
+    margin: 0 !important;
+    padding: 15mm !important;
+  }
+  
+  /* Font size adjustments for print */
+  h1 { font-size: 18pt !important; }
+  h2 { font-size: 16pt !important; }
+  h3 { font-size: 14pt !important; }
+  h4 { font-size: 12pt !important; }
+  p, li, td, th { font-size: 11pt !important; }
 }
