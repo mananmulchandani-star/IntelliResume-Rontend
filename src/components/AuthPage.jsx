@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { supabase } from '../services/supabase';
+import { useGoogleLogin } from '@react-oauth/google';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -30,6 +31,107 @@ const AuthPage = () => {
       setIsLogin(false);
     }
   }, [location.state]);
+
+  // Google Sign-In (for login)
+  const googleSignIn = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      await handleGoogleAuth(tokenResponse, true);
+    },
+    onError: (error) => {
+      console.error('Google Sign-In Failed:', error);
+      setError('Google sign-in failed. Please try again.');
+      setLoading(false);
+    },
+    scope: 'email profile openid',
+  });
+
+  // Google Sign-Up (for registration)
+  const googleSignUp = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      await handleGoogleAuth(tokenResponse, false);
+    },
+    onError: (error) => {
+      console.error('Google Sign-Up Failed:', error);
+      setError('Google sign-up failed. Please try again.');
+      setLoading(false);
+    },
+    scope: 'email profile openid',
+  });
+
+  const handleGoogleAuth = async (tokenResponse, isSignIn) => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Get user info from Google
+      const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+      }).then(res => res.json());
+
+      console.log('Google User Info:', userInfo);
+      
+      // Check if user exists in Supabase
+      const { data: existingUser, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', userInfo.email)
+        .single();
+
+      let userProfile;
+
+      if (userError || !existingUser) {
+        if (isSignIn) {
+          // For sign-in: user doesn't exist, show error
+          throw new Error('No account found with this Google email. Please sign up first.');
+        }
+        
+        // For sign-up: create new user
+        console.log('🔄 Creating new user from Google...');
+        const { data: newUser, error: createError } = await supabase
+          .from('users')
+          .insert([
+            {
+              email: userInfo.email,
+              name: userInfo.name || userInfo.email.split('@')[0],
+              created_at: new Date().toISOString(),
+              auth_provider: 'google'
+            }
+          ])
+          .select()
+          .single();
+
+        if (createError) {
+          throw new Error('Failed to create user profile');
+        }
+        userProfile = newUser;
+        setSuccess('Account created successfully!');
+      } else {
+        if (!isSignIn) {
+          // For sign-up: user already exists, suggest sign-in
+          throw new Error('An account already exists with this Google email. Please sign in instead.');
+        }
+        userProfile = existingUser;
+        setSuccess('Sign in successful!');
+      }
+
+      // Store user data
+      localStorage.setItem('user', JSON.stringify(userProfile));
+      localStorage.setItem('google_token', tokenResponse.access_token);
+      localStorage.setItem('loggedInEmail', userInfo.email.toLowerCase());
+      
+      console.log('✅ Google auth successful, redirecting to dashboard');
+      
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
+      
+    } catch (err) {
+      console.error('Google auth error:', err);
+      setError(err.message || 'Google authentication failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const validateForm = () => {
     if (!formData.email.trim()) {
@@ -107,16 +209,22 @@ const AuthPage = () => {
         const result = await signUp(formData.email, formData.password);
         
         if (result && result.user) {
-          await createUserProfile(result.user.id, formData.email, formData.name);
-          
-          setSuccess('Account created successfully! Please check your email for confirmation link.');
-          setError('');
-          
-          setTimeout(() => {
-            setIsLogin(true);
-            setFormData(prev => ({ ...prev, password: '', name: '' }));
-          }, 2000);
-          
+          // Auto-login after signup and redirect to dashboard
+          const loginResult = await login(formData.email, formData.password);
+          if (loginResult && loginResult.user) {
+            const userProfile = await getUserProfile(loginResult.user.id) || 
+                              await createUserProfile(loginResult.user.id, formData.email, formData.name);
+            
+            localStorage.setItem('token', loginResult.session.access_token);
+            localStorage.setItem('user', JSON.stringify(userProfile));
+            localStorage.setItem('loggedInEmail', formData.email.trim().toLowerCase());
+            
+            setSuccess('Account created successfully! Redirecting to dashboard...');
+            
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 1000);
+          }
         } else {
           throw new Error('Signup failed: No user data received');
         }
@@ -286,25 +394,48 @@ const AuthPage = () => {
             </div>
           )}
 
-          {/* Social Login (Login Only) */}
-          {isLogin && (
-            <>
-              <div className="social-login">
-                <button className="social-btn" type="button" disabled={loading}>
-                  <span className="social-icon">🔍</span>
-                  Continue with Google
-                </button>
-                <button className="social-btn" type="button" disabled={loading}>
-                  <span className="social-icon">💼</span>
-                  Continue with LinkedIn
-                </button>
-              </div>
+          {/* Google Login/Signup Buttons */}
+          <div className="social-login">
+            {isLogin ? (
+              <button 
+                className="social-btn google-btn" 
+                type="button" 
+                onClick={googleSignIn}
+                disabled={loading}
+              >
+                <span className="social-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                </span>
+                Continue with Google
+              </button>
+            ) : (
+              <button 
+                className="social-btn google-btn" 
+                type="button" 
+                onClick={googleSignUp}
+                disabled={loading}
+              >
+                <span className="social-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                </span>
+                Sign up with Google
+              </button>
+            )}
+          </div>
 
-              <div className="divider">
-                <span>or continue with email</span>
-              </div>
-            </>
-          )}
+          <div className="divider">
+            <span>or continue with email</span>
+          </div>
 
           {/* Auth Form */}
           <form className="auth-form" onSubmit={handleSubmit}>
@@ -787,10 +918,11 @@ const AuthPage = () => {
           font-family: inherit;
         }
 
-        .social-btn:hover:not(:disabled) {
-          border-color: var(--primary-blue);
+        .google-btn:hover:not(:disabled) {
+          background: #F9FAFB;
+          border-color: #9CA3AF;
           transform: translateY(-1px);
-          box-shadow: var(--shadow-soft);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .social-btn:disabled {
@@ -800,6 +932,11 @@ const AuthPage = () => {
 
         .social-icon {
           font-size: 1.1rem;
+        }
+
+        .social-icon svg {
+          width: 18px;
+          height: 18px;
         }
 
         /* Divider */
