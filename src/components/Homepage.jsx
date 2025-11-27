@@ -1,6 +1,42 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+// AdSense Component
+const AdSenseAd = ({ adSlot, adFormat = 'auto', style = {} }) => {
+  useEffect(() => {
+    if (!window.adsbygoogle) {
+      const script = document.createElement('script');
+      script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1522324464144333';
+      script.async = true;
+      script.crossOrigin = 'anonymous';
+      document.head.appendChild(script);
+    }
+
+    const timer = setTimeout(() => {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.error('AdSense error:', e);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div style={style}>
+      <ins
+        className="adsbygoogle"
+        style={{ display: 'block' }}
+        data-ad-client="ca-pub-1522324464144333"
+        data-ad-slot={adSlot}
+        data-ad-format={adFormat}
+        data-full-width-responsive="true"
+      />
+    </div>
+  );
+};
+
 function Homepage() {
   const navigate = useNavigate();
   const [showTemplates, setShowTemplates] = useState(false);
@@ -19,9 +55,7 @@ function Homepage() {
   };
 
   const handleSignupRedirect = () => {
-    // Add timestamp to completely bypass cache
-    navigate('/auth?t=' + Date.now());
-    console.log('🚀 FORCE NAVIGATING TO /auth - Cache busted at:', new Date().toISOString());
+    navigate('/signup');
   };
 
   const handleViewTemplates = () => {
@@ -33,7 +67,7 @@ function Homepage() {
   };
 
   const handleTemplateSelect = (templateName) => {
-    navigate('/auth', { state: { selectedTemplate: templateName } }); // Changed to '/auth'
+    navigate('/signup', { state: { selectedTemplate: templateName } });
   };
 
   // Responsive styles
@@ -314,6 +348,17 @@ function Homepage() {
         </div>
       </main>
 
+      {/* AdSense Banner Ad after Hero Section */}
+      <AdSenseAd 
+        adSlot="1234567890" 
+        style={{ 
+          margin: isMobile ? '2rem 1rem' : '3rem 2rem',
+          textAlign: 'center',
+          borderRadius: '8px',
+          overflow: 'hidden'
+        }}
+      />
+
       {/* Features Section */}
       <section style={{padding: isMobile ? '4rem 1rem' : '8rem 2rem', background: 'white'}}>
         <div style={{
@@ -393,6 +438,19 @@ function Homepage() {
             </div>
           ))}
         </div>
+
+        {/* AdSense Rectangle Ad after Features */}
+        <AdSenseAd 
+          adSlot="0987654321" 
+          adFormat="rectangle"
+          style={{ 
+            margin: isMobile ? '3rem 1rem' : '4rem auto',
+            textAlign: 'center',
+            maxWidth: '300px',
+            borderRadius: '8px',
+            overflow: 'hidden'
+          }}
+        />
       </section>
 
       {/* CTA Section */}
@@ -443,7 +501,7 @@ function Homepage() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer with AdSense */}
       <footer style={{
         background: '#0f172a', 
         color: 'white', 
@@ -502,6 +560,18 @@ function Homepage() {
             </div>
           </div>
         </div>
+
+        {/* Footer AdSense Banner */}
+        <AdSenseAd 
+          adSlot="1122334455" 
+          style={{ 
+            margin: '2rem auto',
+            textAlign: 'center',
+            maxWidth: '728px',
+            borderRadius: '8px',
+            overflow: 'hidden'
+          }}
+        />
         
         <div style={{
           maxWidth: '1200px', 
