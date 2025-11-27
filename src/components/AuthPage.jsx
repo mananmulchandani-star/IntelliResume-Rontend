@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { supabase } from '../services/supabase';
-import { useGoogleLogin } from '@react-oauth/google';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -32,101 +31,31 @@ const AuthPage = () => {
     }
   }, [location.state]);
 
-  // Google Sign-In (for login)
-  const googleSignIn = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      await handleGoogleAuth(tokenResponse, true);
-    },
-    onError: (error) => {
-      console.error('Google Sign-In Failed:', error);
-      setError('Google sign-in failed. Please try again.');
-      setLoading(false);
-    },
-    scope: 'email profile openid',
-  });
-
-  // Google Sign-Up (for registration)
-  const googleSignUp = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      await handleGoogleAuth(tokenResponse, false);
-    },
-    onError: (error) => {
-      console.error('Google Sign-Up Failed:', error);
-      setError('Google sign-up failed. Please try again.');
-      setLoading(false);
-    },
-    scope: 'email profile openid',
-  });
-
-  const handleGoogleAuth = async (tokenResponse, isSignIn) => {
+  // Google OAuth Sign-In/Sign-Up
+  const handleGoogleAuth = async (isSignIn = true) => {
     try {
       setLoading(true);
       setError('');
-      
-      // Get user info from Google
-      const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-      }).then(res => res.json());
 
-      console.log('Google User Info:', userInfo);
-      
-      // Check if user exists in Supabase
-      const { data: existingUser, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', userInfo.email)
-        .single();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'https://lpgdolynzbgisbqbfwrf.supabase.co/auth/v1/callback',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
 
-      let userProfile;
-
-      if (userError || !existingUser) {
-        if (isSignIn) {
-          // For sign-in: user doesn't exist, show error
-          throw new Error('No account found with this Google email. Please sign up first.');
-        }
-        
-        // For sign-up: create new user
-        console.log('🔄 Creating new user from Google...');
-        const { data: newUser, error: createError } = await supabase
-          .from('users')
-          .insert([
-            {
-              email: userInfo.email,
-              name: userInfo.name || userInfo.email.split('@')[0],
-              created_at: new Date().toISOString(),
-              auth_provider: 'google'
-            }
-          ])
-          .select()
-          .single();
-
-        if (createError) {
-          throw new Error('Failed to create user profile');
-        }
-        userProfile = newUser;
-        setSuccess('Account created successfully!');
-      } else {
-        if (!isSignIn) {
-          // For sign-up: user already exists, suggest sign-in
-          throw new Error('An account already exists with this Google email. Please sign in instead.');
-        }
-        userProfile = existingUser;
-        setSuccess('Sign in successful!');
+      if (error) {
+        throw error;
       }
 
-      // Store user data
-      localStorage.setItem('user', JSON.stringify(userProfile));
-      localStorage.setItem('google_token', tokenResponse.access_token);
-      localStorage.setItem('loggedInEmail', userInfo.email.toLowerCase());
-      
-      console.log('✅ Google auth successful, redirecting to dashboard');
-      
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+      console.log('✅ Google OAuth initiated successfully');
       
     } catch (err) {
-      console.error('Google auth error:', err);
+      console.error('Google OAuth error:', err);
       setError(err.message || 'Google authentication failed. Please try again.');
     } finally {
       setLoading(false);
@@ -400,7 +329,7 @@ const AuthPage = () => {
               <button 
                 className="social-btn google-btn" 
                 type="button" 
-                onClick={googleSignIn}
+                onClick={() => handleGoogleAuth(true)}
                 disabled={loading}
               >
                 <span className="social-icon">
@@ -417,7 +346,7 @@ const AuthPage = () => {
               <button 
                 className="social-btn google-btn" 
                 type="button" 
-                onClick={googleSignUp}
+                onClick={() => handleGoogleAuth(false)}
                 disabled={loading}
               >
                 <span className="social-icon">
