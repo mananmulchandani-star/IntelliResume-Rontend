@@ -54,8 +54,19 @@ function Homepage() {
     setIsMobile(window.innerWidth < 768);
   };
 
+  // Navigate directly to auth page
+  const handleAuthRedirect = () => {
+    navigate('/auth');
+  };
+
+  // Navigate to auth with signup state
   const handleSignupRedirect = () => {
-    navigate('/signup');
+    navigate('/auth', { state: { initialTab: 'signup' } });
+  };
+
+  // Navigate to auth with login state
+  const handleLoginRedirect = () => {
+    navigate('/auth', { state: { initialTab: 'login' } });
   };
 
   const handleViewTemplates = () => {
@@ -67,7 +78,7 @@ function Homepage() {
   };
 
   const handleTemplateSelect = (templateName) => {
-    navigate('/signup', { state: { selectedTemplate: templateName } });
+    navigate('/auth', { state: { initialTab: 'signup', selectedTemplate: templateName } });
   };
 
   // Responsive styles
@@ -130,36 +141,36 @@ function Homepage() {
       borderRadius: '12px',
       animation: 'orbGlow 3s ease-in-out infinite'
     },
-    getStartedBtn: {
-      background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
-      color: 'white',
-      padding: isMobile ? '0.6rem 1rem' : '0.75rem 1.5rem',
-      border: 'none',
-      borderRadius: '12px',
-      fontWeight: 600,
+    authButtons: {
+      display: 'flex',
+      gap: '0.75rem',
+      alignItems: 'center'
+    },
+    loginBtn: {
+      background: 'transparent',
+      color: '#475569',
+      padding: isMobile ? '0.5rem 1rem' : '0.6rem 1.25rem',
+      border: '1px solid rgba(226, 232, 240, 0.8)',
+      borderRadius: '8px',
+      fontWeight: 500,
       cursor: 'pointer',
       transition: 'all 0.3s ease',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-      boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
-      fontSize: isMobile ? '0.9rem' : '1rem'
+      fontSize: isMobile ? '0.8rem' : '0.9rem'
+    },
+    signupBtn: {
+      background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+      color: 'white',
+      padding: isMobile ? '0.5rem 1rem' : '0.6rem 1.25rem',
+      border: 'none',
+      borderRadius: '8px',
+      fontWeight: 500,
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      fontSize: isMobile ? '0.8rem' : '0.9rem'
     },
     nav: {
       display: isMobile ? 'none' : 'flex',
       gap: '2rem'
-    },
-    mobileMenu: {
-      display: isMobile ? 'flex' : 'none',
-      flexDirection: 'column',
-      gap: '1rem',
-      background: 'white',
-      padding: '2rem',
-      position: 'absolute',
-      top: '100%',
-      left: 0,
-      right: 0,
-      borderBottom: '1px solid rgba(226, 232, 240, 0.8)'
     }
   };
 
@@ -192,14 +203,21 @@ function Homepage() {
             <a href="#about" style={{color: '#475569', textDecoration: 'none', fontWeight: 500, transition: 'all 0.3s ease'}}>About</a>
           </nav>
 
-          <button 
-            style={styles.getStartedBtn}
-            onClick={handleSignupRedirect}
-          >
-            <span>✨</span>
-            {isMobile ? 'Start' : 'Get Started'}
-            {!isMobile && <span>→</span>}
-          </button>
+          {/* Updated Auth Buttons */}
+          <div style={styles.authButtons}>
+            <button 
+              style={styles.loginBtn}
+              onClick={handleLoginRedirect}
+            >
+              {isMobile ? 'Login' : 'Sign In'}
+            </button>
+            <button 
+              style={styles.signupBtn}
+              onClick={handleSignupRedirect}
+            >
+              {isMobile ? 'Start' : 'Get Started'}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -478,26 +496,48 @@ function Homepage() {
           }}>
             Join thousands of professionals who landed their dream jobs with InsightResume
           </p>
-          <button 
-            style={{
-              background: 'white', 
-              color: '#2563eb', 
-              padding: isMobile ? '1rem 2rem' : '1.25rem 3rem', 
-              border: 'none', 
-              borderRadius: '12px', 
-              fontSize: isMobile ? '1rem' : '1.1rem', 
-              fontWeight: 700, 
-              cursor: 'pointer', 
-              margin: '0 auto', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.5rem'
-            }}
-            onClick={handleSignupRedirect}
-          >
-            <span>🎯</span>
-            Create Your Resume Now
-          </button>
+          <div style={{
+            display: 'flex',
+            gap: '1rem',
+            justifyContent: 'center',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: 'center'
+          }}>
+            <button 
+              style={{
+                background: 'white', 
+                color: '#2563eb', 
+                padding: isMobile ? '1rem 2rem' : '1.25rem 3rem', 
+                border: 'none', 
+                borderRadius: '12px', 
+                fontSize: isMobile ? '1rem' : '1.1rem', 
+                fontWeight: 700, 
+                cursor: 'pointer', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem'
+              }}
+              onClick={handleSignupRedirect}
+            >
+              <span>🎯</span>
+              Create Your Resume Now
+            </button>
+            <button 
+              style={{
+                background: 'transparent', 
+                color: 'white', 
+                padding: isMobile ? '1rem 2rem' : '1.25rem 2rem', 
+                border: '1px solid rgba(255, 255, 255, 0.3)', 
+                borderRadius: '12px', 
+                fontSize: isMobile ? '1rem' : '1.1rem', 
+                fontWeight: 600, 
+                cursor: 'pointer'
+              }}
+              onClick={handleLoginRedirect}
+            >
+              Already have an account? Sign In
+            </button>
+          </div>
         </div>
       </section>
 
@@ -553,9 +593,19 @@ function Homepage() {
               <a href="#pricing" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem'}}>Pricing</a>
             </div>
             <div>
-              <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem'}}>Company</h4>
-              <a href="#about" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem'}}>About</a>
-              <a href="#careers" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem'}}>Careers</a>
+              <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem'}}>Support</h4>
+              <button 
+                onClick={handleLoginRedirect}
+                style={{display: 'block', background: 'none', border: 'none', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem', cursor: 'pointer', textAlign: 'left'}}
+              >
+                Sign In
+              </button>
+              <button 
+                onClick={handleSignupRedirect}
+                style={{display: 'block', background: 'none', border: 'none', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem', cursor: 'pointer', textAlign: 'left'}}
+              >
+                Get Started
+              </button>
               <a href="#contact" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem'}}>Contact</a>
             </div>
           </div>
