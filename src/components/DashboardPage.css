@@ -105,8 +105,6 @@ body {
   }
 }
 
-/* Removed glowPulse animation as glows are removed */
-
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -243,7 +241,7 @@ body {
   letter-spacing: -0.5px;
 }
 
-/* This class is for the gradient-text in JSX, re-themed */
+/* This class is for gradient-text in JSX, re-themed */
 .gradient-text {
   color: var(--accent-primary);
 }
@@ -262,6 +260,8 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 4px 0; /* Add padding to accommodate hover movement */
+  overflow: visible; /* Allow button to be visible when it moves */
 }
 
 /* Theme Toggle */
@@ -359,6 +359,12 @@ body {
   border: 1px solid var(--border-light);
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.user-section:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
 }
 
 .user-avatar {
@@ -397,23 +403,34 @@ body {
   background: var(--accent-secondary);
   border: none;
   border-radius: var(--radius-pill);
-  width: 36px;
+  width: 80px; /* Increased width to fit text */
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px; /* Reduced font size */
   font-weight: 600;
   transition: all 0.3s ease;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
+  margin: 0;
+  padding: 0 8px; /* Added padding */
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Show ... if text is too long */
+}
+
+.logout-text {
+  font-size: 12px; /* Explicit font size for logout text */
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .logout-btn:hover {
-  transform: translateY(-2px);
+  transform: scale(1.02); /* Reduced scale */
   background: var(--accent-secondary-hover);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
 }
 
 /* Quick Actions Section */
