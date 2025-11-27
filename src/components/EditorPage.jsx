@@ -25,6 +25,7 @@ const SkillVerificationPopup = ({
   const [showResults, setShowResults] = useState(false);
   const [attemptedSkills, setAttemptedSkills] = useState([]);
   const [timeoutOccurred, setTimeoutOccurred] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState(null);
 
   const currentSkill = skills[currentSkillIndex];
 
@@ -45,13 +46,44 @@ const SkillVerificationPopup = ({
     return () => clearInterval(timer);
   }, [currentQuestion, showResults, timeoutOccurred]);
 
+  // Check verification status on component mount
+  useEffect(() => {
+    checkVerificationStatus();
+  }, []);
+
   // Load question for current skill
   useEffect(() => {
-    if (currentSkill && !showResults) {
+    if (currentSkill && !showResults && verificationStatus?.can_attempt) {
       loadQuestionForSkill(currentSkill);
       setTimeoutOccurred(false); // Reset timeout flag for new question
     }
-  }, [currentSkill, showResults]);
+  }, [currentSkill, showResults, verificationStatus]);
+
+  // Check verification status
+  const checkVerificationStatus = async () => {
+    try {
+      const userIdentifier = resumeData.personalInfo.fullName || 'default_user';
+      
+      const response = await fetch(`${getBackendUrl()}/api/check-verification-status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userIdentifier: userIdentifier
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setVerificationStatus(result);
+        return result;
+      }
+    } catch (error) {
+      console.error('Error checking verification status:', error);
+    }
+    return { can_attempt: true, message: 'Proceeding with verification' };
+  };
 
   const loadQuestionForSkill = async (skill) => {
     setIsLoading(true);
@@ -96,6 +128,7 @@ const SkillVerificationPopup = ({
     }
   };
 
+  // ✅ FIXED: handleAnswerSelect function with enhanced attempt system
   const handleAnswerSelect = async (answer) => {
     if (!currentQuestion || timeoutOccurred) return;
 
@@ -104,45 +137,100 @@ const SkillVerificationPopup = ({
 
     // Verify answer with backend
     try {
-      // ✅ Updated to use Railway backend
+      const userIdentifier = resumeData.personalInfo.fullName || 'default_user';
+      
+      // ✅ FIXED: Corrected the field names to match backend
       const response = await fetch(`${getBackendUrl()}/api/verify-skill-answer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          question_data: currentQuestion,
-          user_answer: answer,
-          skill: currentSkill
+          question: currentQuestion,        // ✅ Changed from question_data
+          selectedAnswer: answer,           // ✅ Changed from user_answer  
+          skill: currentSkill,
+          level: 'intermediate',
+          userIdentifier: userIdentifier
         })
       });
 
       if (response.ok) {
         const result = await response.json();
         
-        // Store result
+        if (result.success) {
+          // Store result - FIXED: Access the correct path
+          setResults(prev => ({
+            ...prev,
+            [currentSkill]: result.result.is_correct  // ✅ Fixed: result.result.is_correct
+          }));
+
+          setUserAnswers(prev => ({
+            ...prev,
+            [currentSkill]: answer
+          }));
+
+          // Update verification status
+          setVerificationStatus(prev => ({
+            ...prev,
+            attempt_data: result.result.attempt_data
+          }));
+
+          // Move to next skill after a brief delay
+          setTimeout(() => {
+            if (currentSkillIndex < skills.length - 1) {
+              setCurrentSkillIndex(prev => prev + 1);
+            } else {
+              // All skills completed
+              setShowResults(true);
+            }
+          }, 1500);
+        } else {
+          console.error('Backend verification failed:', result.error);
+          // Handle backend error
+          setResults(prev => ({
+            ...prev,
+            [currentSkill]: false
+          }));
+          
+          setTimeout(() => {
+            if (currentSkillIndex < skills.length - 1) {
+              setCurrentSkillIndex(prev => prev + 1);
+            } else {
+              setShowResults(true);
+            }
+          }, 1500);
+        }
+      } else {
+        console.error('HTTP error:', response.status);
+        // Handle HTTP error
         setResults(prev => ({
           ...prev,
-          [currentSkill]: result.is_correct
+          [currentSkill]: false
         }));
-
-        setUserAnswers(prev => ({
-          ...prev,
-          [currentSkill]: answer
-        }));
-
-        // Move to next skill after a brief delay
+        
         setTimeout(() => {
           if (currentSkillIndex < skills.length - 1) {
             setCurrentSkillIndex(prev => prev + 1);
           } else {
-            // All skills completed
             setShowResults(true);
           }
         }, 1500);
       }
     } catch (error) {
       console.error('Error verifying answer:', error);
+      // Handle network error
+      setResults(prev => ({
+        ...prev,
+        [currentSkill]: false
+      }));
+      
+      setTimeout(() => {
+        if (currentSkillIndex < skills.length - 1) {
+          setCurrentSkillIndex(prev => prev + 1);
+        } else {
+          setShowResults(true);
+        }
+      }, 1500);
     }
   };
 
@@ -203,7 +291,8 @@ const SkillVerificationPopup = ({
         verifiedSkills: Object.entries(results)
           .filter(([skill, result]) => result === true)
           .map(([skill]) => skill),
-        verifiedAt: new Date().toISOString()
+        verifiedAt: new Date().toISOString(),
+        attempt_data: verificationStatus?.attempt_data
       };
       localStorage.setItem(`resume_verified_${resumeData.personalInfo.fullName}`, JSON.stringify(verificationData));
     }
@@ -216,11 +305,20 @@ const SkillVerificationPopup = ({
       attemptedSkills,
       verifiedSkills: passed ? Object.entries(results)
         .filter(([skill, result]) => result === true)
-        .map(([skill]) => skill) : []
+        .map(([skill]) => skill) : [],
+      attempt_data: verificationStatus?.attempt_data
     });
   };
 
   const getAttemptText = () => {
+    if (verificationStatus?.attempt_data) {
+      const { current_attempt, total_attempts, passed } = verificationStatus.attempt_data;
+      if (passed) {
+        return '✅ Verification Passed';
+      }
+      return `Attempt ${current_attempt} of 3`;
+    }
+    
     const attempts = localStorage.getItem(`skill_attempts_${resumeData.personalInfo.fullName}`) || 0;
     return `Attempt ${parseInt(attempts) + 1} of 3`;
   };
@@ -230,6 +328,42 @@ const SkillVerificationPopup = ({
     if (results[skill] === 'not_attempted') return 'not_attempted';
     return results[skill] ? 'correct' : 'incorrect';
   };
+
+  // Show verification status if user cannot attempt
+  if (verificationStatus && !verificationStatus.can_attempt) {
+    return (
+      <div className="skill-verification-popup">
+        <div className="popup-content">
+          <div className="popup-header">
+            <h2>Skill Verification</h2>
+            <button className="close-btn" onClick={onClose}>×</button>
+          </div>
+          
+          <div className="verification-locked">
+            <div className="lock-icon">🔒</div>
+            <h3>Verification Locked</h3>
+            <p>{verificationStatus.message}</p>
+            
+            {verificationStatus.attempt_data && (
+              <div className="attempt-details">
+                <p><strong>Attempt Status:</strong> {verificationStatus.attempt_data.current_attempt}/3</p>
+                <p><strong>Total Attempts:</strong> {verificationStatus.attempt_data.total_attempts}</p>
+                {verificationStatus.attempt_data.lock_until && (
+                  <p><strong>Next Attempt:</strong> {new Date(verificationStatus.attempt_data.lock_until).toLocaleString()}</p>
+                )}
+              </div>
+            )}
+            
+            <div className="popup-actions">
+              <button className="btn-secondary" onClick={onClose}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showResults) {
     const score = calculateScore();
@@ -254,6 +388,21 @@ const SkillVerificationPopup = ({
                 Based on {Object.entries(results).filter(([skill, result]) => attemptedSkills.includes(skill) && result !== 'not_attempted').length} attempted questions
               </p>
             </div>
+
+            {verificationStatus?.attempt_data && (
+              <div className="attempt-summary">
+                <h4>Attempt Summary:</h4>
+                <div className="attempt-details">
+                  <p><strong>Current Attempt:</strong> {verificationStatus.attempt_data.current_attempt}/3</p>
+                  <p><strong>Total Attempts:</strong> {verificationStatus.attempt_data.total_attempts}</p>
+                  {!passed && verificationStatus.attempt_data.lock_until && (
+                    <p className="warning-text">
+                      <strong>Next Attempt Available:</strong> {new Date(verificationStatus.attempt_data.lock_until).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="skills-results">
               <h4>Skill Results:</h4>
@@ -283,7 +432,19 @@ const SkillVerificationPopup = ({
                 </button>
               ) : (
                 <div className="failed-actions">
-                  <p>You can retry in 24 hours. Attempts remaining: {3 - (parseInt(localStorage.getItem(`skill_attempts_${resumeData.personalInfo.fullName}`) || 0) + 1)}</p>
+                  {verificationStatus?.attempt_data && (
+                    <div className="attempt-info">
+                      <p>
+                        {verificationStatus.attempt_data.current_attempt === 1 && 
+                         '2nd attempt will unlock in 2 minutes'}
+                        {verificationStatus.attempt_data.current_attempt === 2 && 
+                         'Final attempt will unlock in 24 hours'}
+                        {verificationStatus.attempt_data.current_attempt === 3 && 
+                         'No more attempts available. Verification failed.'}
+                      </p>
+                      <p>Attempts remaining: {3 - verificationStatus.attempt_data.current_attempt}</p>
+                    </div>
+                  )}
                   <button className="btn-secondary" onClick={onClose}>
                     Close
                   </button>
@@ -303,6 +464,29 @@ const SkillVerificationPopup = ({
           <h2>Skill Verification</h2>
           <div className="attempt-info">{getAttemptText()}</div>
         </div>
+
+        {verificationStatus?.attempt_data && (
+          <div className="attempt-progress">
+            <div className="attempt-badges">
+              <span className={`attempt-badge ${verificationStatus.attempt_data.current_attempt >= 1 ? 'active' : ''}`}>
+                Attempt 1
+              </span>
+              <span className={`attempt-badge ${verificationStatus.attempt_data.current_attempt >= 2 ? 'active' : ''}`}>
+                Attempt 2
+              </span>
+              <span className={`attempt-badge ${verificationStatus.attempt_data.current_attempt >= 3 ? 'active' : ''}`}>
+                Attempt 3
+              </span>
+            </div>
+            <div className="attempt-rules">
+              <small>
+                {verificationStatus.attempt_data.current_attempt === 1 && '→ 2 min wait if failed'}
+                {verificationStatus.attempt_data.current_attempt === 2 && '→ 24 hr wait if failed'}
+                {verificationStatus.attempt_data.current_attempt === 3 && '→ Final attempt'}
+              </small>
+            </div>
+          </div>
+        )}
 
         <div className="verification-progress">
           <div className="progress-bar">
@@ -440,6 +624,7 @@ const EditorPage = () => {
   const [verificationResults, setVerificationResults] = useState(null);
   const [verifiedSkills, setVerifiedSkills] = useState([]);
   const [isVerificationComplete, setIsVerificationComplete] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState(null);
 
   // ✅ FIXED: Enhanced data loading with better error handling
   useEffect(() => {
@@ -530,6 +715,32 @@ const EditorPage = () => {
       }
     }
   }, [resumeData.personalInfo.fullName]);
+
+  // Check verification status
+  const checkVerificationStatus = async () => {
+    try {
+      const userIdentifier = resumeData.personalInfo.fullName || 'default_user';
+      
+      const response = await fetch(`${getBackendUrl()}/api/check-verification-status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userIdentifier: userIdentifier
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setVerificationStatus(result);
+        return result;
+      }
+    } catch (error) {
+      console.error('Error checking verification status:', error);
+    }
+    return { can_attempt: true, message: 'Proceeding with verification' };
+  };
 
   // ✅ Professional Title Generator
   const generateProfessionalTitle = () => {
@@ -676,27 +887,69 @@ const EditorPage = () => {
     }
   };
 
-  // Separate PDF generation function
+  // ✅ OPTIMIZED PDF Generation Function - FIXED VERSION
   const generateAndDownloadPDF = async () => {
     try {
       const element = resumeRef.current;
+      
+      // Apply PDF-specific styles temporarily
+      element.classList.add('pdf-export', 'pdf-optimized');
+      
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 1.5, // Reduced from 2 to 1.5 for smaller file size
         useCORS: true,
-        logging: false
+        allowTaint: false,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: 794, // A4 width in pixels
+        height: element.scrollHeight,
+        onclone: (clonedDoc, clonedElement) => {
+          // Inject PDF-specific styles
+          clonedElement.classList.add('pdf-export', 'pdf-optimized');
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            .pdf-export * {
+              box-sizing: border-box;
+              max-width: 100% !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+            .pdf-export {
+              font-family: Arial, Helvetica, sans-serif !important;
+              background: white !important;
+              color: black !important;
+            }
+            .pdf-export .shadow, .pdf-export .box-shadow {
+              box-shadow: none !important;
+            }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      // Remove temporary classes
+      element.classList.remove('pdf-export', 'pdf-optimized');
+
+      // Use JPEG compression instead of PNG for smaller file size
+      const imgData = canvas.toDataURL('image/jpeg', 0.8); // 80% quality
+      
       const pdf = new jsPDF({
         orientation: 'portrait',
-        unit: 'px',
-        format: [794, 1123]
+        unit: 'mm',
+        format: 'a4',
+        compress: true // Enable PDF compression
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      // Calculate image dimensions to fit PDF
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgWidth = pdfWidth;
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
       pdf.save(`${resumeData.personalInfo.fullName || 'resume'}.pdf`);
       
       setSaveMessage('PDF downloaded successfully!');
@@ -708,8 +961,21 @@ const EditorPage = () => {
     }
   };
 
-  // Modified Download PDF function to trigger verification
-  const handleDownloadPDF = async () => {
+  // Download without verification
+  const handleDownloadWithoutVerification = async () => {
+    try {
+      await generateAndDownloadPDF();
+      setSaveMessage('PDF downloaded successfully!');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setSaveMessage('Error generating PDF');
+      setTimeout(() => setSaveMessage(''), 3000);
+    }
+  };
+
+  // Download with verification
+  const handleDownloadWithVerification = async () => {
     // Check if skills are already verified
     const storedVerification = localStorage.getItem(`resume_verified_${resumeData.personalInfo.fullName}`);
     
@@ -722,12 +988,11 @@ const EditorPage = () => {
       }
     }
 
-    // Check attempt limits
-    const attemptKey = `skill_attempts_${resumeData.personalInfo.fullName}`;
-    const currentAttempts = parseInt(localStorage.getItem(attemptKey) || '0');
+    // Check verification status first
+    const status = await checkVerificationStatus();
     
-    if (currentAttempts >= 3) {
-      alert('You have used all 3 attempts. Please try again after 24 hours.');
+    if (!status.can_attempt) {
+      alert(status.message);
       return;
     }
 
@@ -752,7 +1017,18 @@ const EditorPage = () => {
         generateAndDownloadPDF();
       }, 1000);
     } else {
-      setSaveMessage(`Verification failed! Score: ${results.score}%. ${3 - (parseInt(localStorage.getItem(`skill_attempts_${resumeData.personalInfo.fullName}`) || 0))} attempts remaining.`);
+      const attemptsRemaining = 3 - (results.attempt_data?.current_attempt || 0);
+      let message = `Verification failed! Score: ${results.score}%. `;
+      
+      if (results.attempt_data?.current_attempt === 1) {
+        message += 'Next attempt available in 2 minutes.';
+      } else if (results.attempt_data?.current_attempt === 2) {
+        message += 'Final attempt available in 24 hours.';
+      } else {
+        message += 'No more attempts available.';
+      }
+      
+      setSaveMessage(message);
       setTimeout(() => setSaveMessage(''), 5000);
     }
   };
@@ -1135,6 +1411,7 @@ const EditorPage = () => {
       setIsFromAI(false);
       setVerifiedSkills([]);
       setIsVerificationComplete(false);
+      setVerificationStatus(null);
       setSaveMessage('All data cleared!');
       setTimeout(() => setSaveMessage(''), 3000);
     } catch (error) {
@@ -1201,21 +1478,46 @@ const EditorPage = () => {
             </div>
           )}
           
+          {/* Attempt Status Badge */}
+          {verificationStatus && !verificationStatus.can_attempt && (
+            <div className="attempt-status-badge">
+              🔒 {verificationStatus.message}
+            </div>
+          )}
+          
           {saveMessage && <div className="save-message">{saveMessage}</div>}
         </div>
         <div className="header-actions">
           <button className="btn-secondary" onClick={() => navigate('/dashboard')}>
             ← Back to Dashboard
           </button>
-          <button className="btn-primary" onClick={handleSaveResume}>
-            Save Resume
-          </button>
-          <button 
-            className={`btn-success ${isVerificationComplete ? 'verified' : ''}`}
-            onClick={handleDownloadPDF}
-          >
-            {isVerificationComplete ? '✅ Download Verified PDF' : 'Download PDF (A4)'}
-          </button>
+          
+          {/* Download Options Dropdown */}
+          <div className="download-options">
+            <button className="btn-primary dropdown-toggle">
+              Download Options ▼
+            </button>
+            <div className="dropdown-menu">
+              <button 
+                className="dropdown-item"
+                onClick={handleDownloadWithoutVerification}
+              >
+                📄 Download PDF (Without Verification)
+              </button>
+              <button 
+                className={`dropdown-item ${isVerificationComplete ? 'verified' : ''}`}
+                onClick={handleDownloadWithVerification}
+              >
+                {isVerificationComplete ? '✅ Download Verified PDF' : '🔒 Download with Verification'}
+              </button>
+              <button 
+                className="dropdown-item"
+                onClick={handleSaveResume}
+              >
+                💾 Save Resume
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1285,20 +1587,62 @@ const EditorPage = () => {
             </p>
           </div>
 
-          {/* ✅ NEW: Skill Verification Status */}
+          {/* ✅ NEW: Enhanced Skill Verification Status */}
           {resumeData.skills && resumeData.skills.length > 0 && (
             <div className="verification-status-section">
-              <h4>Skill Verification</h4>
+              <h4>Download Options</h4>
+              
+              {/* Quick Download Options */}
+              <div className="quick-download-options">
+                <button 
+                  className="btn-download-quick"
+                  onClick={handleDownloadWithoutVerification}
+                >
+                  📄 Quick Download
+                </button>
+                
+                {isVerificationComplete ? (
+                  <button 
+                    className="btn-download-verified"
+                    onClick={handleDownloadWithVerification}
+                  >
+                    ✅ Download Verified
+                  </button>
+                ) : (
+                  <button 
+                    className="btn-download-verify"
+                    onClick={handleDownloadWithVerification}
+                  >
+                    🔒 Verify & Download
+                  </button>
+                )}
+              </div>
+
               {isVerificationComplete ? (
                 <div className="verification-success">
                   <p>✅ {verifiedSkills.length} skills verified</p>
                   <p>Ready for download!</p>
                 </div>
+              ) : verificationStatus && !verificationStatus.can_attempt ? (
+                <div className="verification-locked">
+                  <p>🔒 {verificationStatus.message}</p>
+                  {verificationStatus.attempt_data && (
+                    <div className="attempt-details-small">
+                      <p>Attempt: {verificationStatus.attempt_data.current_attempt}/3</p>
+                      {verificationStatus.attempt_data.lock_until && (
+                        <p>Next: {new Date(verificationStatus.attempt_data.lock_until).toLocaleString()}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="verification-pending">
                   <p>Skills need verification</p>
-                  <p>Click Download to start</p>
+                  <p>Click "Verify & Download" to start</p>
                   <p className="verification-note">20 seconds per question</p>
+                  <p className="attempt-rules-note">
+                    <small>3 attempts total • 67% to pass</small>
+                  </p>
                 </div>
               )}
             </div>
