@@ -8,7 +8,7 @@ import './DashboardPage.css';
 const Icons = {
   Sun: () => <span>☀️</span>,
   Moon: () => <span>🌙</span>,
-  Logout: () => <span>Logout</span>,
+  Logout: () => <span className="logout-text">Logout</span>, // Changed back to text with class
   Create: () => <span>+</span>,
   AI: () => <span>AI</span>,
   Edit: () => <span>✎</span>,
@@ -49,6 +49,7 @@ const DashboardPage = () => {
   const [aiPrompt, setAiPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   const navigate = useNavigate();
   const aiPopupRef = useRef(null);
@@ -89,6 +90,13 @@ const DashboardPage = () => {
     
     console.log('Loaded resumes:', userResumes);
     console.log('Current user:', user);
+
+    // Load dark mode preference
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.body.classList.add('dark-mode');
+    }
   }, [user]);
 
   // Close AI popup when clicking outside
@@ -107,6 +115,19 @@ const DashboardPage = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showAIPopup]);
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode.toString());
+    
+    if (newDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  };
 
   // Handle skill level change
   const handleSkillLevelChange = (category, level) => {
@@ -472,7 +493,7 @@ const DashboardPage = () => {
   // Error animation function
   const showErrorAnimation = (message) => {
     const errorElement = document.createElement('div');
-    errorElement.className = 'error-toast light';
+    errorElement.className = `error-toast ${darkMode ? 'dark' : 'light'}`;
     errorElement.innerHTML = `
       <div class="error-content">
         <div class="error-icon">!</div>
@@ -647,7 +668,7 @@ const DashboardPage = () => {
 
   return (
     <motion.div 
-      className="dashboard-page"
+      className={`dashboard-page ${darkMode ? 'dark-mode' : ''}`}
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -666,7 +687,10 @@ const DashboardPage = () => {
               transition={{ type: "spring", stiffness: 300 }}
             >
               <div className="logo-icon">
-                <Icons.Document />
+                {/* Changed from Document icon to IR Logo */}
+                <div className="ir-logo">
+                  <span className="ir-text">IR</span>
+                </div>
               </div>
               <div className="brand-text">
                 <h1 className="gradient-text">InsightResume</h1>
@@ -676,6 +700,17 @@ const DashboardPage = () => {
           </div>
           
           <div className="header-actions">
+            {/* Added Dark Mode Toggle Button */}
+            <motion.button 
+              className="theme-toggle-btn"
+              onClick={toggleDarkMode}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {darkMode ? <Icons.Sun /> : <Icons.Moon />}
+            </motion.button>
+            
             <div className="user-section">
               <div className="user-avatar">
                 {userName.charAt(0).toUpperCase()}
