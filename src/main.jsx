@@ -1,22 +1,33 @@
-// main.jsx - CORRECTED VERSION
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import App from './App.jsx'
-import SignUpPage from './components/SignUpPage.jsx'
-import LoginPage from './components/LoginPage.jsx'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
 import Homepage from './components/Homepage.jsx'
 import DashboardPage from './components/DashboardPage.jsx'
 import EditorPage from './components/EditorPage.jsx'
+import AIPromptPage from './components/AIPromptPage.jsx' // ✅ FIXED: Changed from AiPromptPage to AIPromptPage
 import ContactPage from './components/ContactPage.jsx' // ✅ ADDED CONTACT PAGE
 import AboutPage from './components/AboutPage.jsx'
 import FeaturesPage from './components/FeaturesPage.jsx'
 import PrivacyPage from './components/PrivacyPage.jsx'
 import FaqPage from './components/FaqPage.jsx'
-import AiPromptPage from './components/AIPromptPage.jsx'
 import CreateResume from './components/CreateResume.jsx'
 import { AuthProvider } from './components/AuthContext'
+import AuthPage from './components/AuthPage.jsx'
 import './index.css'
+
+// ✅ CREATE MUI THEME
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#2563eb',
+    },
+    secondary: {
+      main: '#3b82f6',
+    },
+  },
+})
 
 // Debug Component
 const DebugPage = () => {
@@ -35,18 +46,17 @@ const DebugPage = () => {
         <ul style={{ listStyle: 'none', padding: 0 }}>
           <li>✅ / - Homepage</li>
           <li>✅ /dashboard - DashboardPage</li>
-          <li>✅ /auth - LoginPage</li>
-          <li>✅ /login - LoginPage</li>
-          <li>✅ /signup - SignUpPage</li>
+          <li>✅ /auth - AuthPage</li>
+          <li>✅ /login - AuthPage</li>
           <li>✅ /editor - EditorPage</li>
+          <li>❌ /input - (Removed - use /auth instead)</li>
           <li>✅ /contact - ContactPage</li> {/* ✅ ADDED CONTACT PAGE */}
           <li>✅ /About - AboutPage</li>
           <li>✅ /Features - FeaturesPage</li>
           <li>✅ /privacy - PrivacyPage</li>
           <li>✅ /faq - FaqPage</li>
-          <li>✅ /input - SignUpPage</li>
           <li>✅ /adminportal - AdminPortalPage</li>
-          <li>✅ /ai-prompt - AiPromptPage</li>
+          <li>✅ /ai-prompt - AIPromptPage</li>
           <li>✅ /create-resume - CreateResume</li>
           <li>✅ /debug - This Debug Page</li>
         </ul>
@@ -219,40 +229,32 @@ const AdminPortalPage = () => {
   )
 }
 
-// ✅ Use App.jsx component (Recommended - Cleaner approach)
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>
-)
-
-// If you prefer the alternative approach, use this instead:
-/*
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Homepage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/auth" element={<LoginPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/editor" element={<EditorPage />} />
-          <Route path="/contact" element={<ContactPage />} />
+    {/* ✅ WRAP EVERYTHING WITH THEMEPROVIDER */}
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Homepage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/login" element={<AuthPage />} />
+            <Route path="/editor" element={<EditorPage />} />
+            <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/Features" element={<FeaturesPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/faq" element={<FaqPage />} />
-          <Route path="/input" element={<SignUpPage />} />
-          <Route path="/adminportal" element={<AdminPortalPage />} />
-          <Route path="/ai-prompt" element={<AiPromptPage />} />
-          <Route path="/create-resume" element={<CreateResume />} />
-          <Route path="/debug" element={<DebugPage />} />
-          <Route path="*" element={<div>Page not found - 404 Error</div>} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+            <Route path="/adminportal" element={<AdminPortalPage />} />
+            <Route path="/ai-prompt" element={<AIPromptPage />} /> {/* ✅ FIXED: Changed from AiPromptPage to AIPromptPage */}
+            <Route path="/create-resume" element={<CreateResume />} />
+            <Route path="/debug" element={<DebugPage />} />
+            <Route path="*" element={<div>Page not found - 404 Error</div>} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>
 )
-*/
