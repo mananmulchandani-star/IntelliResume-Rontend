@@ -42,6 +42,7 @@ function Homepage() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showFaq, setShowFaq] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -54,8 +55,22 @@ function Homepage() {
     setIsMobile(window.innerWidth < 768);
   };
 
-  const handleSignupRedirect = () => {
-    navigate('/signup');
+  // Navigate to different pages
+  const navigateToFeatures = () => {
+    navigate('/features');
+  };
+
+  const navigateToAbout = () => {
+    navigate('/about');
+  };
+
+  const navigateToFaq = () => {
+    navigate('/faq');
+  };
+
+  // Navigate directly to auth page - NO SIGNUP STATE
+  const handleAuthRedirect = () => {
+    navigate('/auth');
   };
 
   const handleViewTemplates = () => {
@@ -67,45 +82,40 @@ function Homepage() {
   };
 
   const handleTemplateSelect = (templateName) => {
-    navigate('/signup', { state: { selectedTemplate: templateName } });
+    navigate('/auth');
   };
 
-  // Navigation handlers for actual page routing
-  const handleFeaturesClick = () => {
-    navigate('/features');
+  const toggleFaq = () => {
+    setShowFaq(!showFaq);
   };
 
-  const handleTemplatesClick = () => {
-    navigate('/templates');
-  };
-
-  const handleAboutClick = () => {
-    navigate('/about');
-  };
-
-  const handleContactClick = () => {
-    navigate('/contact');
-  };
-
-  const handlePricingClick = () => {
-    navigate('/pricing');
-  };
-
-  const handleCareersClick = () => {
-    navigate('/careers');
-  };
-
-  const handleHelpClick = () => {
-    navigate('/help');
-  };
-
-  const handleFaqClick = () => {
-    navigate('/faq');
-  };
-
-  const handlePrivacyClick = () => {
-    navigate('/privacy');
-  };
+  // FAQ Data
+  const faqData = [
+    {
+      question: "How does the AI-powered resume builder work?",
+      answer: "Our AI analyzes your input and suggests professional phrasing, optimizes keywords for ATS systems, and provides industry-specific recommendations to make your resume stand out."
+    },
+    {
+      question: "Is my data secure?",
+      answer: "Yes, we take data security seriously. All your information is encrypted and we never share your personal data with third parties without your consent."
+    },
+    {
+      question: "Can I download my resume in different formats?",
+      answer: "Absolutely! You can download your resume as PDF, Word document, or plain text. All formats are optimized for both human readers and applicant tracking systems."
+    },
+    {
+      question: "Do you offer templates for specific industries?",
+      answer: "Yes, we have templates tailored for various industries including tech, healthcare, finance, creative fields, and more. Each template is designed to highlight what recruiters in that industry look for."
+    },
+    {
+      question: "How long does it take to create a resume?",
+      answer: "Most users can create a professional resume in under 10 minutes. Our streamlined process and AI suggestions make resume building quick and efficient."
+    },
+    {
+      question: "Can I update my resume later?",
+      answer: "Yes, you can edit and update your resume anytime. All your data is saved automatically, and you can create multiple versions for different job applications."
+    }
+  ];
 
   // Responsive styles
   const styles = {
@@ -157,8 +167,7 @@ function Homepage() {
     logoBox: {
       display: 'flex',
       alignItems: 'center',
-      gap: '0.75rem',
-      cursor: 'pointer'
+      gap: '0.75rem'
     },
     logoOrb: {
       position: 'absolute',
@@ -168,20 +177,32 @@ function Homepage() {
       borderRadius: '12px',
       animation: 'orbGlow 3s ease-in-out infinite'
     },
-    getStartedBtn: {
-      background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
-      color: 'white',
-      padding: isMobile ? '0.6rem 1rem' : '0.75rem 1.5rem',
-      border: 'none',
-      borderRadius: '12px',
-      fontWeight: 600,
+    authButtons: {
+      display: 'flex',
+      gap: '0.75rem',
+      alignItems: 'center'
+    },
+    loginBtn: {
+      background: 'transparent',
+      color: '#475569',
+      padding: isMobile ? '0.5rem 1rem' : '0.6rem 1.25rem',
+      border: '1px solid rgba(226, 232, 240, 0.8)',
+      borderRadius: '8px',
+      fontWeight: 500,
       cursor: 'pointer',
       transition: 'all 0.3s ease',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-      boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
-      fontSize: isMobile ? '0.9rem' : '1rem'
+      fontSize: isMobile ? '0.8rem' : '0.9rem'
+    },
+    signupBtn: {
+      background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+      color: 'white',
+      padding: isMobile ? '0.5rem 1rem' : '0.6rem 1.25rem',
+      border: 'none',
+      borderRadius: '8px',
+      fontWeight: 500,
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      fontSize: isMobile ? '0.8rem' : '0.9rem'
     },
     nav: {
       display: isMobile ? 'none' : 'flex',
@@ -195,38 +216,9 @@ function Homepage() {
       cursor: 'pointer',
       background: 'none',
       border: 'none',
-      fontSize: '1rem',
+      fontSize: 'inherit',
       fontFamily: 'inherit'
-    },
-    footerLink: {
-      display: 'block',
-      color: '#94a3b8',
-      textDecoration: 'none',
-      marginBottom: '0.5rem',
-      fontSize: isMobile ? '0.8rem' : '0.9rem',
-      cursor: 'pointer',
-      background: 'none',
-      border: 'none',
-      textAlign: 'left',
-      padding: 0,
-      fontFamily: 'inherit'
-    },
-    mobileMenu: {
-      display: isMobile ? 'flex' : 'none',
-      flexDirection: 'column',
-      gap: '1rem',
-      background: 'white',
-      padding: '2rem',
-      position: 'absolute',
-      top: '100%',
-      left: 0,
-      right: 0,
-      borderBottom: '1px solid rgba(226, 232, 240, 0.8)'
     }
-  };
-
-  const handleLogoClick = () => {
-    navigate('/');
   };
 
   return (
@@ -242,7 +234,7 @@ function Homepage() {
       {/* Header */}
       <header style={styles.modernHeader}>
         <div style={styles.headerContent}>
-          <div style={styles.logoBox} onClick={handleLogoClick}>
+          <div style={styles.logoBox}>
             <div style={{position: 'relative', width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
               <div style={styles.logoOrb}></div>
               <span style={{position: 'relative', color: 'white', fontWeight: 800, fontSize: isMobile ? '0.8rem' : '0.9rem'}}>IR</span>
@@ -253,20 +245,32 @@ function Homepage() {
           </div>
           
           <nav style={styles.nav}>
-            <button style={styles.navLink} onClick={handleFeaturesClick}>Features</button>
-            <button style={styles.navLink} onClick={handleTemplatesClick}>Templates</button>
-            <button style={styles.navLink} onClick={handleAboutClick}>About</button>
-            <button style={styles.navLink} onClick={handleContactClick}>Contact</button>
+            <button style={styles.navLink} onClick={navigateToFeatures}>
+              Features
+            </button>
+            <button style={styles.navLink} onClick={navigateToAbout}>
+              About
+            </button>
+            <button style={styles.navLink} onClick={navigateToFaq}>
+              FAQ
+            </button>
           </nav>
 
-          <button 
-            style={styles.getStartedBtn}
-            onClick={handleSignupRedirect}
-          >
-            <span>✨</span>
-            {isMobile ? 'Start' : 'Get Started'}
-            {!isMobile && <span>→</span>}
-          </button>
+          {/* Updated Auth Buttons */}
+          <div style={styles.authButtons}>
+            <button 
+              style={styles.loginBtn}
+              onClick={handleAuthRedirect}
+            >
+              {isMobile ? 'Login' : 'Sign In'}
+            </button>
+            <button 
+              style={styles.signupBtn}
+              onClick={handleAuthRedirect}
+            >
+              {isMobile ? 'Start' : 'Get Started'}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -344,7 +348,7 @@ function Homepage() {
                   gap: '0.5rem', 
                   boxShadow: '0 8px 40px rgba(0, 0, 0, 0.12)'
                 }}
-                onClick={handleSignupRedirect}
+                onClick={handleAuthRedirect}
               >
                 <span>🚀</span>
                 Start Building Free
@@ -520,6 +524,110 @@ function Homepage() {
         />
       </section>
 
+      {/* FAQ Section */}
+      <section style={{padding: isMobile ? '4rem 1rem' : '6rem 2rem', background: '#f8fafc'}}>
+        <div style={{
+          textAlign: 'center', 
+          maxWidth: '600px', 
+          margin: '0 auto 4rem auto'
+        }}>
+          <h2 style={{
+            fontSize: isMobile ? '2rem' : '2.5rem', 
+            fontWeight: 800, 
+            marginBottom: '1rem', 
+            background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', 
+            WebkitBackgroundClip: 'text', 
+            WebkitTextFillColor: 'transparent'
+          }}>
+            Frequently Asked Questions
+          </h2>
+          <p style={{
+            fontSize: isMobile ? '1rem' : '1.1rem', 
+            color: '#475569'
+          }}>
+            Get answers to the most common questions about our platform
+          </p>
+        </div>
+
+        <div style={{
+          maxWidth: '800px', 
+          margin: '0 auto'
+        }}>
+          {faqData.map((faq, index) => (
+            <div key={index} style={{
+              background: 'white', 
+              marginBottom: '1rem', 
+              borderRadius: '12px', 
+              overflow: 'hidden',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+              border: '1px solid rgba(226, 232, 240, 0.8)'
+            }}>
+              <button
+                style={{
+                  width: '100%',
+                  padding: isMobile ? '1.5rem 1rem' : '2rem 1.5rem',
+                  background: 'white',
+                  border: 'none',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: isMobile ? '1rem' : '1.1rem',
+                  fontWeight: 600,
+                  color: '#0f172a'
+                }}
+                onClick={() => {
+                  const newFaqData = [...faqData];
+                  newFaqData[index].isOpen = !newFaqData[index].isOpen;
+                  // In a real implementation, you would set state here
+                }}
+              >
+                <span>{faq.question}</span>
+                <span style={{fontSize: '1.5rem', color: '#2563eb'}}>+</span>
+              </button>
+              <div style={{
+                padding: isMobile ? '0 1rem 1.5rem 1rem' : '0 1.5rem 2rem 1.5rem',
+                color: '#475569',
+                lineHeight: 1.6,
+                fontSize: isMobile ? '0.9rem' : '1rem'
+              }}>
+                {faq.answer}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Additional CTA after FAQ */}
+        <div style={{
+          textAlign: 'center', 
+          marginTop: '4rem'
+        }}>
+          <p style={{
+            fontSize: isMobile ? '1rem' : '1.1rem', 
+            color: '#475569',
+            marginBottom: '2rem'
+          }}>
+            Still have questions? We're here to help!
+          </p>
+          <button 
+            style={{
+              background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', 
+              color: 'white', 
+              padding: isMobile ? '1rem 2rem' : '1.25rem 2.5rem', 
+              border: 'none', 
+              borderRadius: '12px', 
+              fontSize: isMobile ? '1rem' : '1.1rem', 
+              fontWeight: 600, 
+              cursor: 'pointer'
+            }}
+            onClick={handleAuthRedirect}
+          >
+            Get Started Now
+          </button>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section style={{
         padding: isMobile ? '4rem 1rem' : '6rem 2rem', 
@@ -545,26 +653,48 @@ function Homepage() {
           }}>
             Join thousands of professionals who landed their dream jobs with InsightResume
           </p>
-          <button 
-            style={{
-              background: 'white', 
-              color: '#2563eb', 
-              padding: isMobile ? '1rem 2rem' : '1.25rem 3rem', 
-              border: 'none', 
-              borderRadius: '12px', 
-              fontSize: isMobile ? '1rem' : '1.1rem', 
-              fontWeight: 700, 
-              cursor: 'pointer', 
-              margin: '0 auto', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.5rem'
-            }}
-            onClick={handleSignupRedirect}
-          >
-            <span>🎯</span>
-            Create Your Resume Now
-          </button>
+          <div style={{
+            display: 'flex',
+            gap: '1rem',
+            justifyContent: 'center',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: 'center'
+          }}>
+            <button 
+              style={{
+                background: 'white', 
+                color: '#2563eb', 
+                padding: isMobile ? '1rem 2rem' : '1.25rem 3rem', 
+                border: 'none', 
+                borderRadius: '12px', 
+                fontSize: isMobile ? '1rem' : '1.1rem', 
+                fontWeight: 700, 
+                cursor: 'pointer', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem'
+              }}
+              onClick={handleAuthRedirect}
+            >
+              <span>🎯</span>
+              Create Your Resume Now
+            </button>
+            <button 
+              style={{
+                background: 'transparent', 
+                color: 'white', 
+                padding: isMobile ? '1rem 2rem' : '1.25rem 2rem', 
+                border: '1px solid rgba(255, 255, 255, 0.3)', 
+                borderRadius: '12px', 
+                fontSize: isMobile ? '1rem' : '1.1rem', 
+                fontWeight: 600, 
+                cursor: 'pointer'
+              }}
+              onClick={handleAuthRedirect}
+            >
+              Already have an account? Sign In
+            </button>
+          </div>
         </div>
       </section>
 
@@ -583,7 +713,7 @@ function Homepage() {
           marginBottom: '2rem'
         }}>
           <div>
-            <div style={styles.logoBox} onClick={handleLogoClick}>
+            <div style={styles.logoBox}>
               <div style={{
                 position: 'relative', 
                 width: isMobile ? '32px' : '40px', 
@@ -614,22 +744,31 @@ function Homepage() {
             justifyContent: isMobile ? 'space-between' : 'flex-end'
           }}>
             <div>
-              <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem'}}>Product</h4>
-              <button style={styles.footerLink} onClick={handleFeaturesClick}>Features</button>
-              <button style={styles.footerLink} onClick={handleTemplatesClick}>Templates</button>
-              <button style={styles.footerLink} onClick={handlePricingClick}>Pricing</button>
+              <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem'}}>Navigate</h4>
+              <button style={styles.navLink} onClick={navigateToFeatures} style={{display: 'block', background: 'none', border: 'none', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem', cursor: 'pointer', textAlign: 'left'}}>
+                Features
+              </button>
+              <button style={styles.navLink} onClick={navigateToAbout} style={{display: 'block', background: 'none', border: 'none', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem', cursor: 'pointer', textAlign: 'left'}}>
+                About
+              </button>
+              <button style={styles.navLink} onClick={navigateToFaq} style={{display: 'block', background: 'none', border: 'none', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem', cursor: 'pointer', textAlign: 'left'}}>
+                FAQ
+              </button>
             </div>
             <div>
-              <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem'}}>Company</h4>
-              <button style={styles.footerLink} onClick={handleAboutClick}>About</button>
-              <button style={styles.footerLink} onClick={handleCareersClick}>Careers</button>
-              <button style={styles.footerLink} onClick={handleContactClick}>Contact</button>
-            </div>
-            <div>
-              <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem'}}>Support</h4>
-              <button style={styles.footerLink} onClick={handleHelpClick}>Help Center</button>
-              <button style={styles.footerLink} onClick={handleFaqClick}>FAQ</button>
-              <button style={styles.footerLink} onClick={handlePrivacyClick}>Privacy Policy</button>
+              <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem'}}>Account</h4>
+              <button 
+                onClick={handleAuthRedirect}
+                style={{display: 'block', background: 'none', border: 'none', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem', cursor: 'pointer', textAlign: 'left'}}
+              >
+                Sign In
+              </button>
+              <button 
+                onClick={handleAuthRedirect}
+                style={{display: 'block', background: 'none', border: 'none', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem', cursor: 'pointer', textAlign: 'left'}}
+              >
+                Get Started
+              </button>
             </div>
           </div>
         </div>
