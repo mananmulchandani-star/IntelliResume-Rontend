@@ -54,19 +54,8 @@ function Homepage() {
     setIsMobile(window.innerWidth < 768);
   };
 
-  // Navigate directly to auth page
-  const handleAuthRedirect = () => {
-    navigate('/auth');
-  };
-
-  // Navigate to auth with signup state
   const handleSignupRedirect = () => {
-    navigate('/auth', { state: { initialTab: 'signup' } });
-  };
-
-  // Navigate to auth with login state
-  const handleLoginRedirect = () => {
-    navigate('/auth', { state: { initialTab: 'login' } });
+    navigate('/signup');
   };
 
   const handleViewTemplates = () => {
@@ -78,7 +67,44 @@ function Homepage() {
   };
 
   const handleTemplateSelect = (templateName) => {
-    navigate('/auth', { state: { initialTab: 'signup', selectedTemplate: templateName } });
+    navigate('/signup', { state: { selectedTemplate: templateName } });
+  };
+
+  // Navigation handlers for actual page routing
+  const handleFeaturesClick = () => {
+    navigate('/features');
+  };
+
+  const handleTemplatesClick = () => {
+    navigate('/templates');
+  };
+
+  const handleAboutClick = () => {
+    navigate('/about');
+  };
+
+  const handleContactClick = () => {
+    navigate('/contact');
+  };
+
+  const handlePricingClick = () => {
+    navigate('/pricing');
+  };
+
+  const handleCareersClick = () => {
+    navigate('/careers');
+  };
+
+  const handleHelpClick = () => {
+    navigate('/help');
+  };
+
+  const handleFaqClick = () => {
+    navigate('/faq');
+  };
+
+  const handlePrivacyClick = () => {
+    navigate('/privacy');
   };
 
   // Responsive styles
@@ -131,7 +157,8 @@ function Homepage() {
     logoBox: {
       display: 'flex',
       alignItems: 'center',
-      gap: '0.75rem'
+      gap: '0.75rem',
+      cursor: 'pointer'
     },
     logoOrb: {
       position: 'absolute',
@@ -141,37 +168,65 @@ function Homepage() {
       borderRadius: '12px',
       animation: 'orbGlow 3s ease-in-out infinite'
     },
-    authButtons: {
-      display: 'flex',
-      gap: '0.75rem',
-      alignItems: 'center'
-    },
-    loginBtn: {
-      background: 'transparent',
-      color: '#475569',
-      padding: isMobile ? '0.5rem 1rem' : '0.6rem 1.25rem',
-      border: '1px solid rgba(226, 232, 240, 0.8)',
-      borderRadius: '8px',
-      fontWeight: 500,
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      fontSize: isMobile ? '0.8rem' : '0.9rem'
-    },
-    signupBtn: {
+    getStartedBtn: {
       background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
       color: 'white',
-      padding: isMobile ? '0.5rem 1rem' : '0.6rem 1.25rem',
+      padding: isMobile ? '0.6rem 1rem' : '0.75rem 1.5rem',
       border: 'none',
-      borderRadius: '8px',
-      fontWeight: 500,
+      borderRadius: '12px',
+      fontWeight: 600,
       cursor: 'pointer',
       transition: 'all 0.3s ease',
-      fontSize: isMobile ? '0.8rem' : '0.9rem'
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
+      fontSize: isMobile ? '0.9rem' : '1rem'
     },
     nav: {
       display: isMobile ? 'none' : 'flex',
       gap: '2rem'
+    },
+    navLink: {
+      color: '#475569',
+      textDecoration: 'none',
+      fontWeight: 500,
+      transition: 'all 0.3s ease',
+      cursor: 'pointer',
+      background: 'none',
+      border: 'none',
+      fontSize: '1rem',
+      fontFamily: 'inherit'
+    },
+    footerLink: {
+      display: 'block',
+      color: '#94a3b8',
+      textDecoration: 'none',
+      marginBottom: '0.5rem',
+      fontSize: isMobile ? '0.8rem' : '0.9rem',
+      cursor: 'pointer',
+      background: 'none',
+      border: 'none',
+      textAlign: 'left',
+      padding: 0,
+      fontFamily: 'inherit'
+    },
+    mobileMenu: {
+      display: isMobile ? 'flex' : 'none',
+      flexDirection: 'column',
+      gap: '1rem',
+      background: 'white',
+      padding: '2rem',
+      position: 'absolute',
+      top: '100%',
+      left: 0,
+      right: 0,
+      borderBottom: '1px solid rgba(226, 232, 240, 0.8)'
     }
+  };
+
+  const handleLogoClick = () => {
+    navigate('/');
   };
 
   return (
@@ -187,7 +242,7 @@ function Homepage() {
       {/* Header */}
       <header style={styles.modernHeader}>
         <div style={styles.headerContent}>
-          <div style={styles.logoBox}>
+          <div style={styles.logoBox} onClick={handleLogoClick}>
             <div style={{position: 'relative', width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
               <div style={styles.logoOrb}></div>
               <span style={{position: 'relative', color: 'white', fontWeight: 800, fontSize: isMobile ? '0.8rem' : '0.9rem'}}>IR</span>
@@ -198,26 +253,20 @@ function Homepage() {
           </div>
           
           <nav style={styles.nav}>
-            <a href="#features" style={{color: '#475569', textDecoration: 'none', fontWeight: 500, transition: 'all 0.3s ease'}}>Features</a>
-            <a href="#templates" style={{color: '#475569', textDecoration: 'none', fontWeight: 500, transition: 'all 0.3s ease'}}>Templates</a>
-            <a href="#about" style={{color: '#475569', textDecoration: 'none', fontWeight: 500, transition: 'all 0.3s ease'}}>About</a>
+            <button style={styles.navLink} onClick={handleFeaturesClick}>Features</button>
+            <button style={styles.navLink} onClick={handleTemplatesClick}>Templates</button>
+            <button style={styles.navLink} onClick={handleAboutClick}>About</button>
+            <button style={styles.navLink} onClick={handleContactClick}>Contact</button>
           </nav>
 
-          {/* Updated Auth Buttons */}
-          <div style={styles.authButtons}>
-            <button 
-              style={styles.loginBtn}
-              onClick={handleLoginRedirect}
-            >
-              {isMobile ? 'Login' : 'Sign In'}
-            </button>
-            <button 
-              style={styles.signupBtn}
-              onClick={handleSignupRedirect}
-            >
-              {isMobile ? 'Start' : 'Get Started'}
-            </button>
-          </div>
+          <button 
+            style={styles.getStartedBtn}
+            onClick={handleSignupRedirect}
+          >
+            <span>✨</span>
+            {isMobile ? 'Start' : 'Get Started'}
+            {!isMobile && <span>→</span>}
+          </button>
         </div>
       </header>
 
@@ -496,48 +545,26 @@ function Homepage() {
           }}>
             Join thousands of professionals who landed their dream jobs with InsightResume
           </p>
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            justifyContent: 'center',
-            flexDirection: isMobile ? 'column' : 'row',
-            alignItems: 'center'
-          }}>
-            <button 
-              style={{
-                background: 'white', 
-                color: '#2563eb', 
-                padding: isMobile ? '1rem 2rem' : '1.25rem 3rem', 
-                border: 'none', 
-                borderRadius: '12px', 
-                fontSize: isMobile ? '1rem' : '1.1rem', 
-                fontWeight: 700, 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem'
-              }}
-              onClick={handleSignupRedirect}
-            >
-              <span>🎯</span>
-              Create Your Resume Now
-            </button>
-            <button 
-              style={{
-                background: 'transparent', 
-                color: 'white', 
-                padding: isMobile ? '1rem 2rem' : '1.25rem 2rem', 
-                border: '1px solid rgba(255, 255, 255, 0.3)', 
-                borderRadius: '12px', 
-                fontSize: isMobile ? '1rem' : '1.1rem', 
-                fontWeight: 600, 
-                cursor: 'pointer'
-              }}
-              onClick={handleLoginRedirect}
-            >
-              Already have an account? Sign In
-            </button>
-          </div>
+          <button 
+            style={{
+              background: 'white', 
+              color: '#2563eb', 
+              padding: isMobile ? '1rem 2rem' : '1.25rem 3rem', 
+              border: 'none', 
+              borderRadius: '12px', 
+              fontSize: isMobile ? '1rem' : '1.1rem', 
+              fontWeight: 700, 
+              cursor: 'pointer', 
+              margin: '0 auto', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem'
+            }}
+            onClick={handleSignupRedirect}
+          >
+            <span>🎯</span>
+            Create Your Resume Now
+          </button>
         </div>
       </section>
 
@@ -556,7 +583,7 @@ function Homepage() {
           marginBottom: '2rem'
         }}>
           <div>
-            <div style={styles.logoBox}>
+            <div style={styles.logoBox} onClick={handleLogoClick}>
               <div style={{
                 position: 'relative', 
                 width: isMobile ? '32px' : '40px', 
@@ -588,25 +615,21 @@ function Homepage() {
           }}>
             <div>
               <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem'}}>Product</h4>
-              <a href="#features" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem'}}>Features</a>
-              <a href="#templates" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem'}}>Templates</a>
-              <a href="#pricing" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem'}}>Pricing</a>
+              <button style={styles.footerLink} onClick={handleFeaturesClick}>Features</button>
+              <button style={styles.footerLink} onClick={handleTemplatesClick}>Templates</button>
+              <button style={styles.footerLink} onClick={handlePricingClick}>Pricing</button>
+            </div>
+            <div>
+              <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem'}}>Company</h4>
+              <button style={styles.footerLink} onClick={handleAboutClick}>About</button>
+              <button style={styles.footerLink} onClick={handleCareersClick}>Careers</button>
+              <button style={styles.footerLink} onClick={handleContactClick}>Contact</button>
             </div>
             <div>
               <h4 style={{color: 'white', marginBottom: '1rem', fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem'}}>Support</h4>
-              <button 
-                onClick={handleLoginRedirect}
-                style={{display: 'block', background: 'none', border: 'none', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem', cursor: 'pointer', textAlign: 'left'}}
-              >
-                Sign In
-              </button>
-              <button 
-                onClick={handleSignupRedirect}
-                style={{display: 'block', background: 'none', border: 'none', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem', cursor: 'pointer', textAlign: 'left'}}
-              >
-                Get Started
-              </button>
-              <a href="#contact" style={{display: 'block', color: '#94a3b8', textDecoration: 'none', marginBottom: '0.5rem', fontSize: isMobile ? '0.8rem' : '0.9rem'}}>Contact</a>
+              <button style={styles.footerLink} onClick={handleHelpClick}>Help Center</button>
+              <button style={styles.footerLink} onClick={handleFaqClick}>FAQ</button>
+              <button style={styles.footerLink} onClick={handlePrivacyClick}>Privacy Policy</button>
             </div>
           </div>
         </div>
