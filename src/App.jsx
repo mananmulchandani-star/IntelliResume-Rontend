@@ -5,7 +5,7 @@ import { AuthProvider } from './components/AuthContext';
 import { ThemeProvider } from './components/ThemeProvider';
 import DashboardPage from './components/DashboardPage';
 import EditorPage from './components/EditorPage';
-import ContactPage from './components/ContactPage'; // ✅ ADDED CONTACT PAGE
+import ContactPage from './components/ContactPage'; //  ADDED CONTACT PAGE
 import AboutPage from './components/AboutPage';
 import FeaturesPage from './components/FeaturesPage';
 import PrivacyPage from './components/PrivacyPage';
@@ -32,7 +32,7 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/contact" element={<ContactPage />} /> {/* ✅ ADDED CONTACT PAGE */}
+              <Route path="/contact" element={<ContactPage />} /> {/*  ADDED CONTACT PAGE */}
               <Route path="/about" element={<AboutPage />} />
               <Route path="/features" element={<FeaturesPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />

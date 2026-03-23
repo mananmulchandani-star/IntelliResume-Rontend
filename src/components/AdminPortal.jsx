@@ -254,7 +254,7 @@ const AdminPortal = () => {
               className="theme-toggle-btn"
               title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
-              {darkMode ? '☀️' : '🌙'}
+              {darkMode ? '️' : ''}
             </button>
             <span className="admin-welcome">
               Welcome, <strong>{loginData.username}</strong> 
@@ -268,7 +268,7 @@ const AdminPortal = () => {
       {/* Statistics Cards - REAL DATA ONLY */}
       <div className="stats-container">
         <div className="stat-card">
-          <div className="stat-icon users-icon">👥</div>
+          <div className="stat-icon users-icon"></div>
           <div className="stat-info">
             <h3>{stats.totalUsers}</h3>
             <p>Total Users Signed Up</p>
@@ -276,7 +276,7 @@ const AdminPortal = () => {
         </div>
         
         <div className="stat-card">
-          <div className="stat-icon resume-icon">📄</div>
+          <div className="stat-icon resume-icon"></div>
           <div className="stat-info">
             <h3>{stats.resumeCreated}</h3>
             <p>Resumes Generated</p>
@@ -294,12 +294,12 @@ const AdminPortal = () => {
             onChange={handleSearch}
             className="search-input"
           />
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
         </div>
         
         <div className="access-info">
           <span className={`access-badge ${adminType}`}>
-            {adminType === 'full' ? '🔓 Full Access' : '🔒 Limited Access'}
+            {adminType === 'full' ? ' Full Access' : ' Limited Access'}
           </span>
         </div>
       </div>
@@ -331,7 +331,7 @@ const AdminPortal = () => {
                   </td>
                   <td>
                     <span className={`status-badge ${user.hasResume ? 'completed' : 'pending'}`}>
-                      {user.hasResume ? '✅ Yes' : '❌ No'}
+                      {user.hasResume ? ' Yes' : ' No'}
                     </span>
                   </td>
                   <td>

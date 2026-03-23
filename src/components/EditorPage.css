@@ -2638,7 +2638,7 @@
 }
 
 .skill-item.verified::after {
-  content: '✅';
+  content: '';
   position: absolute;
   right: 0;
   top: 50%;

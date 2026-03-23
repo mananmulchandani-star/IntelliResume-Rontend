@@ -16,18 +16,18 @@ const AIPromptPage = () => {
     location: ''
   });
 
-  // ✅ Backend URL from environment variable (works on local dev AND production)
+  //  Backend URL from environment variable (works on local dev AND production)
   const getBackendUrl = () => {
     return import.meta.env.VITE_API_BASE_URL || 'https://insightr-backend-production.up.railway.app';
   };
 
 
-  // ✅ CRITICAL FIX: Load formData from Dashboard navigation state
+  //  CRITICAL FIX: Load formData from Dashboard navigation state
   useEffect(() => {
-    console.log('📍 AIPrompt Location State:', location.state);
+    console.log(' AIPrompt Location State:', location.state);
     
     if (location.state?.formData) {
-      console.log('🎯 Received formData from Dashboard:', location.state.formData);
+      console.log(' Received formData from Dashboard:', location.state.formData);
       const { formData } = location.state;
       
       // Update basic info from formData
@@ -42,15 +42,15 @@ const AIPromptPage = () => {
       const autoPrompt = generatePromptFromFormData(formData);
       setPrompt(autoPrompt);
       
-      // ✅ Save to localStorage as backup
+      //  Save to localStorage as backup
       localStorage.setItem('resumeFormData', JSON.stringify(formData));
     } else {
-      // ✅ Check localStorage as fallback
+      //  Check localStorage as fallback
       const savedFormData = localStorage.getItem('resumeFormData');
       if (savedFormData) {
         try {
           const formData = JSON.parse(savedFormData);
-          console.log('📦 Loaded formData from localStorage:', formData);
+          console.log(' Loaded formData from localStorage:', formData);
           setBasicInfo({
             fullName: formData.fullName || '',
             email: formData.email || '',
@@ -64,7 +64,7 @@ const AIPromptPage = () => {
     }
   }, [location.state]);
 
-  // ✅ Generate comprehensive prompt from form data
+  //  Generate comprehensive prompt from form data
   const generatePromptFromFormData = (formData) => {
     if (!formData) return '';
     
@@ -89,7 +89,7 @@ Generate a complete resume with professional summary, education, skills, project
     }));
   };
 
-  // ✅ FIXED: Now using your Railway backend
+  //  FIXED: Now using your Railway backend
   const generateResumeWithAI = async () => {
     if (!prompt.trim()) {
       setError('Please enter a prompt describing your resume');
@@ -102,8 +102,8 @@ Generate a complete resume with professional summary, education, skills, project
 
     try {
       const backendUrl = getBackendUrl();
-      console.log('🚀 Sending AI request to:', backendUrl);
-      console.log('📝 Prompt:', prompt);
+      console.log(' Sending AI request to:', backendUrl);
+      console.log(' Prompt:', prompt);
 
       const response = await fetch(`${backendUrl}/api/generate-resume-from-prompt`, {
         method: 'POST',
@@ -119,16 +119,16 @@ Generate a complete resume with professional summary, education, skills, project
         }),
       });
 
-      console.log('📨 Response status:', response.status);
+      console.log(' Response status:', response.status);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('✅ Received AI data:', data);
+      console.log(' Received AI data:', data);
 
-      // ✅ FIX: Handle different response formats
+      //  FIX: Handle different response formats
       let aiResumeData;
       if (data && data.resumeData) {
         aiResumeData = typeof data.resumeData === 'string' ? JSON.parse(data.resumeData) : data.resumeData;
@@ -139,37 +139,37 @@ Generate a complete resume with professional summary, education, skills, project
       // Process the AI data to ensure all fields are filled
       const processedData = processAIData(aiResumeData, basicInfo);
       
-      console.log('🎯 Processed resume data ready for editor:', processedData);
+      console.log(' Processed resume data ready for editor:', processedData);
       
-      // ✅ AUTO-NAVIGATE: Immediately navigate to Editor with the generated data
+      //  AUTO-NAVIGATE: Immediately navigate to Editor with the generated data
       navigateToEditor(processedData);
 
     } catch (error) {
-      console.error('❌ Error generating resume:', error);
+      console.error(' Error generating resume:', error);
       setError(`Failed to generate resume: ${error.message}. Using template instead...`);
       
       // Fallback: Create a basic resume structure with user info and auto-navigate
       const fallbackData = createFallbackResume(basicInfo, prompt);
-      console.log('🔄 Using fallback data and navigating to editor');
+      console.log(' Using fallback data and navigating to editor');
       navigateToEditor(fallbackData);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ✅ NEW: Auto-navigation function
+  //  NEW: Auto-navigation function
   const navigateToEditor = (resumeData) => {
-    console.log('💾 Saving resume data for editor...');
+    console.log(' Saving resume data for editor...');
     
-    // ✅ Save to localStorage for backup
+    //  Save to localStorage for backup
     localStorage.setItem('currentResume', JSON.stringify(resumeData));
     
-    // ✅ Get formData from location state or localStorage
+    //  Get formData from location state or localStorage
     const formData = location.state?.formData || JSON.parse(localStorage.getItem('resumeFormData') || '{}');
     
-    console.log('🎯 Auto-navigating to editor with:', { resumeData, formData });
+    console.log(' Auto-navigating to editor with:', { resumeData, formData });
     
-    // ✅ Navigate with both resumeData and formData
+    //  Navigate with both resumeData and formData
     navigate('/editor', { 
       state: { 
         resumeData: resumeData,
@@ -214,7 +214,7 @@ Generate a complete resume with professional summary, education, skills, project
       // Only include work experience if AI provided it
       workExperience: aiData.workExperience || aiData.experience || [],
       
-      // ✅ NEW: Include all the new sections for EditorPage
+      //  NEW: Include all the new sections for EditorPage
       internships: aiData.internships || [],
       extracurriculars: aiData.extracurriculars || [],
       languages: aiData.languages || [
@@ -260,7 +260,7 @@ Generate a complete resume with professional summary, education, skills, project
       achievements: [],
       workExperience: [], // Empty by default - user can add manually
       
-      // ✅ NEW: Include all the new sections
+      //  NEW: Include all the new sections
       internships: [],
       extracurriculars: [],
       languages: [
@@ -273,8 +273,8 @@ Generate a complete resume with professional summary, education, skills, project
   const handleQuickStart = (templateType) => {
     const quickStartData = createQuickStartResume(templateType, basicInfo);
     
-    // ✅ AUTO-NAVIGATE: For quick start templates too
-    console.log('🚀 Quick start template selected, navigating to editor');
+    //  AUTO-NAVIGATE: For quick start templates too
+    console.log(' Quick start template selected, navigating to editor');
     navigateToEditor(quickStartData);
   };
 
@@ -433,7 +433,7 @@ Include: Education, skills, projects, career goals, any work experience (optiona
               />
               
               <div className="prompt-tips">
-                <h4>💡 Tips for best results:</h4>
+                <h4> Tips for best results:</h4>
                 <ul>
                   <li>Mention your education level and field</li>
                   <li>List your key skills and technologies</li>
@@ -455,7 +455,7 @@ Include: Education, skills, projects, career goals, any work experience (optiona
                   Generating Your Resume...
                 </>
               ) : (
-                '✨ Generate Resume with AI'
+                ' Generate Resume with AI'
               )}
             </button>
           </div>
@@ -467,7 +467,7 @@ Include: Education, skills, projects, career goals, any work experience (optiona
             
             <div className="template-cards">
               <div className="template-card" onClick={() => handleQuickStart('student')}>
-                <div className="template-icon">🎓</div>
+                <div className="template-icon"></div>
                 <h3>Student / Graduate</h3>
                 <p>Perfect for students and recent graduates with limited work experience</p>
                 <div className="template-features">
@@ -478,7 +478,7 @@ Include: Education, skills, projects, career goals, any work experience (optiona
               </div>
               
               <div className="template-card" onClick={() => handleQuickStart('professional')}>
-                <div className="template-icon">💼</div>
+                <div className="template-icon"></div>
                 <h3>Experienced Professional</h3>
                 <p>For professionals with work experience to showcase</p>
                 <div className="template-features">
@@ -489,7 +489,7 @@ Include: Education, skills, projects, career goals, any work experience (optiona
               </div>
               
               <div className="template-card" onClick={() => handleQuickStart('career-change')}>
-                <div className="template-icon">🔄</div>
+                <div className="template-icon"></div>
                 <h3>Career Change</h3>
                 <p>Transitioning to a new field? Emphasize transferable skills</p>
                 <div className="template-features">

@@ -2,26 +2,26 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from '../services/supabase';
 
-console.log('🔄 AuthContext.jsx is loading...');
+console.log(' AuthContext.jsx is loading...');
 
 const AuthContext = createContext(undefined);
 
 export function AuthProvider({ children }) {
-  console.log('🔄 AuthProvider is rendering...');
+  console.log(' AuthProvider is rendering...');
   
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log('🔄 AuthProvider useEffect running...');
+    console.log(' AuthProvider useEffect running...');
     
     let isMounted = true;
     let subscription;
 
     const initializeAuth = async () => {
       try {
-        console.log('🔄 Getting initial session...');
+        console.log(' Getting initial session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
         }
         
         if (isMounted) {
-          console.log('🔄 Session loaded:', session?.user?.email);
+          console.log(' Session loaded:', session?.user?.email);
           setUser(session?.user ?? null);
           setLoading(false);
           setError(null);
@@ -50,10 +50,10 @@ export function AuthProvider({ children }) {
 
     initializeAuth();
 
-    // ✅ SAFE SUBSCRIPTION SETUP
+    //  SAFE SUBSCRIPTION SETUP
     try {
       const { data: authListener, error: listenerError } = supabase.auth.onAuthStateChange((_event, session) => {
-        console.log('🔄 Auth state changed:', session?.user?.email);
+        console.log(' Auth state changed:', session?.user?.email);
         if (isMounted) {
           setUser(session?.user ?? null);
           setLoading(false);
@@ -79,10 +79,10 @@ export function AuthProvider({ children }) {
     }
 
     return () => {
-      console.log('🔄 AuthProvider cleanup...');
+      console.log(' AuthProvider cleanup...');
       isMounted = false;
       
-      // ✅ SAFE UNSUBSCRIBE
+      //  SAFE UNSUBSCRIBE
       if (subscription) {
         try {
           subscription.unsubscribe();
@@ -107,7 +107,7 @@ export function AuthProvider({ children }) {
           throw new Error(loginError.message);
         }
         
-        // ✅ SAFE: Check if data exists before accessing properties
+        //  SAFE: Check if data exists before accessing properties
         if (data && data.user) {
           setUser(data.user);
         } else {
@@ -136,7 +136,7 @@ export function AuthProvider({ children }) {
           throw new Error(signupError.message);
         }
         
-        // ✅ Don't set user here - wait for email confirmation
+        //  Don't set user here - wait for email confirmation
         console.log('Signup successful, waiting for email confirmation');
         return data;
       } catch (error) {
@@ -187,7 +187,7 @@ export function AuthProvider({ children }) {
     clearError: () => setError(null)
   };
 
-  console.log('🔄 AuthProvider rendering children, context value:', { 
+  console.log(' AuthProvider rendering children, context value:', { 
     user: value.user?.email, 
     loading: value.loading,
     hasError: !!value.error
@@ -201,18 +201,18 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-  console.log('🔄 useAuth hook called...');
+  console.log(' useAuth hook called...');
   
   const context = useContext(AuthContext);
   
-  console.log('🔄 useAuth context value:', context ? 'Context available' : 'Context undefined');
+  console.log(' useAuth context value:', context ? 'Context available' : 'Context undefined');
   
   if (context === undefined) {
-    console.error('❌ useAuth error: Context is undefined!');
+    console.error(' useAuth error: Context is undefined!');
     console.trace('Stack trace for context error');
     throw new Error('useAuth must be used within an AuthProvider');
   }
   
-  console.log('🔄 useAuth returning context successfully');
+  console.log(' useAuth returning context successfully');
   return context;
 }

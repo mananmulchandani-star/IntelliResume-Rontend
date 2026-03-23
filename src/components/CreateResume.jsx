@@ -72,7 +72,7 @@ const CreateResume = () => {
         prompt: additionalInstructions
       };
 
-      console.log('🚀 Sending to AI Prompt page:', formData);
+      console.log(' Sending to AI Prompt page:', formData);
 
       // Navigate to AI Prompt page with all data
       navigate('/ai-prompt', { 
@@ -82,7 +82,7 @@ const CreateResume = () => {
       });
 
     } catch (err) {
-      console.error('❌ Error:', err);
+      console.error(' Error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -105,7 +105,7 @@ const CreateResume = () => {
       <form onSubmit={handleCreateResume} className="resume-form">
         {/* Personal Information Section */}
         <div className="form-section">
-          <h2>📝 Personal Information</h2>
+          <h2> Personal Information</h2>
           <div className="form-row">
             <div className="form-group">
               <label>Full Name *</label>
@@ -156,7 +156,7 @@ const CreateResume = () => {
 
         {/* Professional Information Section */}
         <div className="form-section">
-          <h2>💼 Professional Information</h2>
+          <h2> Professional Information</h2>
           <div className="form-row">
             <div className="form-group">
               <label>Stream/Background *</label>
@@ -249,7 +249,7 @@ const CreateResume = () => {
 
         {/* Additional Instructions */}
         <div className="form-section">
-          <h2>📋 Additional Information</h2>
+          <h2> Additional Information</h2>
           <textarea
             value={additionalInstructions}
             onChange={(e) => setAdditionalInstructions(e.target.value)}

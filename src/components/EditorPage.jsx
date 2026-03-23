@@ -5,13 +5,13 @@ import jsPDF from 'jspdf';
 import AdBanner from './AdBanner';
 import './EditorPage.css';
 
-// ✅ Backend URL from environment variable (works on local dev AND production)
+//  Backend URL from environment variable (works on local dev AND production)
 const getBackendUrl = () => {
   return import.meta.env.VITE_API_BASE_URL || 'https://insightr-backend-production.up.railway.app';
 };
 
 
-// ✅ FIXED: Enhanced Skill Verification Popup Component with proper question flow
+//  FIXED: Enhanced Skill Verification Popup Component with proper question flow
 const SkillVerificationPopup = ({ 
   skills, 
   onComplete, 
@@ -34,7 +34,7 @@ const SkillVerificationPopup = ({
 
   const currentSkill = skills[currentSkillIndex];
 
-  // ✅ FIXED: Enhanced Timer effect with proper cleanup
+  //  FIXED: Enhanced Timer effect with proper cleanup
   useEffect(() => {
     if (!currentQuestion || showResults || timeoutOccurred || isAnswerSubmitted || showProceedButton) return;
     
@@ -147,7 +147,7 @@ const SkillVerificationPopup = ({
     }
   };
 
-  // ✅ FIXED: Enhanced handleAnswerSelect with proper state management
+  //  FIXED: Enhanced handleAnswerSelect with proper state management
   const handleAnswerSelect = async (answer) => {
     if (!currentQuestion || timeoutOccurred || isAnswerSubmitted) return;
 
@@ -246,7 +246,7 @@ const SkillVerificationPopup = ({
     }
   };
 
-  // ✅ FIXED: Enhanced handleTimeUp to show proceed button
+  //  FIXED: Enhanced handleTimeUp to show proceed button
   const handleTimeUp = () => {
     // Clear timer
     if (timerRef.current) {
@@ -269,7 +269,7 @@ const SkillVerificationPopup = ({
     console.log(`Time's up for ${currentSkill}!`);
   };
 
-  // ✅ FIXED: Enhanced handleProceedToNext to properly move to next skill
+  //  FIXED: Enhanced handleProceedToNext to properly move to next skill
   const handleProceedToNext = () => {
     // Clear timer
     if (timerRef.current) {
@@ -342,7 +342,7 @@ const SkillVerificationPopup = ({
     if (verificationStatus?.attempt_data) {
       const { current_attempt, total_attempts, passed } = verificationStatus.attempt_data;
       if (passed) {
-        return '✅ Verification Passed';
+        return ' Verification Passed';
       }
       return `Attempt ${current_attempt} of 3`;
     }
@@ -368,7 +368,7 @@ const SkillVerificationPopup = ({
           </div>
           
           <div className="verification-locked">
-            <div className="lock-icon">🔒</div>
+            <div className="lock-icon"></div>
             <h3>Verification Locked</h3>
             <p>{verificationStatus.message}</p>
             
@@ -407,7 +407,7 @@ const SkillVerificationPopup = ({
           
           <div className="results-section">
             <div className={`score-display ${passed ? 'passed' : 'failed'}`}>
-              <h3>{passed ? '🎉 Verification Passed!' : '❌ Verification Failed'}</h3>
+              <h3>{passed ? ' Verification Passed!' : ' Verification Failed'}</h3>
               <div className="score-circle">
                 <span>{score}%</span>
               </div>
@@ -440,10 +440,10 @@ const SkillVerificationPopup = ({
                   <div key={skill} className="skill-result-item">
                     <span className="skill-name">{skill}</span>
                     <span className={`result-badge ${status}`}>
-                      {status === 'correct' && '✅ Verified'}
-                      {status === 'incorrect' && '❌ Incorrect'}
-                      {status === 'not_attempted' && '⏰ Not Attempted (0 marks)'}
-                      {status === 'pending' && '⏳ Pending'}
+                      {status === 'correct' && ' Verified'}
+                      {status === 'incorrect' && ' Incorrect'}
+                      {status === 'not_attempted' && ' Not Attempted (0 marks)'}
+                      {status === 'pending' && ' Pending'}
                     </span>
                   </div>
                 );
@@ -456,7 +456,7 @@ const SkillVerificationPopup = ({
                   className="btn-success" 
                   onClick={handleVerificationComplete}
                 >
-                  🎉 Continue to Download
+                   Continue to Download
                 </button>
               ) : (
                 <div className="failed-actions">
@@ -542,7 +542,7 @@ const SkillVerificationPopup = ({
               </div>
               <p className="timer-note">50 seconds per question</p>
               {timeLeft <= 10 && (
-                <p className="timer-warning">⚠️ Hurry up! Time is running out</p>
+                <p className="timer-warning"> Hurry up! Time is running out</p>
               )}
             </div>
 
@@ -553,7 +553,7 @@ const SkillVerificationPopup = ({
               {timeoutOccurred ? (
                 <div className="timeout-message">
                   <div className="timeout-alert">
-                    <h4>⏰ Time's Up!</h4>
+                    <h4> Time's Up!</h4>
                     <p>This question has been marked as <strong>"Not Attempted"</strong> and will receive <strong>0 marks</strong>.</p>
                   </div>
                 </div>
@@ -577,7 +577,7 @@ const SkillVerificationPopup = ({
               {isAnswerSubmitted && (
                 <div className="answer-feedback">
                   <p className="feedback-text">
-                    {results[currentSkill] === true ? '✅ Correct!' : '❌ Incorrect!'}
+                    {results[currentSkill] === true ? ' Correct!' : ' Incorrect!'}
                   </p>
                   {currentQuestion.explanation && (
                     <p className="explanation-text">
@@ -590,12 +590,12 @@ const SkillVerificationPopup = ({
               {/* Show time warning */}
               {!timeoutOccurred && !isAnswerSubmitted && (
                 <div className="time-warning">
-                  <p>⚠️ If time runs out without answering, this question will be marked as "Not Attempted" and will receive 0 marks.</p>
+                  <p> If time runs out without answering, this question will be marked as "Not Attempted" and will receive 0 marks.</p>
                 </div>
               )}
             </div>
 
-            {/* ✅ FIXED: Show proceed button after answering or timeout */}
+            {/*  FIXED: Show proceed button after answering or timeout */}
             {(showProceedButton || timeoutOccurred || isAnswerSubmitted) && (
               <div className="proceed-section">
                 <button 
@@ -702,7 +702,7 @@ const EditorPage = () => {
     }
   }, [downloadSuccess, downloadSuccessTimestamp]);
 
-  // ✅ FIXED: Enhanced data loading
+  //  FIXED: Enhanced data loading
   useEffect(() => {
     const loadData = () => {
       try {
@@ -751,7 +751,7 @@ const EditorPage = () => {
         }
 
       } catch (error) {
-        console.error('❌ Error loading data:', error);
+        console.error(' Error loading data:', error);
         setResumeData(defaultResumeData);
       } finally {
         setIsLoading(false);
@@ -1051,13 +1051,13 @@ const EditorPage = () => {
       
       pdf.save(`${resumeData.personalInfo.fullName.replace(/\s+/g, '_') || 'resume'}_${Date.now()}.pdf`);
       
-      setSaveMessage('✅ PDF downloaded successfully!');
+      setSaveMessage(' PDF downloaded successfully!');
       setDownloadSuccess(true);
       setDownloadSuccessTimestamp(Date.now());
       setTimeout(() => setSaveMessage(''), 3000);
     } catch (error) {
       console.error('Error generating PDF:', error);
-      setSaveMessage('❌ Error generating PDF. Please try again.');
+      setSaveMessage(' Error generating PDF. Please try again.');
       setTimeout(() => setSaveMessage(''), 3000);
     }
   };
@@ -1570,21 +1570,21 @@ const EditorPage = () => {
           {/* AI Generated Badge */}
           {isFromAI && (
             <div className="ai-badge">
-              🚀 AI-Generated Resume - Ready to Customize!
+               AI-Generated Resume - Ready to Customize!
             </div>
           )}
           
           {/* Verification Status Badge */}
           {isVerificationComplete && verifiedSkills.length > 0 && (
             <div className="verification-badge">
-              ✅ Skills Verified! {verifiedSkills.length} skills certified
+               Skills Verified! {verifiedSkills.length} skills certified
             </div>
           )}
           
           {/* Attempt Status Badge */}
           {verificationStatus && !verificationStatus.can_attempt && (
             <div className="attempt-status-badge">
-              🔒 {verificationStatus.message}
+               {verificationStatus.message}
             </div>
           )}
           
@@ -1621,19 +1621,19 @@ const EditorPage = () => {
                 className="dropdown-item"
                 onClick={handleDownloadWithoutVerification}
               >
-                📄 Download PDF (Without Verification)
+                 Download PDF (Without Verification)
               </button>
               <button 
                 className={`dropdown-item ${isVerificationComplete ? 'verified' : ''}`}
                 onClick={handleDownloadWithVerification}
               >
-                {isVerificationComplete ? '✅ Download Verified PDF' : '🔒 Download with Verification'}
+                {isVerificationComplete ? ' Download Verified PDF' : ' Download with Verification'}
               </button>
               <button 
                 className="dropdown-item"
                 onClick={handleSaveResume}
               >
-                💾 Save Resume
+                 Save Resume
               </button>
             </div>
           </div>
@@ -1700,7 +1700,7 @@ const EditorPage = () => {
               className="btn-generate-title"
               onClick={generateProfessionalTitle}
             >
-              🚀 Generate Professional Title
+               Generate Professional Title
             </button>
             <p className="generator-note">
               Based on your education and skills
@@ -1718,7 +1718,7 @@ const EditorPage = () => {
                   className="btn-download-quick"
                   onClick={handleDownloadWithoutVerification}
                 >
-                  📄 Quick Download
+                   Quick Download
                 </button>
                 
                 {isVerificationComplete ? (
@@ -1726,26 +1726,26 @@ const EditorPage = () => {
                     className="btn-download-verified"
                     onClick={handleDownloadWithVerification}
                   >
-                    ✅ Download Verified
+                     Download Verified
                   </button>
                 ) : (
                   <button 
                     className="btn-download-verify"
                     onClick={handleDownloadWithVerification}
                   >
-                    🔒 Verify & Download
+                     Verify & Download
                   </button>
                 )}
               </div>
 
               {isVerificationComplete ? (
                 <div className="verification-success">
-                  <p>✅ {verifiedSkills.length} skills verified</p>
+                  <p> {verifiedSkills.length} skills verified</p>
                   <p>Ready for download!</p>
                 </div>
               ) : verificationStatus && !verificationStatus.can_attempt ? (
                 <div className="verification-locked">
-                  <p>🔒 {verificationStatus.message}</p>
+                  <p> {verificationStatus.message}</p>
                   {verificationStatus.attempt_data && (
                     <div className="attempt-details-small">
                       <p>Attempt: {verificationStatus.attempt_data.current_attempt}/3</p>
@@ -1837,19 +1837,19 @@ const EditorPage = () => {
           className={`mobile-nav-btn ${mobileTab === 'templates' ? 'active' : ''}`}
           onClick={() => setMobileTab('templates')}
         >
-          🎨 Templates
+           Templates
         </button>
         <button 
           className={`mobile-nav-btn ${mobileTab === 'edit' ? 'active' : ''}`}
           onClick={() => setMobileTab('edit')}
         >
-          📝 Edit
+           Edit
         </button>
         <button 
           className={`mobile-nav-btn ${mobileTab === 'preview' ? 'active' : ''}`}
           onClick={() => setMobileTab('preview')}
         >
-          👁️ Preview
+          ️ Preview
         </button>
       </div>
 
@@ -1891,10 +1891,10 @@ const ProfessionalTemplate = ({ data, verifiedSkills = [] }) => {
         <h1 className="professional-name">{personalInfo.fullName || "Your Name"}</h1>
         <p className="professional-title">{personalInfo.jobTitle || "Professional Title"}</p>
         <div className="professional-contact">
-          <span>📞 {personalInfo.phone || "Phone"}</span>
-          <span>📧 {personalInfo.email || "Email"}</span>
-          <span>📍 {personalInfo.location || "Location"}</span>
-          {personalInfo.dateOfBirth && <span>📆 {personalInfo.dateOfBirth}</span>}
+          <span> {personalInfo.phone || "Phone"}</span>
+          <span> {personalInfo.email || "Email"}</span>
+          <span> {personalInfo.location || "Location"}</span>
+          {personalInfo.dateOfBirth && <span> {personalInfo.dateOfBirth}</span>}
         </div>
       </div>
 
@@ -1990,13 +1990,13 @@ const ProfessionalTemplate = ({ data, verifiedSkills = [] }) => {
               {safeSkills.map((skill, index) => (
                 <span key={index} className={`skill-tag ${verifiedSkills.includes(skill) ? 'verified' : ''}`}>
                   {skill}
-                  {verifiedSkills.includes(skill) && <span className="verified-badge">✅</span>}
+                  {verifiedSkills.includes(skill) && <span className="verified-badge"></span>}
                 </span>
               ))}
             </div>
             {verifiedSkills.length > 0 && (
               <div className="verification-note">
-                <small>✅ Verified skills certified by InsightResume</small>
+                <small> Verified skills certified by InsightResume</small>
               </div>
             )}
           </div>
@@ -2090,7 +2090,7 @@ const ModernTemplate = ({ data, verifiedSkills = [] }) => {
           <span>{personalInfo.email || "Email"}</span>
           <span>{personalInfo.phone || "Phone"}</span>
           <span>{personalInfo.location || "Location"}</span>
-          {personalInfo.dateOfBirth && <span>📆 {personalInfo.dateOfBirth}</span>}
+          {personalInfo.dateOfBirth && <span> {personalInfo.dateOfBirth}</span>}
         </div>
       </div>
       
@@ -2159,13 +2159,13 @@ const ModernTemplate = ({ data, verifiedSkills = [] }) => {
             {safeSkills.map((skill, index) => (
               <span key={index} className={`modern-skill-tag ${verifiedSkills.includes(skill) ? 'verified' : ''}`}>
                 {skill}
-                {verifiedSkills.includes(skill) && <span className="verified-badge">✅</span>}
+                {verifiedSkills.includes(skill) && <span className="verified-badge"></span>}
               </span>
             ))}
           </div>
           {verifiedSkills.length > 0 && (
             <div className="verification-note">
-              <small>✅ Verified skills certified by InsightResume</small>
+              <small> Verified skills certified by InsightResume</small>
             </div>
           )}
         </div>
@@ -2222,10 +2222,10 @@ const CreativeTemplate = ({ data, verifiedSkills = [] }) => {
         <h1>{personalInfo.fullName || "Your Name"}</h1>
         <p>{personalInfo.jobTitle || "Professional Title"}</p>
         <div className="creative-contact">
-          <span>📧 {personalInfo.email || "Email"}</span>
-          <span>📞 {personalInfo.phone || "Phone"}</span>
-          <span>📍 {personalInfo.location || "Location"}</span>
-          {personalInfo.dateOfBirth && <span>📆 {personalInfo.dateOfBirth}</span>}
+          <span> {personalInfo.email || "Email"}</span>
+          <span> {personalInfo.phone || "Phone"}</span>
+          <span> {personalInfo.location || "Location"}</span>
+          {personalInfo.dateOfBirth && <span> {personalInfo.dateOfBirth}</span>}
         </div>
       </div>
       
@@ -2294,13 +2294,13 @@ const CreativeTemplate = ({ data, verifiedSkills = [] }) => {
             {safeSkills.map((skill, index) => (
               <span key={index} className={`creative-skill-tag ${verifiedSkills.includes(skill) ? 'verified' : ''}`}>
                 {skill}
-                {verifiedSkills.includes(skill) && <span className="verified-badge">✅</span>}
+                {verifiedSkills.includes(skill) && <span className="verified-badge"></span>}
               </span>
             ))}
           </div>
           {verifiedSkills.length > 0 && (
             <div className="verification-note">
-              <small>✅ Verified skills certified by InsightResume</small>
+              <small> Verified skills certified by InsightResume</small>
             </div>
           )}
         </div>
@@ -2372,10 +2372,10 @@ const IRMSpecialTemplate = ({ data, verifiedSkills = [] }) => {
           <h1 className="irm-name">{personalInfo.fullName || "Your Name"}</h1>
           <p className="irm-title">{personalInfo.jobTitle || "Professional Title"}</p>
           <div className="irm-contact">
-            <span>📞 {personalInfo.phone || "Phone"}</span>
-            <span>📧 {personalInfo.email || "Email"}</span>
-            <span>📍 {personalInfo.location || "Location"}</span>
-            {personalInfo.dateOfBirth && <span>📆 {personalInfo.dateOfBirth}</span>}
+            <span> {personalInfo.phone || "Phone"}</span>
+            <span> {personalInfo.email || "Email"}</span>
+            <span> {personalInfo.location || "Location"}</span>
+            {personalInfo.dateOfBirth && <span> {personalInfo.dateOfBirth}</span>}
           </div>
         </div>
       </div>
@@ -2471,13 +2471,13 @@ const IRMSpecialTemplate = ({ data, verifiedSkills = [] }) => {
               {safeSkills.map((skill, index) => (
                 <span key={index} className={`irm-skill-tag ${verifiedSkills.includes(skill) ? 'verified' : ''}`}>
                   {skill}
-                  {verifiedSkills.includes(skill) && <span className="verified-badge">✅</span>}
+                  {verifiedSkills.includes(skill) && <span className="verified-badge"></span>}
                 </span>
               ))}
             </div>
             {verifiedSkills.length > 0 && (
               <div className="verification-note">
-                <small>✅ Verified skills certified by InsightResume</small>
+                <small> Verified skills certified by InsightResume</small>
               </div>
             )}
           </div>
@@ -2553,20 +2553,20 @@ const InsightTwinGridTemplate = ({ data, verifiedSkills = [] }) => {
             <h2 className="twin-grid-section-title">CONTACT</h2>
             <div className="twin-grid-section-content">
               <div className="contact-item">
-                <span className="contact-icon">📞</span>
+                <span className="contact-icon"></span>
                 <span className="contact-text">{personalInfo.phone || "Phone"}</span>
               </div>
               <div className="contact-item">
-                <span className="contact-icon">📧</span>
+                <span className="contact-icon"></span>
                 <span className="contact-text">{personalInfo.email || "Email"}</span>
               </div>
               <div className="contact-item">
-                <span className="contact-icon">📍</span>
+                <span className="contact-icon"></span>
                 <span className="contact-text">{personalInfo.location || "Location"}</span>
               </div>
               {personalInfo.dateOfBirth && (
                 <div className="contact-item">
-                  <span className="contact-icon">📆</span>
+                  <span className="contact-icon"></span>
                   <span className="contact-text">{personalInfo.dateOfBirth}</span>
                 </div>
               )}
@@ -2582,13 +2582,13 @@ const InsightTwinGridTemplate = ({ data, verifiedSkills = [] }) => {
                   {safeSkills.map((skill, index) => (
                     <li key={index} className={`skill-item ${verifiedSkills.includes(skill) ? 'verified' : ''}`}>
                       {skill}
-                      {verifiedSkills.includes(skill) && <span className="verified-badge">✅</span>}
+                      {verifiedSkills.includes(skill) && <span className="verified-badge"></span>}
                     </li>
                   ))}
                 </ul>
                 {verifiedSkills.length > 0 && (
                   <div className="verification-note">
-                    <small>✅ Verified skills certified by InsightResume</small>
+                    <small> Verified skills certified by InsightResume</small>
                   </div>
                 )}
               </div>
@@ -3065,7 +3065,7 @@ const ResumeForm = ({
         {/* Skill Recommendations */}
         {skillRecommendations.length > 0 && (
           <div className="skill-recommendations">
-            <p className="recommendations-title">💡 Recommended Skills:</p>
+            <p className="recommendations-title"> Recommended Skills:</p>
             <div className="recommendations-list">
               {skillRecommendations.map((skill, index) => (
                 <button

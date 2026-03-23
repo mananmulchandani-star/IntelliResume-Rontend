@@ -45,7 +45,7 @@ class ErrorBoundary extends React.Component {
       return (
         <div className="error-boundary">
           <div className="error-content">
-            <div className="error-icon">⚠️</div>
+            <div className="error-icon"></div>
             <h2>Something went wrong</h2>
             <p>We're sorry, but there was an error loading this page.</p>
             

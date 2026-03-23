@@ -81,7 +81,7 @@ const AboutPage = () => {
           <h2 className="features-title">Why Choose InsightResume?</h2>
           <div className="features-grid">
             <div className="feature-card">
-              <div className="feature-icon">🤖</div>
+              <div className="feature-icon"></div>
               <h3 className="feature-title">AI-Powered Insights</h3>
               <p className="feature-description">
                 Our intelligent algorithms analyze your content and provide real-time 
@@ -89,7 +89,7 @@ const AboutPage = () => {
               </p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">🎯</div>
+              <div className="feature-icon"></div>
               <h3 className="feature-title">ATS Optimized</h3>
               <p className="feature-description">
                 Every resume is optimized to pass through Applicant Tracking Systems 
@@ -97,7 +97,7 @@ const AboutPage = () => {
               </p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">⚡</div>
+              <div className="feature-icon"></div>
               <h3 className="feature-title">Quick & Easy</h3>
               <p className="feature-description">
                 Create a professional resume in minutes, not hours. Our intuitive 
@@ -105,7 +105,7 @@ const AboutPage = () => {
               </p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">💼</div>
+              <div className="feature-icon"></div>
               <h3 className="feature-title">Industry Specific</h3>
               <p className="feature-description">
                 Tailored templates and content suggestions for different industries 
@@ -113,7 +113,7 @@ const AboutPage = () => {
               </p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">🔒</div>
+              <div className="feature-icon"></div>
               <h3 className="feature-title">Secure & Private</h3>
               <p className="feature-description">
                 Your data is protected with enterprise-grade security. We never share 
@@ -121,7 +121,7 @@ const AboutPage = () => {
               </p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">🔄</div>
+              <div className="feature-icon"></div>
               <h3 className="feature-title">Always Updated</h3>
               <p className="feature-description">
                 We continuously update our platform with the latest resume trends and 
@@ -258,7 +258,7 @@ const AboutPage = () => {
         </div>
         
         <div className="footer-bottom">
-          <p>&copy; 2025 InsightResume. All rights reserved. Crafted with ❤️ for job seekers worldwide.</p>
+          <p>&copy; 2025 InsightResume. All rights reserved. Crafted with ️ for job seekers worldwide.</p>
         </div>
       </footer>
     </div>

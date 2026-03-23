@@ -16,42 +16,42 @@ const orbs = [
 /* ── Feature card data ───────────────────────────────────── */
 const features = [
   {
-    emoji: "🤖",
+    emoji: "",
     title: "AI-Powered Content",
     desc: "Smart suggestions and professional phrasing tailored to your target industry and role.",
     accent: "from-blue-500 to-cyan-400",
     shadow: "rgba(59,130,246,0.25)",
   },
   {
-    emoji: "🎨",
+    emoji: "",
     title: "Modern Templates",
     desc: "ATS-optimised templates that pass automated filters and impress human recruiters.",
     accent: "from-violet-500 to-purple-400",
     shadow: "rgba(124,58,237,0.25)",
   },
   {
-    emoji: "⚡",
+    emoji: "",
     title: "Instant Optimisation",
     desc: "Real-time feedback, keyword analysis and improvement tips as you build your resume.",
     accent: "from-indigo-500 to-blue-400",
     shadow: "rgba(99,102,241,0.25)",
   },
   {
-    emoji: "🔒",
+    emoji: "",
     title: "Secure & Private",
     desc: "Your data is encrypted end-to-end. We never share your personal details with third parties.",
     accent: "from-emerald-500 to-teal-400",
     shadow: "rgba(16,185,129,0.25)",
   },
   {
-    emoji: "📥",
+    emoji: "",
     title: "Multi-Format Export",
     desc: "Download as PDF or print-ready format with one click — pixel-perfect every time.",
     accent: "from-orange-500 to-amber-400",
     shadow: "rgba(245,158,11,0.25)",
   },
   {
-    emoji: "✅",
+    emoji: "",
     title: "Skill Verification",
     desc: "Verify your skills with AI-generated quiz questions and earn a verified badge on your resume.",
     accent: "from-rose-500 to-pink-400",
@@ -341,7 +341,7 @@ function Homepage() {
                 background: "#2563eb",
                 animation: "glowBadge 1.5s ease-in-out infinite",
               }} />
-              🚀 AI-Powered Resume Builder
+               AI-Powered Resume Builder
             </motion.div>
 
             {/* Headline */}
@@ -421,7 +421,7 @@ function Homepage() {
                   fontFamily: "'Inter', sans-serif",
                 }}
               >
-                👁️ Browse Templates
+                ️ Browse Templates
               </motion.button>
             </motion.div>
 
@@ -494,7 +494,7 @@ function Homepage() {
                   marginLeft: "auto", background: "rgba(37,99,235,0.1)",
                   color: "#2563eb", padding: "0.35rem 0.8rem",
                   borderRadius: "999px", fontSize: "0.75rem", fontWeight: 700,
-                }}>✅ Verified</div>
+                }}> Verified</div>
               </div>
               {/* Skill bars */}
               {[
@@ -527,7 +527,7 @@ function Homepage() {
                 borderRadius: "12px", padding: "1rem",
                 display: "flex", alignItems: "center", gap: "0.75rem",
               }}>
-                <div style={{ fontSize: "1.5rem" }}>🏆</div>
+                <div style={{ fontSize: "1.5rem" }}></div>
                 <div>
                   <div style={{ fontWeight: 700, color: "#0f172a", fontSize: "0.9rem" }}>ATS Score: 97/100</div>
                   <div style={{ color: "#64748b", fontSize: "0.75rem" }}>Optimised for top ATS systems</div>
@@ -546,7 +546,7 @@ function Homepage() {
                   border: "2px solid white",
                 }}
               >
-                🤖 AI Generated
+                 AI Generated
               </motion.div>
             </motion.div>
           </motion.div>
@@ -601,7 +601,7 @@ function Homepage() {
             color: "#7c3aed", padding: "0.4rem 1rem",
             borderRadius: "999px", fontSize: "0.82rem", fontWeight: 700,
             marginBottom: "1rem",
-          }}>✨ Packed with Features</div>
+          }}> Packed with Features</div>
           <h2 style={{
             fontSize: "clamp(2rem, 4vw, 2.75rem)", fontWeight: 900,
             letterSpacing: "-1px", marginBottom: "1rem",
@@ -663,9 +663,9 @@ function Homepage() {
           flexWrap: "wrap", justifyContent: "center",
         }}>
           {[
-            { step: "01", icon: "📝", title: "Enter Your Details", desc: "Fill in your info or just describe yourself in plain English — our AI handles the rest." },
-            { step: "02", icon: "🤖", title: "AI Generates Your Resume", desc: "Our AI crafts a professional resume with the right keywords, structure and formatting." },
-            { step: "03", icon: "🏆", title: "Verify, Download & Apply", desc: "Verify your skills, download as PDF and start applying to your dream job today." },
+            { step: "01", icon: "", title: "Enter Your Details", desc: "Fill in your info or just describe yourself in plain English — our AI handles the rest." },
+            { step: "02", icon: "", title: "AI Generates Your Resume", desc: "Our AI crafts a professional resume with the right keywords, structure and formatting." },
+            { step: "03", icon: "", title: "Verify, Download & Apply", desc: "Verify your skills, download as PDF and start applying to your dream job today." },
           ].map((item, i) => (
             <motion.div
               key={i}
@@ -766,7 +766,7 @@ function Homepage() {
                 boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
               }}
             >
-              🎯 Create Your Resume Now
+               Create Your Resume Now
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -857,7 +857,7 @@ function Homepage() {
           paddingTop: "1.5rem", borderTop: "1px solid #1e293b",
           textAlign: "center", color: "#64748b", fontSize: "0.85rem",
         }}>
-          Crafted with 💙 by M · © {new Date().getFullYear()} InsightResume
+          Crafted with  by M ·  {new Date().getFullYear()} InsightResume
         </div>
       </footer>
 
@@ -914,7 +914,7 @@ function Homepage() {
                     }}
                   >
                     <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>
-                      {["🖊️","📄","🎨","💼"][i]}
+                      {["️","","",""][i]}
                     </div>
                     <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: "0.25rem" }}>{t}</div>
                     <div style={{ fontSize: "0.8rem", color: "#64748b" }}>Click to use this template</div>

@@ -76,14 +76,14 @@ export default function ForgotPassword() {
           {/* Messages */}
           {message && (
             <div className="success-message">
-              <span className="error-icon">✅</span>
+              <span className="error-icon"></span>
               {message}
             </div>
           )}
           
           {error && (
             <div className="error-message">
-              <span className="error-icon">❌</span>
+              <span className="error-icon"></span>
               {error}
             </div>
           )}
@@ -102,7 +102,7 @@ export default function ForgotPassword() {
                   required
                   disabled={loading}
                 />
-                <span className="input-icon">📧</span>
+                <span className="input-icon"></span>
               </div>
             </div>
 
@@ -118,7 +118,7 @@ export default function ForgotPassword() {
                 </>
               ) : (
                 <>
-                  <span className="btn-sparkle">✨</span>
+                  <span className="btn-sparkle"></span>
                   Send Reset Link
                   <span className="btn-shine"></span>
                 </>

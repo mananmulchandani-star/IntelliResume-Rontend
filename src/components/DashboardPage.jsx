@@ -7,18 +7,18 @@ import './DashboardPage.css';
 
 // Icons (you can replace with actual icon library like react-icons)
 const Icons = {
-  Sun: () => <span>☀️</span>,
-  Moon: () => <span>🌙</span>,
+  Sun: () => <span>️</span>,
+  Moon: () => <span></span>,
   Logout: () => <span className="logout-text">Logout</span>, // Changed back to text with class
   Create: () => <span>+</span>,
   AI: () => <span>AI</span>,
-  Edit: () => <span>✎</span>,
-  Delete: () => <span>🗑</span>,
-  Calendar: () => <span>📅</span>,
-  Document: () => <span>📄</span>,
+  Edit: () => <span></span>,
+  Delete: () => <span></span>,
+  Calendar: () => <span></span>,
+  Document: () => <span></span>,
   Close: () => <span>×</span>,
-  Sparkle: () => <span>✨</span>,
-  Robot: () => <span>🤖</span>
+  Sparkle: () => <span></span>,
+  Robot: () => <span></span>
 };
 
 const DashboardPage = () => {
@@ -58,7 +58,7 @@ const DashboardPage = () => {
   // Auth context
   const { user, logout, loading: authLoading } = useAuth();
 
-  // ✅ Backend URL from environment variable (works on local dev AND production)
+  //  Backend URL from environment variable (works on local dev AND production)
   const getBackendUrl = () => {
     return import.meta.env.VITE_API_BASE_URL || 'https://insightr-backend-production.up.railway.app';
   };
@@ -729,7 +729,7 @@ const DashboardPage = () => {
       <motion.div className="db-welcome-banner" variants={itemVariants}>
         <div className="db-banner-inner">
           <div>
-            <div className="db-banner-title">Good to see you, {userName.split(' ')[0]} 👋</div>
+            <div className="db-banner-title">Good to see you, {userName.split(' ')[0]} </div>
             <div className="db-banner-sub">Your AI-powered resume workspace</div>
           </div>
           <div className="db-stats-chips">
@@ -738,11 +738,11 @@ const DashboardPage = () => {
               <div className="db-stat-chip-label">Resumes</div>
             </div>
             <div className="db-stat-chip">
-              <div className="db-stat-chip-value">🤖</div>
+              <div className="db-stat-chip-value"></div>
               <div className="db-stat-chip-label">AI Ready</div>
             </div>
             <div className="db-stat-chip">
-              <div className="db-stat-chip-value">✅</div>
+              <div className="db-stat-chip-value"></div>
               <div className="db-stat-chip-label">ATS Optimised</div>
             </div>
           </div>
@@ -922,16 +922,16 @@ const DashboardPage = () => {
                   <div className="db-profile-email">{user?.email || ''}</div>
                 </div>
               </div>
-              <div className="db-profile-badge">✅ Verified Account</div>
+              <div className="db-profile-badge"> Verified Account</div>
             </div>
 
             <div className="db-sidebar-card">
-              <div className="db-sidebar-title">💡 Pro Tips</div>
+              <div className="db-sidebar-title"> Pro Tips</div>
               {[
-                { icon: '🎯', text: 'Use the AI builder for a quicker start — it generates a full resume in seconds.' },
-                { icon: '🔑', text: 'Add specific skills matching the job description to boost your ATS score.' },
-                { icon: '✅', text: 'Verify your skills to get a verified badge on your resume.' },
-                { icon: '📄', text: 'Keep your resume to 1 page unless you have 10+ years of experience.' },
+                { icon: '', text: 'Use the AI builder for a quicker start — it generates a full resume in seconds.' },
+                { icon: '', text: 'Add specific skills matching the job description to boost your ATS score.' },
+                { icon: '', text: 'Verify your skills to get a verified badge on your resume.' },
+                { icon: '', text: 'Keep your resume to 1 page unless you have 10+ years of experience.' },
               ].map((tip, i) => (
                 <div key={i} className="db-tip-item">
                   <span className="db-tip-icon">{tip.icon}</span>

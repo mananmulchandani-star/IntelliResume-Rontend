@@ -20,7 +20,7 @@ const AuthPage = () => {
 
   useEffect(() => {
     if (user) {
-      console.log('✅ User already logged in, redirecting to dashboard');
+      console.log(' User already logged in, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [user, navigate]);
@@ -52,7 +52,7 @@ const AuthPage = () => {
         throw error;
       }
 
-      console.log('✅ Google OAuth initiated successfully');
+      console.log(' Google OAuth initiated successfully');
       
     } catch (err) {
       console.error('Google OAuth error:', err);
@@ -105,7 +105,7 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        console.log('🔄 Attempting login...');
+        console.log(' Attempting login...');
         const result = await login(formData.email, formData.password);
         
         if (!result || !result.user || !result.user.id) {
@@ -115,7 +115,7 @@ const AuthPage = () => {
         let userProfile = await getUserProfile(result.user.id);
         
         if (!userProfile) {
-          console.log('🔄 Creating user profile...');
+          console.log(' Creating user profile...');
           userProfile = await createUserProfile(result.user.id, result.user.email);
         }
 
@@ -124,7 +124,7 @@ const AuthPage = () => {
           localStorage.setItem('user', JSON.stringify(userProfile));
           localStorage.setItem('loggedInEmail', formData.email.trim().toLowerCase());
           
-          console.log('✅ Login successful, redirecting to dashboard');
+          console.log(' Login successful, redirecting to dashboard');
           setSuccess('Login successful! Redirecting...');
           
           setTimeout(() => {
@@ -134,7 +134,7 @@ const AuthPage = () => {
           throw new Error('Login successful but no session token received');
         }
       } else {
-        console.log('🔄 Attempting signup...');
+        console.log(' Attempting signup...');
         const result = await signUp(formData.email, formData.password);
         
         if (result && result.user) {
@@ -299,7 +299,7 @@ const AuthPage = () => {
           {/* Template Selection Info */}
           {location.state?.selectedTemplate && (
             <div className="template-info">
-              <div className="template-icon">🎨</div>
+              <div className="template-icon"></div>
               <div className="template-text">
                 <p><strong>Selected Template: {location.state.selectedTemplate}</strong></p>
                 <p>Complete signup to start building your resume!</p>
@@ -310,7 +310,7 @@ const AuthPage = () => {
           {/* Error Message */}
           {error && (
             <div className="error-message">
-              <span className="error-icon">⚠️</span>
+              <span className="error-icon"></span>
               {error}
             </div>
           )}
@@ -318,7 +318,7 @@ const AuthPage = () => {
           {/* Success Message */}
           {success && (
             <div className="success-message">
-              <span className="success-icon">✅</span>
+              <span className="success-icon"></span>
               {success}
             </div>
           )}
@@ -381,7 +381,7 @@ const AuthPage = () => {
                     onChange={handleChange}
                     disabled={loading}
                   />
-                  <span className="input-icon">👤</span>
+                  <span className="input-icon"></span>
                 </div>
               </div>
             )}
@@ -398,7 +398,7 @@ const AuthPage = () => {
                   onChange={handleChange}
                   disabled={loading}
                 />
-                <span className="input-icon">📧</span>
+                <span className="input-icon"></span>
               </div>
             </div>
 
@@ -415,7 +415,7 @@ const AuthPage = () => {
                   disabled={loading}
                   minLength={6}
                 />
-                <span className="input-icon">🔒</span>
+                <span className="input-icon"></span>
               </div>
               <div className="password-hint">Must be at least 6 characters</div>
             </div>
@@ -469,7 +469,7 @@ const AuthPage = () => {
 
           {/* Demo Notes */}
           <div className="demo-notes">
-            <p>💡 <strong>Demo Tip:</strong> Use any email & password (6+ characters) to test the app</p>
+            <p> <strong>Demo Tip:</strong> Use any email & password (6+ characters) to test the app</p>
           </div>
         </div>
 
@@ -477,17 +477,17 @@ const AuthPage = () => {
         {isLogin && (
           <div className="login-features">
             <div className="feature-highlight">
-              <div className="feature-icon">🤖</div>
+              <div className="feature-icon"></div>
               <h3>AI-Powered Builder</h3>
               <p>Smart suggestions and professional phrasing tailored to your industry</p>
             </div>
             <div className="feature-highlight">
-              <div className="feature-icon">🎨</div>
+              <div className="feature-icon"></div>
               <h3>Modern Templates</h3>
               <p>Professionally designed templates that pass ATS and impress recruiters</p>
             </div>
             <div className="feature-highlight">
-              <div className="feature-icon">⚡</div>
+              <div className="feature-icon"></div>
               <h3>Instant Optimization</h3>
               <p>Real-time feedback and optimization tips as you build your resume</p>
             </div>

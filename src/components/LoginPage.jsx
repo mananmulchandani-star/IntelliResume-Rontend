@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // ✅ Added Link import
+import { useNavigate, Link } from 'react-router-dom'; //  Added Link import
 import { createClient } from '@supabase/supabase-js';
 import './LoginPage.css';
 
-// ✅ Initialize Supabase client directly in frontend
+//  Initialize Supabase client directly in frontend
 const supabase = createClient(
   'https://lpgdolynzbgisbqbfwrf.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwZ2RvbHluemJnaXNicWJmd3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzkzOTAsImV4cCI6MjA3NzgxNTM5MH0.usuPeETruTUTvUDmH18O87qPgHg1xVHfufMqdRHdvBM'
@@ -19,7 +19,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // ✅ Add validation before API call
+    //  Add validation before API call
     if (!email.trim() || !password) {
       setError('Please fill in all fields');
       return;
@@ -29,7 +29,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      // ✅ DIRECT Supabase login - NO backend API calls!
+      //  DIRECT Supabase login - NO backend API calls!
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password: password,
@@ -47,7 +47,7 @@ const LoginPage = () => {
         return;
       }
 
-      // ✅ Get user profile from users table with error handling
+      //  Get user profile from users table with error handling
       let userProfile = null;
       try {
         const { data: profileData, error: profileError } = await supabase
@@ -66,7 +66,7 @@ const LoginPage = () => {
         console.warn('Profile fetch failed:', profileErr);
       }
 
-      // ✅ Save to localStorage
+      //  Save to localStorage
       localStorage.setItem('token', data.session.access_token);
       localStorage.setItem('user', JSON.stringify({
         id: data.user.id,
@@ -75,12 +75,12 @@ const LoginPage = () => {
       }));
       localStorage.setItem('loggedInEmail', email.trim().toLowerCase());
 
-      console.log('✅ Login successful:', {
+      console.log(' Login successful:', {
         userId: data.user.id,
         email: data.user.email
       });
 
-      // ✅ Navigate to dashboard
+      //  Navigate to dashboard
       navigate('/dashboard');
       
     } catch (err) {
@@ -91,7 +91,7 @@ const LoginPage = () => {
     }
   };
 
-  // ✅ Fixed navigation handlers
+  //  Fixed navigation handlers
   const goToHome = () => {
     navigate('/');
   };
@@ -100,7 +100,7 @@ const LoginPage = () => {
     navigate('/signup');
   };
 
-  // ✅ UPDATED: Navigate to forgot password page
+  //  UPDATED: Navigate to forgot password page
   const handleForgotPassword = () => {
     navigate('/forgot-password');
   };
@@ -146,7 +146,7 @@ const LoginPage = () => {
           {/* Error Message */}
           {error && (
             <div className="error-message">
-              <span className="error-icon">⚠️</span>
+              <span className="error-icon"></span>
               {error}
             </div>
           )}
@@ -165,7 +165,7 @@ const LoginPage = () => {
                   required
                   disabled={loading}
                 />
-                <span className="input-icon">📧</span>
+                <span className="input-icon"></span>
               </div>
             </div>
 
@@ -182,7 +182,7 @@ const LoginPage = () => {
                   disabled={loading}
                   minLength="6"
                 />
-                <span className="input-icon">🔒</span>
+                <span className="input-icon"></span>
               </div>
             </div>
 
@@ -194,7 +194,7 @@ const LoginPage = () => {
               <button 
                 type="button" 
                 className="forgot-password"
-                onClick={handleForgotPassword} // ✅ Now navigates to forgot password page
+                onClick={handleForgotPassword} //  Now navigates to forgot password page
                 disabled={loading}
               >
                 Forgot password?
@@ -213,7 +213,7 @@ const LoginPage = () => {
                 </>
               ) : (
                 <>
-                  <span className="btn-sparkle">✨</span>
+                  <span className="btn-sparkle"></span>
                   Sign In
                 </>
               )}

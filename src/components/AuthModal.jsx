@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { createClient } from '@supabase/supabase-js';
 
-// ✅ Initialize Supabase client
+//  Initialize Supabase client
 const supabase = createClient(
   'https://lpgdolynzbgisbqbfwrf.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwZ2RvbHluemJnaXNicWJmd3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMzkzOTAsImV4cCI6MjA3NzgxNTM5MH0.usuPeETruTUTvUDmH18O87qPgHg1xVHfufMqdRHdvBM'
@@ -17,7 +17,7 @@ function AuthModal({ onClose, onAuthSuccess }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ Handle input changes
+  //  Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -27,7 +27,7 @@ function AuthModal({ onClose, onAuthSuccess }) {
     setError(""); // Clear error when user types
   };
 
-  // ✅ Create user profile in users table
+  //  Create user profile in users table
   const createUserProfile = async (userId, email, name = '') => {
     try {
       const { data, error } = await supabase
@@ -63,12 +63,12 @@ function AuthModal({ onClose, onAuthSuccess }) {
     }
   };
 
-  // ✅ Handle form submission
+  //  Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     
-    // ✅ Validation
+    //  Validation
     if (!formData.email.trim() || !formData.password) {
       setError("Please fill in all required fields");
       return;
@@ -88,7 +88,7 @@ function AuthModal({ onClose, onAuthSuccess }) {
 
     try {
       if (mode === "signup") {
-        // ✅ Sign up logic
+        //  Sign up logic
         const { data, error } = await supabase.auth.signUp({
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
@@ -110,10 +110,10 @@ function AuthModal({ onClose, onAuthSuccess }) {
           return;
         }
 
-        // ✅ Create user profile
+        //  Create user profile
         await createUserProfile(data.user.id, formData.email.trim().toLowerCase(), formData.name.trim());
 
-        // ✅ Auto-login after signup
+        //  Auto-login after signup
         const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
@@ -123,7 +123,7 @@ function AuthModal({ onClose, onAuthSuccess }) {
           console.log('Auto-login failed, but account created');
         }
 
-        // ✅ Save user data
+        //  Save user data
         const userData = {
           id: data.user?.id || loginData?.user?.id,
           name: formData.name.trim(),
@@ -137,11 +137,11 @@ function AuthModal({ onClose, onAuthSuccess }) {
           localStorage.setItem('token', loginData.session.access_token);
         }
 
-        console.log('✅ Signup successful');
+        console.log(' Signup successful');
         onAuthSuccess?.(userData);
 
       } else {
-        // ✅ Login logic
+        //  Login logic
         const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
@@ -157,7 +157,7 @@ function AuthModal({ onClose, onAuthSuccess }) {
           return;
         }
 
-        // ✅ Get user profile
+        //  Get user profile
         let userProfile = null;
         try {
           const { data: profileData } = await supabase
@@ -170,7 +170,7 @@ function AuthModal({ onClose, onAuthSuccess }) {
           console.warn('Profile fetch failed:', profileErr);
         }
 
-        // ✅ Save to localStorage
+        //  Save to localStorage
         localStorage.setItem('token', data.session.access_token);
         localStorage.setItem('user', JSON.stringify({
           id: data.user.id,
@@ -179,7 +179,7 @@ function AuthModal({ onClose, onAuthSuccess }) {
         }));
         localStorage.setItem('loggedInEmail', formData.email.trim().toLowerCase());
 
-        console.log('✅ Login successful');
+        console.log(' Login successful');
         onAuthSuccess?.({
           id: data.user.id,
           email: data.user.email,
@@ -194,7 +194,7 @@ function AuthModal({ onClose, onAuthSuccess }) {
     }
   };
 
-  // ✅ Reset form when switching modes
+  //  Reset form when switching modes
   const switchMode = (newMode) => {
     setMode(newMode);
     setFormData({ name: "", email: "", password: "" });
@@ -294,7 +294,7 @@ function AuthModal({ onClose, onAuthSuccess }) {
             alignItems: "center",
             gap: "0.5rem"
           }}>
-            <span>⚠️</span>
+            <span></span>
             {error}
           </div>
         )}
@@ -354,7 +354,7 @@ function AuthModal({ onClose, onAuthSuccess }) {
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
-                <span>✨</span>
+                <span></span>
                 {mode === "signup" ? "Create Account" : "Sign In"}
               </div>
             )}

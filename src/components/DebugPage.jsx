@@ -29,7 +29,7 @@ const DebugPage = () => {
         keySkills: "Programming, Problem Solving, Teamwork"
       };
 
-      console.log('🚀 Sending to AI:', testData);
+      console.log(' Sending to AI:', testData);
 
       const response = await fetch('http://localhost:5000/api/generate-resume-from-prompt', {
         method: 'POST',
@@ -40,7 +40,7 @@ const DebugPage = () => {
       });
 
       const responseData = await response.json();
-      console.log('📨 AI Response:', responseData);
+      console.log(' AI Response:', responseData);
 
       if (!response.ok) {
         throw new Error(responseData.error || `HTTP error! status: ${response.status}`);
@@ -56,10 +56,10 @@ const DebugPage = () => {
       localStorage.setItem('debugResume', JSON.stringify(responseData.resumeData));
       localStorage.setItem('debugFormData', JSON.stringify(testData));
       
-      console.log('✅ Saved to localStorage for testing');
+      console.log(' Saved to localStorage for testing');
 
     } catch (err) {
-      console.error('❌ AI Test Error:', err);
+      console.error(' AI Test Error:', err);
       setError(`AI Test Failed: ${err.message}`);
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ const DebugPage = () => {
         keySkills: "Programming, Problem Solving"
       }));
       
-      console.log('✅ Data loaded into Editor format');
+      console.log(' Data loaded into Editor format');
       navigate('/editor');
     }
   };
@@ -99,12 +99,12 @@ const DebugPage = () => {
     setAiResponse(null);
     setPrompt('');
     setError('');
-    console.log('✅ All test data cleared');
+    console.log(' All test data cleared');
   };
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>🧪 AI Debug Page</h1>
+      <h1> AI Debug Page</h1>
       <p>Test if AI is returning proper data before checking Editor</p>
 
       <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
@@ -127,7 +127,7 @@ const DebugPage = () => {
           borderRadius: '4px',
           cursor: 'pointer'
         }}>
-          🗑️ Clear All Data
+          ️ Clear All Data
         </button>
       </div>
 
@@ -187,7 +187,7 @@ const DebugPage = () => {
 
       {aiResponse && (
         <div style={{ marginTop: '30px' }}>
-          <h3>✅ AI Response Received:</h3>
+          <h3> AI Response Received:</h3>
           
           <div style={{ 
             backgroundColor: '#d4edda', 
@@ -231,16 +231,16 @@ const DebugPage = () => {
             gap: '10px',
             marginBottom: '20px'
           }}>
-            <div><strong>fullName:</strong> {aiResponse.fullName || '❌ MISSING'}</div>
-            <div><strong>email:</strong> {aiResponse.email || '❌ MISSING'}</div>
-            <div><strong>phone:</strong> {aiResponse.phone || '❌ MISSING'}</div>
-            <div><strong>location:</strong> {aiResponse.location || '❌ MISSING'}</div>
-            <div><strong>jobTitle:</strong> {aiResponse.jobTitle || '❌ MISSING'}</div>
-            <div><strong>summary:</strong> {aiResponse.summary ? '✅ PRESENT' : '❌ MISSING'}</div>
-            <div><strong>education:</strong> {aiResponse.education ? `✅ ${aiResponse.education.length} items` : '❌ MISSING'}</div>
-            <div><strong>skills:</strong> {aiResponse.skills ? `✅ ${aiResponse.skills.length} items` : '❌ MISSING'}</div>
-            <div><strong>projects:</strong> {aiResponse.projects ? `✅ ${aiResponse.projects.length} items` : '❌ MISSING'}</div>
-            <div><strong>workExperience:</strong> {aiResponse.workExperience ? `✅ ${aiResponse.workExperience.length} items` : '❌ MISSING'}</div>
+            <div><strong>fullName:</strong> {aiResponse.fullName || ' MISSING'}</div>
+            <div><strong>email:</strong> {aiResponse.email || ' MISSING'}</div>
+            <div><strong>phone:</strong> {aiResponse.phone || ' MISSING'}</div>
+            <div><strong>location:</strong> {aiResponse.location || ' MISSING'}</div>
+            <div><strong>jobTitle:</strong> {aiResponse.jobTitle || ' MISSING'}</div>
+            <div><strong>summary:</strong> {aiResponse.summary ? ' PRESENT' : ' MISSING'}</div>
+            <div><strong>education:</strong> {aiResponse.education ? ` ${aiResponse.education.length} items` : ' MISSING'}</div>
+            <div><strong>skills:</strong> {aiResponse.skills ? ` ${aiResponse.skills.length} items` : ' MISSING'}</div>
+            <div><strong>projects:</strong> {aiResponse.projects ? ` ${aiResponse.projects.length} items` : ' MISSING'}</div>
+            <div><strong>workExperience:</strong> {aiResponse.workExperience ? ` ${aiResponse.workExperience.length} items` : ' MISSING'}</div>
           </div>
 
           {aiResponse.education && (
@@ -253,9 +253,9 @@ const DebugPage = () => {
                   marginBottom: '10px',
                   borderRadius: '4px'
                 }}>
-                  <div><strong>Degree:</strong> {edu.degree || '❌ MISSING'}</div>
-                  <div><strong>School:</strong> {edu.school || edu.institution || '❌ MISSING'}</div>
-                  <div><strong>Year:</strong> {edu.year || '❌ MISSING'}</div>
+                  <div><strong>Degree:</strong> {edu.degree || ' MISSING'}</div>
+                  <div><strong>School:</strong> {edu.school || edu.institution || ' MISSING'}</div>
+                  <div><strong>Year:</strong> {edu.year || ' MISSING'}</div>
                   <div><strong>Score:</strong> {edu.score || 'Not specified'}</div>
                 </div>
               ))}
@@ -290,7 +290,7 @@ const DebugPage = () => {
       )}
 
       <div style={{ marginTop: '30px', padding: '15px', backgroundColor: '#fff3cd', borderRadius: '4px' }}>
-        <h4>🔍 Debug Instructions:</h4>
+        <h4> Debug Instructions:</h4>
         <ol>
           <li>Enter your prompt or click "Load Sample Prompt"</li>
           <li>Click "Test AI Response" to see if backend works</li>

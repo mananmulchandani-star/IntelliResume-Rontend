@@ -6,8 +6,8 @@ import CssBaseline from '@mui/material/CssBaseline'
 import Homepage from './components/Homepage.jsx'
 import DashboardPage from './components/DashboardPage.jsx'
 import EditorPage from './components/EditorPage.jsx'
-import AIPromptPage from './components/AIPromptPage.jsx' // ✅ FIXED: Changed from AiPromptPage to AIPromptPage
-import ContactPage from './components/ContactPage.jsx' // ✅ ADDED CONTACT PAGE
+import AIPromptPage from './components/AIPromptPage.jsx' //  FIXED: Changed from AiPromptPage to AIPromptPage
+import ContactPage from './components/ContactPage.jsx' //  ADDED CONTACT PAGE
 import AboutPage from './components/AboutPage.jsx'
 import FeaturesPage from './components/FeaturesPage.jsx'
 import PrivacyPage from './components/PrivacyPage.jsx'
@@ -17,7 +17,7 @@ import { AuthProvider } from './components/AuthContext'
 import AuthPage from './components/AuthPage.jsx'
 import './index.css'
 
-// ✅ CREATE MUI THEME
+//  CREATE MUI THEME
 const theme = createTheme({
   palette: {
     primary: {
@@ -33,32 +33,32 @@ const theme = createTheme({
 const DebugPage = () => {
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>🚀 Debug Page - It Works! 🎉</h1>
+      <h1> Debug Page - It Works! </h1>
       <div style={{ background: '#f0f8ff', padding: '15px', borderRadius: '8px', margin: '10px 0' }}>
         <h3>System Information:</h3>
         <p><strong>Current Time:</strong> {new Date().toLocaleString()}</p>
         <p><strong>Route:</strong> /debug</p>
-        <p><strong>Status:</strong> ✅ Routing is working correctly</p>
+        <p><strong>Status:</strong>  Routing is working correctly</p>
       </div>
       
       <div style={{ marginTop: '20px' }}>
         <h3>Available Routes:</h3>
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          <li>✅ / - Homepage</li>
-          <li>✅ /dashboard - DashboardPage</li>
-          <li>✅ /auth - AuthPage</li>
-          <li>✅ /login - AuthPage</li>
-          <li>✅ /editor - EditorPage</li>
-          <li>❌ /input - (Removed - use /auth instead)</li>
-          <li>✅ /contact - ContactPage</li> {/* ✅ ADDED CONTACT PAGE */}
-          <li>✅ /About - AboutPage</li>
-          <li>✅ /Features - FeaturesPage</li>
-          <li>✅ /privacy - PrivacyPage</li>
-          <li>✅ /faq - FaqPage</li>
-          <li>✅ /adminportal - AdminPortalPage</li>
-          <li>✅ /ai-prompt - AIPromptPage</li>
-          <li>✅ /create-resume - CreateResume</li>
-          <li>✅ /debug - This Debug Page</li>
+          <li> / - Homepage</li>
+          <li> /dashboard - DashboardPage</li>
+          <li> /auth - AuthPage</li>
+          <li> /login - AuthPage</li>
+          <li> /editor - EditorPage</li>
+          <li> /input - (Removed - use /auth instead)</li>
+          <li> /contact - ContactPage</li> {/*  ADDED CONTACT PAGE */}
+          <li> /About - AboutPage</li>
+          <li> /Features - FeaturesPage</li>
+          <li> /privacy - PrivacyPage</li>
+          <li> /faq - FaqPage</li>
+          <li> /adminportal - AdminPortalPage</li>
+          <li> /ai-prompt - AIPromptPage</li>
+          <li> /create-resume - CreateResume</li>
+          <li> /debug - This Debug Page</li>
         </ul>
       </div>
     </div>
@@ -144,7 +144,7 @@ const AdminPortalPage = () => {
       <div className="admin-content">
         <div className="stats-grid">
           <div className="stat-card fade-in">
-            <div className="stat-icon">👥</div>
+            <div className="stat-icon"></div>
             <div className="stat-info">
               <h3>{adminData.users.toLocaleString()}</h3>
               <p>Total Users</p>
@@ -153,7 +153,7 @@ const AdminPortalPage = () => {
           </div>
 
           <div className="stat-card fade-in" style={{animationDelay: '0.1s'}}>
-            <div className="stat-icon">🌐</div>
+            <div className="stat-icon"></div>
             <div className="stat-info">
               <h3>{adminData.activeSessions}</h3>
               <p>Active Sessions</p>
@@ -162,7 +162,7 @@ const AdminPortalPage = () => {
           </div>
 
           <div className="stat-card fade-in" style={{animationDelay: '0.2s'}}>
-            <div className="stat-icon">💰</div>
+            <div className="stat-icon"></div>
             <div className="stat-info">
               <h3>${adminData.revenue.toLocaleString()}</h3>
               <p>Monthly Revenue</p>
@@ -171,7 +171,7 @@ const AdminPortalPage = () => {
           </div>
 
           <div className="stat-card fade-in" style={{animationDelay: '0.3s'}}>
-            <div className="stat-icon">✅</div>
+            <div className="stat-icon"></div>
             <div className="stat-info">
               <h3>{adminData.successRate}%</h3>
               <p>Success Rate</p>
@@ -185,19 +185,19 @@ const AdminPortalPage = () => {
             <h2>Quick Actions</h2>
             <div className="actions-grid">
               <button className="action-btn">
-                <span className="btn-icon">📊</span>
+                <span className="btn-icon"></span>
                 View Analytics
               </button>
               <button className="action-btn">
-                <span className="btn-icon">👥</span>
+                <span className="btn-icon"></span>
                 Manage Users
               </button>
               <button className="action-btn">
-                <span className="btn-icon">📝</span>
+                <span className="btn-icon"></span>
                 Create Template
               </button>
               <button className="action-btn">
-                <span className="btn-icon">🔧</span>
+                <span className="btn-icon"></span>
                 System Settings
               </button>
             </div>
@@ -231,7 +231,7 @@ const AdminPortalPage = () => {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* ✅ WRAP EVERYTHING WITH THEMEPROVIDER */}
+    {/*  WRAP EVERYTHING WITH THEMEPROVIDER */}
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
@@ -248,7 +248,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/faq" element={<FaqPage />} />
             <Route path="/adminportal" element={<AdminPortalPage />} />
-            <Route path="/ai-prompt" element={<AIPromptPage />} /> {/* ✅ FIXED: Changed from AiPromptPage to AIPromptPage */}
+            <Route path="/ai-prompt" element={<AIPromptPage />} /> {/*  FIXED: Changed from AiPromptPage to AIPromptPage */}
             <Route path="/create-resume" element={<CreateResume />} />
             <Route path="/debug" element={<DebugPage />} />
             <Route path="*" element={<div>Page not found - 404 Error</div>} />
