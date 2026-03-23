@@ -106,11 +106,11 @@ function TiltCard({ feature, index }) {
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
       style={{
-        background: "white",
+        background: "var(--bg-card)",
         borderRadius: "20px",
         padding: "2rem 1.75rem",
         textAlign: "left",
-        border: "1px solid rgba(226,232,240,0.8)",
+        border: "1px solid var(--border-dim)",
         cursor: "pointer",
         transition: "transform 0.15s ease, box-shadow 0.15s ease",
         willChange: "transform",
@@ -136,12 +136,12 @@ function TiltCard({ feature, index }) {
         transform: "translateZ(20px)",
       }}>{feature.emoji}</div>
       <h3 style={{
-        fontSize: "1.15rem", fontWeight: 700, color: "#0f172a",
+        fontSize: "1.15rem", fontWeight: 700, color: "var(--text-primary)",
         marginBottom: "0.75rem", transform: "translateZ(15px)",
         fontFamily: "'Inter', sans-serif",
       }}>{feature.title}</h3>
       <p style={{
-        color: "#64748b", lineHeight: 1.65, fontSize: "0.92rem",
+        color: "var(--text-secondary)", lineHeight: 1.65, fontSize: "0.92rem",
         transform: "translateZ(10px)", fontFamily: "'Inter', sans-serif",
       }}>{feature.desc}</p>
     </motion.div>
@@ -167,9 +167,9 @@ function FaqItem({ faq, index }) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.05 }}
       style={{
-        background: "white", marginBottom: "0.75rem", borderRadius: "14px",
-        overflow: "hidden", border: "1px solid rgba(226,232,240,0.8)",
-        boxShadow: open ? "0 4px 24px rgba(59,130,246,0.1)" : "0 2px 8px rgba(0,0,0,0.04)",
+        background: "var(--bg-card)", marginBottom: "0.75rem", borderRadius: "14px",
+        overflow: "hidden", border: "1px solid var(--border-dim)",
+        boxShadow: open ? "0 4px 24px rgba(59,130,246,0.15)" : "0 2px 8px rgba(0,0,0,0.2)",
         transition: "box-shadow 0.3s",
       }}
     >
@@ -182,7 +182,7 @@ function FaqItem({ faq, index }) {
           gap: "1rem",
         }}
       >
-        <span style={{ fontSize: "1rem", fontWeight: 600, color: "#0f172a", fontFamily: "'Inter', sans-serif" }}>
+        <span style={{ fontSize: "1rem", fontWeight: 600, color: "var(--text-primary)", fontFamily: "'Inter', sans-serif" }}>
           {faq.q}
         </span>
         <motion.span
@@ -202,7 +202,7 @@ function FaqItem({ faq, index }) {
           >
             <p style={{
               padding: "0 1.5rem 1.4rem",
-              color: "#475569", lineHeight: 1.7, fontSize: "0.95rem",
+              color: "var(--text-secondary)", lineHeight: 1.7, fontSize: "0.95rem",
               fontFamily: "'Inter', sans-serif",
             }}>{faq.a}</p>
           </motion.div>
@@ -258,7 +258,7 @@ function Homepage() {
   }, []);
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", background: "#f8faff", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", background: "var(--bg-dark)", minHeight: "100vh" }}>
       {/* ── Shared Navbar ─────────────────────────────────── */}
       <Navbar />
 
@@ -269,7 +269,7 @@ function Homepage() {
           minHeight: "100vh",
           display: "flex", alignItems: "center",
           position: "relative", overflow: "hidden",
-          background: "linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #eff6ff 100%)",
+          background: "radial-gradient(ellipse at top, #0a1128 0%, #050b14 100%)",
           paddingTop: "68px",
         }}
       >
@@ -344,7 +344,7 @@ function Homepage() {
                 marginBottom: "1.5rem", letterSpacing: "-1.5px",
               }}
             >
-              <span style={{ color: "#0f172a" }}>Craft Resumes</span>
+              <span style={{ color: "var(--text-primary)" }}>Craft Resumes</span>
               <br />
               <span style={{
                 backgroundImage: "linear-gradient(135deg, #2563eb 0%, #7c3aed 60%, #3b82f6 100%)",
@@ -362,7 +362,7 @@ function Homepage() {
               animate={heroInView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.45 }}
               style={{
-                fontSize: "1.15rem", color: "#475569", lineHeight: 1.7,
+                fontSize: "1.15rem", color: "var(--text-secondary)", lineHeight: 1.7,
                 marginBottom: "2.5rem", maxWidth: "520px",
               }}
             >
@@ -400,8 +400,8 @@ function Homepage() {
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setShowTemplates(true)}
                 style={{
-                  background: "white", color: "#0f172a",
-                  border: "1.5px solid rgba(203,213,225,0.9)",
+                  background: "rgba(255,255,255,0.05)", color: "white",
+                  border: "1.5px solid var(--border-dim)",
                   padding: "1rem 1.8rem", borderRadius: "12px",
                   fontSize: "1rem", fontWeight: 600, cursor: "pointer",
                   display: "flex", alignItems: "center", gap: "0.5rem",
@@ -432,7 +432,7 @@ function Homepage() {
                   }}>
                     <CountUp end={s.end} suffix={s.suffix} />
                   </div>
-                  <div style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 600 }}>
+                  <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", fontWeight: 600 }}>
                     {s.label}
                   </div>
                 </div>
@@ -451,11 +451,11 @@ function Homepage() {
               animate={{ y: [0, -16, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               style={{
-                background: "white",
+                background: "var(--bg-card)",
                 borderRadius: "24px",
                 padding: "2.5rem 2rem",
-                boxShadow: "0 40px 80px rgba(37,99,235,0.15), 0 8px 32px rgba(0,0,0,0.08)",
-                border: "1px solid rgba(226,232,240,0.8)",
+                boxShadow: "0 40px 80px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3)",
+                border: "1px solid var(--border-dim)",
                 position: "relative",
                 transformStyle: "preserve-3d",
               }}
@@ -475,8 +475,8 @@ function Homepage() {
                   color: "white", fontWeight: 800, fontSize: "1rem",
                 }}>JD</div>
                 <div>
-                  <div style={{ fontWeight: 700, color: "#0f172a", fontSize: "1rem" }}>Jane Doe</div>
-                  <div style={{ color: "#64748b", fontSize: "0.8rem" }}>Senior Software Engineer</div>
+                  <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "1rem" }}>Jane Doe</div>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem" }}>Senior Software Engineer</div>
                 </div>
                 <div style={{
                   marginLeft: "auto", background: "rgba(37,99,235,0.1)",
@@ -492,10 +492,10 @@ function Homepage() {
               ].map(({ skill, pct }, i) => (
                 <div key={i} style={{ marginBottom: "1rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem" }}>
-                    <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "#475569" }}>{skill}</span>
-                    <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#2563eb" }}>{pct}%</span>
+                    <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary)" }}>{skill}</span>
+                    <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#a78bfa" }}>{pct}%</span>
                   </div>
-                  <div style={{ height: 6, background: "#f1f5f9", borderRadius: 6 }}>
+                  <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 6 }}>
                     <motion.div
                       initial={{ width: 0 }}
                       animate={heroInView ? { width: `${pct}%` } : {}}
@@ -517,8 +517,8 @@ function Homepage() {
               }}>
                 <div style={{ fontSize: "1.5rem" }}>🏆</div>
                 <div>
-                  <div style={{ fontWeight: 700, color: "#0f172a", fontSize: "0.9rem" }}>ATS Score: 97/100</div>
-                  <div style={{ color: "#64748b", fontSize: "0.75rem" }}>Optimised for top ATS systems</div>
+                  <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "0.9rem" }}>ATS Score: 97/100</div>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Optimised for top ATS systems</div>
                 </div>
               </div>
               {/* Floating badge */}
@@ -575,7 +575,7 @@ function Homepage() {
       {/* ══ FEATURES SECTION ════════════════════════════════ */}
       <section style={{
         padding: "8rem 2rem",
-        background: "white",
+        background: "var(--bg-dark)",
       }}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -585,21 +585,21 @@ function Homepage() {
         >
           <div style={{
             display: "inline-block",
-            background: "rgba(124,58,237,0.08)",
-            color: "#7c3aed", padding: "0.4rem 1rem",
+            background: "rgba(124,58,237,0.15)",
+            color: "#a78bfa", padding: "0.4rem 1rem",
             borderRadius: "999px", fontSize: "0.82rem", fontWeight: 700,
             marginBottom: "1rem",
           }}>✨ Packed with Features</div>
           <h2 style={{
             fontSize: "clamp(2rem, 4vw, 2.75rem)", fontWeight: 900,
             letterSpacing: "-1px", marginBottom: "1rem",
-            backgroundImage: "linear-gradient(135deg, #1d4ed8, #7c3aed)",
+            backgroundImage: "linear-gradient(135deg, #60a5fa, #a78bfa)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
             backgroundClip: "text",
           }}>
             Why Choose InsightResume?
           </h2>
-          <p style={{ color: "#64748b", fontSize: "1.05rem", lineHeight: 1.7 }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", lineHeight: 1.7 }}>
             Everything you need to build, verify and download a job-winning resume
           </p>
         </motion.div>
@@ -687,7 +687,7 @@ function Homepage() {
       </section>
 
       {/* ══ FAQ SECTION ═════════════════════════════════════ */}
-      <section style={{ padding: "8rem 2rem", background: "#f8faff" }}>
+      <section style={{ padding: "8rem 2rem", background: "var(--bg-dark)" }}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -697,13 +697,13 @@ function Homepage() {
           <h2 style={{
             fontSize: "clamp(2rem, 4vw, 2.75rem)", fontWeight: 900,
             letterSpacing: "-1px", marginBottom: "1rem",
-            backgroundImage: "linear-gradient(135deg, #1d4ed8, #7c3aed)",
+            backgroundImage: "linear-gradient(135deg, #60a5fa, #a78bfa)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
             backgroundClip: "text",
           }}>
             Frequently Asked Questions
           </h2>
-          <p style={{ color: "#64748b", fontSize: "1.05rem" }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem" }}>
             Get answers to common questions about our platform
           </p>
         </motion.div>
@@ -747,11 +747,11 @@ function Homepage() {
               whileTap={{ scale: 0.97 }}
               onClick={handleAuth}
               style={{
-                background: "white", color: "#1d4ed8",
+                background: "linear-gradient(135deg, #60a5fa, #7c3aed)", color: "white",
                 border: "none", padding: "1rem 2.5rem",
                 borderRadius: "12px", fontSize: "1rem", fontWeight: 700,
                 cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
               }}
             >
               🎯 Create Your Resume Now
@@ -777,7 +777,7 @@ function Homepage() {
 
       {/* ══ FOOTER ══════════════════════════════════════════ */}
       <footer style={{
-        background: "#0f172a", color: "white",
+        background: "var(--bg-dark)", color: "white",
         padding: "4rem 2rem 2rem",
       }}>
         <div style={{

@@ -1,15 +1,15 @@
 /* AboutPage.css */
 .about-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: var(--bg-dark);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Header Styles */
 .about-header {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(10, 17, 40, 0.95);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  border-bottom: 1px solid var(--border-dim);
   position: fixed;
   top: 0;
   left: 0;
@@ -65,7 +65,7 @@
 .nav-link {
   background: none;
   border: none;
-  color: #475569;
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
   font-size: 1rem;
@@ -96,7 +96,7 @@
 }
 
 .login-btn {
-  color: #64748b;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -121,7 +121,7 @@
 .about-hero {
   padding: 140px 2rem 80px;
   text-align: center;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--bg-card);
 }
 
 .hero-content {
@@ -134,14 +134,14 @@
   font-weight: 800;
   line-height: 1.1;
   margin-bottom: 1.5rem;
-  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  background: var(--text-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .hero-subtitle {
   font-size: 1.3rem;
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.6;
   max-width: 600px;
   margin: 0 auto;
@@ -150,7 +150,7 @@
 /* Mission Section */
 .mission-section {
   padding: 6rem 2rem;
-  background: white;
+  background: var(--bg-card);
 }
 
 .mission-container {
@@ -170,12 +170,12 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 2rem;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .mission-text {
   font-size: 1.1rem;
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.7;
   margin-bottom: 1.5rem;
 }
@@ -208,7 +208,7 @@
 /* Features Section */
 .features-section {
   padding: 6rem 2rem;
-  background: #f8fafc;
+  background: var(--bg-dark);
 }
 
 .features-container {
@@ -221,7 +221,7 @@
   font-weight: 700;
   text-align: center;
   margin-bottom: 4rem;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .features-grid {
@@ -231,18 +231,18 @@
 }
 
 .feature-card {
-  background: white;
+  background: var(--bg-card);
   padding: 3rem 2rem;
   border-radius: 16px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-dim);
   transition: all 0.3s ease;
 }
 
 .feature-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
 }
 
 .feature-icon {
@@ -254,18 +254,18 @@
   font-size: 1.4rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .feature-description {
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
 /* Story Section */
 .story-section {
   padding: 6rem 2rem;
-  background: white;
+  background: var(--bg-card);
 }
 
 .story-container {
@@ -278,12 +278,12 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 3rem;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .story-text {
   font-size: 1.1rem;
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.7;
   margin-bottom: 2rem;
   text-align: left;
@@ -292,7 +292,7 @@
 /* Values Section */
 .values-section {
   padding: 6rem 2rem;
-  background: #f8fafc;
+  background: var(--bg-dark);
 }
 
 .values-container {
@@ -305,7 +305,7 @@
   font-weight: 700;
   text-align: center;
   margin-bottom: 4rem;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .values-grid {
@@ -315,29 +315,29 @@
 }
 
 .value-card {
-  background: white;
+  background: var(--bg-card);
   padding: 2.5rem 2rem;
   border-radius: 16px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-dim);
   transition: all 0.3s ease;
 }
 
 .value-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
 }
 
 .value-title {
   font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .value-description {
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -375,7 +375,7 @@
 }
 
 .cta-btn-primary {
-  background: white;
+  background: var(--bg-card);
   color: #2563eb;
   border: none;
   padding: 1rem 2.5rem;

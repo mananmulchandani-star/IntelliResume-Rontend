@@ -790,7 +790,7 @@
 }
 
 .cta-btn-primary {
-  background: white;
+  background: var(--bg-card);
   color: #2563eb;
   border: none;
   padding: 1rem 2.5rem;
@@ -972,7 +972,7 @@
 
 .footer-auth-btn.secondary:hover {
   background: #1e293b;
-  border-color: #475569;
+  border-color: var(--text-secondary);
 }
 
 .footer-bottom {
