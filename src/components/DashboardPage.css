@@ -3,31 +3,30 @@
 /* All logic and animations preserved */
 
 :root {
-  /* Global Dark Theme - Black & Dark Blue */
-  --bg-primary: #050b14;
-  --bg-secondary: #0a1128;
-  --bg-tertiary: #0f172a;
-  --bg-solid: #0a1128;
+  /* Light theme - White & Blue */
+  --bg-primary: #ffffff;      /* White background */
+  --bg-secondary: #f0f4f9;    /* Light blue-white for cards/sections */
+  --bg-tertiary: #e6eef9;     /* Slightly darker hover */
+  --bg-solid: #ffffff;        /* For form inputs */
+  --text-primary: #0a0a0f;    /* Almost black text */
+  --text-secondary: #4a4a4a;  /* Grey text */
+  --text-muted: #6a6a6a;
+  --text-light: #94a3b8;
   
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-light: #475569;
-  
-  --accent-primary: #2563eb;
-  --accent-primary-hover: #1d4ed8;
-  --accent-secondary: #dc3545;
+  --accent-primary: #007bff; /* Primary Blue */
+  --accent-primary-hover: #0056b3; /* Darker Blue */
+  --accent-secondary: #dc3545; /* A contrasting red for delete/logout */
   --accent-secondary-hover: #a71d2a;
-  --accent-error: #ef4444;
+  --accent-error: #dc3545;
   
-  --border-light: rgba(255, 255, 255, 0.1);
-  --border-medium: rgba(255, 255, 255, 0.15);
+  --border-light: #d1d9e6;
+  --border-medium: #b6c1d2;
   
-  /* Shadows - Dark Mode */
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.7);
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.6);
+  /* Shadows - Simple */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1); /* Kept var name */
   
   /* Border radius - Kept from original */
   --radius-sm: 8px;
@@ -36,6 +35,33 @@
   --radius-xl: 20px;
   --radius-2xl: 24px;
   --radius-pill: 50px;
+}
+
+.dark-mode {
+  /* Dark theme - "Z Black" & Blue */
+  --bg-primary: #000000;      /* "Z Black" background */
+  --bg-secondary: #1a1a1a;    /* Dark grey for cards/sections */
+  --bg-tertiary: #2a2a2a;     /* Slightly lighter hover */
+  --bg-solid: #1a1a1a;        /* Fixed: Dark background for form inputs */
+  --text-primary: #ffffff;    /* White text */
+  --text-secondary: #b0b0b0;  /* Light grey text */
+  --text-muted: #8a8a8a;
+  --text-light: #505070;
+  
+  --accent-primary: #007bff; /* Primary Blue */
+  --accent-primary-hover: #3395ff; /* Lighter Blue hover */
+  --accent-secondary: #ff4757; /* Brighter red */
+  --accent-secondary-hover: #ff6b79;
+  --accent-error: #ff4757;
+  
+  --border-light: #3a3a3a;
+  --border-medium: #5a5a5a;
+  
+  /* Shadows - Simple for dark mode */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.25);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 /* Reset and base styles */
@@ -2171,5 +2197,19 @@ button, input, select, textarea, .resume-card, .action-card, .icon-btn {
   .db-main { padding: 1.5rem 1.25rem; }
   .header-content { padding: 0 1.25rem !important; }
   .brand-subtitle { display: none; }
+  
+  /* Comprehensive grid overrides for mobile */
+  .db-body-grid,
+  .actions-grid,
+  .resumes-grid,
+  .form-grid,
+  .info-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .resume-card, .template-card {
+    min-width: unset !important;
+    width: 100% !important;
+  }
 }
 

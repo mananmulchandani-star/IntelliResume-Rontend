@@ -1,15 +1,15 @@
 /* ContactPage.css */
 .contact-page {
   min-height: 100vh;
-  background: var(--bg-dark);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Header Styles */
 .contact-header {
-  background: rgba(10, 17, 40, 0.95);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-dim);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
   position: fixed;
   top: 0;
   left: 0;
@@ -83,7 +83,7 @@
 .nav-link {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: #475569;
   text-decoration: none;
   font-weight: 500;
   font-size: 1rem;
@@ -114,7 +114,7 @@
 }
 
 .login-btn {
-  color: var(--text-secondary);
+  color: #64748b;
   font-weight: 500;
 }
 
@@ -139,7 +139,7 @@
 .contact-hero {
   padding: 140px 2rem 80px;
   text-align: center;
-  background: var(--bg-card);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
 }
 
 .hero-content {
@@ -165,14 +165,14 @@
   font-weight: 800;
   line-height: 1.1;
   margin-bottom: 1.5rem;
-  background: var(--text-primary);
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .hero-subtitle {
   font-size: 1.2rem;
-  color: var(--text-secondary);
+  color: #64748b;
   line-height: 1.6;
   margin-bottom: 3rem;
   max-width: 600px;
@@ -208,9 +208,9 @@
 }
 
 .hero-secondary-btn {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border: 1px solid var(--border-dim);
+  background: white;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
   padding: 1rem 2rem;
   border-radius: 12px;
   font-weight: 600;
@@ -230,7 +230,7 @@
 /* Contact Information Section */
 .contact-section {
   padding: 6rem 2rem;
-  background: var(--bg-card);
+  background: white;
 }
 
 .contact-container {
@@ -247,12 +247,12 @@
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 1rem;
-  color: var(--text-primary);
+  color: #0f172a;
 }
 
 .contact-main-subtitle {
   font-size: 1.2rem;
-  color: var(--text-secondary);
+  color: #64748b;
   max-width: 600px;
   margin: 0 auto;
   line-height: 1.6;
@@ -266,12 +266,12 @@
 }
 
 .contact-method-card {
-  background: var(--bg-card);
+  background: white;
   padding: 2.5rem 2rem;
   border-radius: 20px;
   text-align: center;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--border-dim);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   transition: all 0.3s ease;
 }
 
@@ -297,11 +297,11 @@
   font-size: 1.4rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: var(--text-primary);
+  color: #0f172a;
 }
 
 .method-content p {
-  color: var(--text-secondary);
+  color: #64748b;
   margin-bottom: 1.5rem;
   line-height: 1.6;
 }
@@ -363,7 +363,7 @@
 /* FAQ Section */
 .faq-section {
   padding: 6rem 2rem;
-  background: var(--bg-dark);
+  background: #f8fafc;
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -377,12 +377,12 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
-  color: var(--text-primary);
+  color: #0f172a;
 }
 
 .faq-subtitle {
   font-size: 1.1rem;
-  color: var(--text-secondary);
+  color: #64748b;
   max-width: 500px;
   margin: 0 auto;
 }
@@ -394,8 +394,8 @@
 }
 
 .faq-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border-dim);
+  background: white;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -412,24 +412,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--text-primary);
+  color: #0f172a;
   transition: all 0.3s ease;
 }
 
 .faq-question:hover {
-  background: var(--bg-dark);
+  background: #f8fafc;
 }
 
 .faq-toggle {
   font-size: 1.2rem;
   font-weight: 300;
-  color: var(--text-secondary);
+  color: #64748b;
   transition: all 0.3s ease;
 }
 
 .faq-answer {
   padding: 0 1.5rem 1.5rem;
-  color: var(--text-secondary);
+  color: #64748b;
   line-height: 1.6;
   border-top: 1px solid #f1f5f9;
 }
@@ -468,7 +468,7 @@
 }
 
 .cta-btn-primary {
-  background: var(--bg-card);
+  background: white;
   color: #2563eb;
   border: none;
   padding: 1rem 2rem;
@@ -594,7 +594,7 @@
 
 .footer-auth-btn.secondary:hover {
   background: #1e293b;
-  border-color: var(--text-secondary);
+  border-color: #475569;
 }
 
 .footer-links h3 {
