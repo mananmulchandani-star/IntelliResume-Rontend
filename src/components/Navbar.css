@@ -17,25 +17,24 @@
 }
 
 .ir-navbar.scrolled {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(5, 11, 20, 0.85);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid rgba(37, 99, 235, 0.12);
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
 }
 
 .ir-navbar.top {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(5, 11, 20, 0.3);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .ir-navbar.dark-bg {
-  background: rgba(10, 15, 30, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(99, 150, 255, 0.12);
+  /* No longer needed but keeping override for safety */
+  background: rgba(5, 11, 20, 0.9);
+  border-bottom: 1px solid rgba(99, 150, 255, 0.15);
 }
 
 .ir-navbar-inner {
@@ -150,7 +149,7 @@
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #475569;
+  color: #cbd5e1; /* Light slate text */
   cursor: pointer;
   font-family: 'Inter', sans-serif;
   transition: all 0.25s ease;
@@ -173,8 +172,8 @@
 }
 
 .ir-nav-link:hover {
-  color: #1d4ed8;
-  background: rgba(59, 130, 246, 0.07);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .ir-nav-link:hover::after {
@@ -182,8 +181,8 @@
 }
 
 .ir-nav-link.active {
-  color: #1d4ed8;
-  background: rgba(59, 130, 246, 0.1);
+  color: #fff;
+  background: rgba(59, 130, 246, 0.2);
 }
 
 /* White nav links for dark backgrounds */
@@ -206,8 +205,8 @@
 
 .ir-btn-ghost {
   background: transparent;
-  border: 1.5px solid rgba(203, 213, 225, 0.8);
-  color: #475569;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  color: #f8fafc;
   padding: 0.5rem 1.15rem;
   border-radius: 8px;
   font-size: 0.875rem;
@@ -220,8 +219,8 @@
 
 .ir-btn-ghost:hover {
   border-color: #3b82f6;
-  color: #1d4ed8;
-  background: rgba(59, 130, 246, 0.05);
+  color: #fff;
+  background: rgba(59, 130, 246, 0.15);
 }
 
 .ir-btn-primary {

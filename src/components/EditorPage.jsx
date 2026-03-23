@@ -686,6 +686,9 @@ const EditorPage = () => {
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [downloadSuccessTimestamp, setDownloadSuccessTimestamp] = useState(null);
 
+  // Mobile layout state
+  const [mobileTab, setMobileTab] = useState('edit');
+
   // Timer to hide download success ad after 2 minutes
   useEffect(() => {
     if (downloadSuccess && downloadSuccessTimestamp) {
@@ -1639,7 +1642,7 @@ const EditorPage = () => {
 
       <div className="editor-layout">
         {/* Left Sidebar - Template Selector */}
-        <div className="template-selector">
+        <div className={`template-selector ${mobileTab !== 'templates' ? 'mobile-hidden' : ''}`}>
           <h3>Choose Template</h3>
           <div className="template-buttons">
             {[
@@ -1767,7 +1770,7 @@ const EditorPage = () => {
         </div>
 
         {/* Center Panel - Live Preview */}
-        <div className="preview-panel">
+        <div className={`preview-panel ${mobileTab !== 'preview' ? 'mobile-hidden' : ''}`}>
           <div className="preview-container">
             <div 
               ref={resumeRef}
@@ -1793,7 +1796,7 @@ const EditorPage = () => {
         </div>
 
         {/* Right Panel - Editing Controls */}
-        <div className="editing-panel">
+        <div className={`editing-panel ${mobileTab !== 'edit' ? 'mobile-hidden' : ''}`}>
           <ResumeForm 
             data={resumeData} 
             onChange={handleInputChange}
@@ -1826,6 +1829,28 @@ const EditorPage = () => {
             onClearAll={clearAllData}
           />
         </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="mobile-bottom-nav">
+        <button 
+          className={`mobile-nav-btn ${mobileTab === 'templates' ? 'active' : ''}`}
+          onClick={() => setMobileTab('templates')}
+        >
+          🎨 Templates
+        </button>
+        <button 
+          className={`mobile-nav-btn ${mobileTab === 'edit' ? 'active' : ''}`}
+          onClick={() => setMobileTab('edit')}
+        >
+          📝 Edit
+        </button>
+        <button 
+          className={`mobile-nav-btn ${mobileTab === 'preview' ? 'active' : ''}`}
+          onClick={() => setMobileTab('preview')}
+        >
+          👁️ Preview
+        </button>
       </div>
 
       {/* Skill Verification Popup */}
