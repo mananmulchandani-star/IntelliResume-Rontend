@@ -21,7 +21,7 @@ const SkillVerificationPopup = ({
   const [currentSkillIndex, setCurrentSkillIndex] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(20);
+  const [timeLeft, setTimeLeft] = useState(50);
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState({});
   const [showResults, setShowResults] = useState(false);
@@ -43,7 +43,7 @@ const SkillVerificationPopup = ({
       clearInterval(timerRef.current);
     }
 
-    setTimeLeft(20); // Reset timer for new question
+    setTimeLeft(50); // Reset timer for new question
     
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
@@ -124,7 +124,7 @@ const SkillVerificationPopup = ({
       if (response.ok) {
         const data = await response.json();
         setCurrentQuestion(data.question);
-        setTimeLeft(20); // Reset to 20 seconds
+        setTimeLeft(50); // Reset to 50 seconds
       } else {
         console.error('Failed to load question');
         // Fallback question
@@ -540,7 +540,7 @@ const SkillVerificationPopup = ({
               <div className={`timer-circle ${timeoutOccurred ? 'timeout' : ''}`}>
                 <span>{timeLeft}s</span>
               </div>
-              <p className="timer-note">20 seconds per question</p>
+              <p className="timer-note">50 seconds per question</p>
               {timeLeft <= 10 && (
                 <p className="timer-warning">⚠️ Hurry up! Time is running out</p>
               )}
