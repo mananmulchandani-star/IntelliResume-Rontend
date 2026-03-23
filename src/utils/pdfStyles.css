@@ -1,0 +1,122 @@
+/* PDF Export Fixes for Modern and IRM Templates */
+@media print {
+  /* Reset problematic styles */
+  * {
+    box-sizing: border-box;
+    max-width: 100% !important;
+  }
+  
+  /* Ensure proper page breaks */
+  .resume-section {
+    page-break-inside: avoid;
+  }
+  
+  /* Fix overflow issues */
+  .modern-template,
+  .irm-template {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  
+  /* Remove background colors for better printing */
+  .bg-primary,
+  .bg-secondary,
+  .sidebar,
+  .header {
+    background: white !important;
+    color: black !important;
+  }
+  
+  /* Ensure text is readable */
+  body {
+    color: #000 !important;
+    background: #fff !important;
+    font-family: Arial, sans-serif !important;
+  }
+  
+  /* Fix flex/grid layouts */
+  .flex-container,
+  .grid-container {
+    display: block !important;
+  }
+  
+  /* Remove shadows and effects */
+  .shadow,
+  .box-shadow,
+  .gradient-bg {
+    box-shadow: none !important;
+    background: white !important;
+  }
+  
+  /* Ensure proper spacing */
+  .section {
+    margin: 10px 0 !important;
+    padding: 10px !important;
+  }
+}
+
+/* PDF-specific utility classes */
+.pdf-export {
+  /* Force block display for problematic elements */
+  .inline-element {
+    display: block !important;
+  }
+  
+  /* Fix text overflow */
+  .text-container {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+  }
+  
+  /* Ensure images don't break layout */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* Modern Template specific PDF fixes */
+.modern-template.pdf-export .sidebar {
+  position: relative !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+.modern-template.pdf-export .main-content {
+  margin-left: 0 !important;
+}
+
+.modern-template.pdf-export .skill-bar,
+.modern-template.pdf-export .progress-bar {
+  display: none;
+}
+
+/* IRM Template specific PDF fixes */
+.irm-template.pdf-export .header-section {
+  position: relative !important;
+  text-align: center !important;
+}
+
+.irm-template.pdf-export .timeline-item::before {
+  display: none;
+}
+
+.irm-template.pdf-export .floating-element {
+  position: relative !important;
+  float: none !important;
+}
+
+/* Temporary quick fixes for immediate use */
+.pdf-fix {
+  position: relative !important;
+  overflow: visible !important;
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* Ensure PDF background is white */
+body.pdf-export {
+  background: white !important;
+  color: black !important;
+}

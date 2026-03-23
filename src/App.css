@@ -1,0 +1,170 @@
+.homepage {
+  font-family: 'Inter', Arial, sans-serif;
+  background: #f8fbff;
+  min-height: 100vh;
+  color: #181c32;
+}
+
+.homepage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px 48px 16px 48px;
+}
+
+.logo-box {
+  display: flex;
+  align-items: center;
+}
+
+.logo-circle {
+  background: #2563fb;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 19px;
+}
+
+.site-title {
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.get-started-btn {
+  background: #2563fb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 26px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.get-started-btn:hover {
+  background: #1e62d8;
+}
+
+main {
+  text-align: center;
+  margin-top: 50px;
+}
+
+h1 {
+  font-size: 3.2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #181c32;
+  line-height: 1.13;
+}
+
+.highlight {
+  color: #2563fb;
+  display: inline-block;
+}
+
+.homepage-desc {
+  color: #757d8a;
+  font-size: 1.18rem;
+  margin-bottom: 36px;
+  font-weight: 400;
+}
+
+.homepage-buttons {
+  margin-bottom: 49px;
+}
+
+.primary-btn {
+  background: #2563fb;
+  color: #fff;
+  padding: 16px 36px;
+  border: none;
+  border-radius: 11px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(37, 99, 251, 0.09);
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.primary-btn:hover {
+  background: #1e62d8;
+}
+
+.secondary-btn {
+  background: #fff;
+  color: #2563fb;
+  border: 1px solid #d0d6e3;
+  border-radius: 11px;
+  padding: 16px 36px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.secondary-btn:hover {
+  background: #f0f4fa;
+}
+
+.features-row {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 48px;
+}
+
+.feature-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 32px rgba(37,99,251,.07);
+  padding: 32px 27px 32px 27px;
+  max-width: 280px;
+  text-align: left;
+}
+
+.feature-icon {
+  font-size: 2.1rem;
+  text-align: center;
+}
+
+.feature-title {
+  font-weight: 700;
+  font-size: 1.18rem;
+  margin: 13px 0 8px 0;
+}
+
+.feature-desc {
+  color: #626874;
+  font-size: 1rem;
+}
+
+.homepage-footer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  padding: 13px;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+}
+
+.made-with {
+  display: inline-block;
+  background: #fff;
+  border-radius: 7px;
+  box-shadow: 0 2px 7px rgba(0,0,0,0.03);
+  font-size: 0.94rem;
+  color: #25292e;
+  padding: 7px 14px;
+}

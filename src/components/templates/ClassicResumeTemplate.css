@@ -1,0 +1,188 @@
+/* src/components/templates/ClassicResumeTemplate.css */
+
+.resume-paper-modern {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 8.5in;
+    min-height: 11in;
+    margin: 20px auto;
+    padding: 40px 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #4A4A4A; /* Softer black for text */
+    line-height: 1.6;
+    box-sizing: border-box;
+}
+
+/* --- HEADER: NAME AND TITLE --- */
+.resume-header-modern {
+    text-align: center;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #F0F0F0;
+}
+
+.resume-header-modern h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2D2D2D;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.resume-header-modern p {
+    font-size: 1.1rem;
+    color: #007BFF; /* A nice accent color */
+    margin: 5px 0 0 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- TWO-COLUMN LAYOUT --- */
+.resume-body-columns {
+    display: flex;
+    gap: 40px; /* Space between the two columns */
+}
+
+/* --- LEFT SIDEBAR --- */
+.resume-sidebar {
+    flex: 0 0 250px; /* Sidebar has a fixed width of 250px */
+}
+
+.sidebar-section {
+    margin-bottom: 25px;
+}
+
+.sidebar-section h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #007BFF;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #EAEAEA;
+}
+
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.contact-list span {
+    line-height: 1.5;
+}
+
+.sidebar-item {
+    margin-bottom: 15px;
+}
+
+.sidebar-item h3 {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #2D2D2D;
+    margin: 0;
+}
+
+.sidebar-item p, .sidebar-item em {
+    font-size: 0.9rem;
+    margin: 2px 0;
+}
+
+.sidebar-item em {
+    color: #777;
+    font-style: italic;
+}
+
+.skills-list-sidebar {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.skills-list-sidebar li {
+    margin-bottom: 5px;
+    padding: 3px 8px;
+    background-color: #F8F9FA;
+    border-radius: 4px;
+}
+
+
+/* --- RIGHT MAIN CONTENT --- */
+.resume-main-content {
+    flex-grow: 1; /* Takes up the remaining space */
+}
+
+.main-section {
+    margin-bottom: 30px;
+}
+
+.main-section h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2D2D2D;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 15px 0;
+}
+
+.about-me-text {
+    font-size: 1rem;
+    text-align: justify;
+}
+
+.experience-item-main {
+    margin-bottom: 20px;
+}
+
+.experience-item-main h3 {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #007BFF;
+    margin: 0;
+}
+
+.experience-item-main h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #555;
+    margin: 2px 0 8px 0;
+    font-style: italic;
+}
+
+.experience-item-main p {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.placeholder-text {
+    font-size: 0.95rem;
+    color: #888;
+    background-color: #FDFDFD;
+    border: 1px dashed #DDD;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+/* src/components/templates/ClassicResumeTemplate.css */
+
+/* --- ADD THIS AT THE END OF THE FILE --- */
+
+/* --- Languages Section --- */
+.languages-list-sidebar {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.languages-list-sidebar li {
+    margin-bottom: 5px;
+    padding: 3px 8px;
+    background-color: #F8F9FA;
+    border-radius: 4px;
+}

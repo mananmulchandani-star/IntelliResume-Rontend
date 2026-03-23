@@ -1,0 +1,17 @@
+/* Shared styles for form components */
+.form-entry { border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; position: relative; background-color: #fdfdfd; }
+.form-entry .input-group { display: flex; gap: 15px; }
+.form-entry input, .form-entry textarea { width: 100%; padding: 10px 12px; margin-bottom: 16px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; box-sizing: border-box; }
+.form-entry input:focus, .form-entry textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+.remove-btn { position: absolute; top: 10px; right: 10px; background: #fee2e2; color: #ef4444; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s, color 0.2s; }
+.remove-btn:hover { background-color: #ef4444; color: white; }
+.add-btn { width: 100%; padding: 12px; border: 2px dashed #9ca3af; background-color: #f9fafb; color: #4b5563; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: border-color 0.2s, color 0.2s; }
+.add-btn:hover { border-color: #3b82f6; color: #3b82f6; }
+.tag-input-container { display: flex; margin-bottom: 16px; }
+.tag-input-container input { flex-grow: 1; border-radius: 6px 0 0 6px; border: 1px solid #d1d5db; padding: 10px 12px; font-size: 1rem; }
+.tag-input-container input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); z-index: 1; }
+.tag-input-container button { border-radius: 0 6px 6px 0; border: 1px solid #3b82f6; background-color: #3b82f6; color: white; font-size: 1.5rem; line-height: 1; padding: 0 15px; cursor: pointer; margin-left: -1px; }
+.tags-container { display: flex; flex-wrap: wrap; gap: 10px; }
+.tag-item { background-color: #eff6ff; color: #1d4ed8; padding: 6px 12px; border-radius: 16px; display: flex; align-items: center; font-size: 0.875rem; font-weight: 500; border: 1px solid #dbeafe; }
+.tag-item button { background: none; border: none; color: #1d4ed8; margin-left: 8px; cursor: pointer; font-weight: bold; opacity: 0.7; transition: opacity 0.2s; }
+.tag-item button:hover { opacity: 1; }

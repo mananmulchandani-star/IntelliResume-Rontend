@@ -1,0 +1,416 @@
+/* ============================================
+   SHARED NAVBAR - InsightResume
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ---- Navbar Base ---- */
+.ir-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ir-navbar.scrolled {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.12);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
+}
+
+.ir-navbar.top {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.ir-navbar.dark-bg {
+  background: rgba(10, 15, 30, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(99, 150, 255, 0.12);
+}
+
+.ir-navbar-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+/* ---- Logo ---- */
+.ir-logo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ir-logo-orb {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ir-logo-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #60a5fa 100%);
+  border-radius: 10px;
+  animation: orbPulse 3s ease-in-out infinite;
+}
+
+.ir-logo-shine {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.ir-logo-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  opacity: 0;
+  filter: blur(8px);
+  z-index: -1;
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+.ir-logo-text-orb {
+  position: relative;
+  z-index: 1;
+  color: white;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.5px;
+  font-family: 'Inter', sans-serif;
+}
+
+.ir-logo-name {
+  font-size: 1.45rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 60%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+}
+
+.ir-logo-name.white {
+  background: linear-gradient(135deg, #93c5fd 0%, #ffffff 60%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Logo hover animation */
+.ir-logo-link:hover .ir-logo-glow {
+  opacity: 0.7;
+}
+
+.ir-logo-link:hover .ir-logo-bg {
+  transform: scale(1.05);
+}
+
+/* ---- Nav Links ---- */
+.ir-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ir-nav-link {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.25s ease;
+  position: relative;
+  text-decoration: none;
+  letter-spacing: -0.1px;
+}
+
+.ir-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: calc(100% - 20px);
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #7c3aed);
+  border-radius: 2px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ir-nav-link:hover {
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.07);
+}
+
+.ir-nav-link:hover::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.ir-nav-link.active {
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* White nav links for dark backgrounds */
+.ir-navbar.dark-bg .ir-nav-link {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ir-navbar.dark-bg .ir-nav-link:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Auth Buttons ---- */
+.ir-auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.ir-btn-ghost {
+  background: transparent;
+  border: 1.5px solid rgba(203, 213, 225, 0.8);
+  color: #475569;
+  padding: 0.5rem 1.15rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.25s ease;
+  letter-spacing: -0.1px;
+}
+
+.ir-btn-ghost:hover {
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.ir-btn-primary {
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  border: none;
+  color: white;
+  padding: 0.55rem 1.3rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.35);
+  letter-spacing: -0.1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ir-btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.4s ease;
+}
+
+.ir-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5);
+}
+
+.ir-btn-primary:hover::before {
+  left: 100%;
+}
+
+/* Dark bg button variants */
+.ir-navbar.dark-bg .ir-btn-ghost {
+  border-color: rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.85);
+}
+
+.ir-navbar.dark-bg .ir-btn-ghost:hover {
+  border-color: rgba(255,255,255,0.5);
+  color: white;
+  background: rgba(255,255,255,0.1);
+}
+
+/* ---- Mobile Menu ---- */
+.ir-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+  flex-direction: column;
+  gap: 5px;
+  transition: background 0.2s;
+}
+
+.ir-hamburger:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.ir-hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #475569;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.ir-hamburger.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.ir-hamburger.open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.ir-hamburger.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.ir-mobile-menu {
+  display: none;
+  position: absolute;
+  top: 68px;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 1rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.25s ease;
+}
+
+.ir-mobile-menu.open {
+  display: flex;
+}
+
+.ir-mobile-link {
+  background: none;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  text-align: left;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.ir-mobile-link:hover {
+  background: rgba(59, 130, 246, 0.08);
+  color: #1d4ed8;
+}
+
+.ir-mobile-divider {
+  height: 1px;
+  background: rgba(226, 232, 240, 0.8);
+  margin: 0.5rem 0;
+}
+
+.ir-mobile-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .ir-nav-links {
+    display: none;
+  }
+
+  .ir-auth-buttons {
+    display: none;
+  }
+
+  .ir-hamburger {
+    display: flex;
+  }
+
+  .ir-navbar-inner {
+    padding: 0 1.25rem;
+  }
+
+  .ir-logo-name {
+    font-size: 1.2rem;
+  }
+
+  .ir-logo-orb {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ---- Keyframes ---- */
+@keyframes orbPulse {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.1);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
