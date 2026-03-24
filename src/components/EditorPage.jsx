@@ -7,7 +7,8 @@ import './EditorPage.css';
 
 //  Backend URL from environment variable (works on local dev AND production)
 const getBackendUrl = () => {
-  return import.meta.env.VITE_API_BASE_URL || 'https://insightr-backend-production.up.railway.app';
+  // Force local backend because the Railway server lacks the latest code
+  return 'http://127.0.0.1:5000';
 };
 
 
@@ -221,7 +222,14 @@ const SkillVerificationPopup = ({
           }, 1000);
         }
       } else {
-        console.error('HTTP error:', response.status);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('HTTP error:', response.status, errorData);
+        if (errorData.error) {
+            alert(`Backend notice: ${errorData.error}`);
+        } else {
+            alert(`HTTP error: ${response.status}`);
+        }
+        
         // Handle HTTP error
         setResults(prev => ({
           ...prev,
