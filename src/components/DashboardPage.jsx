@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './AuthContext';
+import { getBackendUrl } from '../config';
 import AdBanner from './AdBanner';
 import './DashboardPage.css';
 
@@ -58,10 +59,7 @@ const DashboardPage = () => {
   // Auth context
   const { user, logout, loading: authLoading } = useAuth();
 
-  //  Backend URL from environment variable (works on local dev AND production)
-  const getBackendUrl = () => {
-    return import.meta.env.VITE_API_BASE_URL || 'https://insightr-backend-production.up.railway.app';
-  };
+  
 
 
   // Load user's existing resumes and user name

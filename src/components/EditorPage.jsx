@@ -1,15 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getBackendUrl } from '../config';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import AdBanner from './AdBanner';
 import './EditorPage.css';
 
-//  Backend URL from environment variable (works on local dev AND production)
-const getBackendUrl = () => {
-  // Force local backend because the Railway server lacks the latest code
-  return 'http://127.0.0.1:5000';
-};
+
 
 
 //  FIXED: Enhanced Skill Verification Popup Component with proper question flow

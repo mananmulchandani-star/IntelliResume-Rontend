@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getBackendUrl } from '../config';
 
 const DebugPage = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ const DebugPage = () => {
 
       console.log(' Sending to AI:', testData);
 
-      const response = await fetch('http://localhost:5000/api/generate-resume-from-prompt', {
+      const response = await fetch(`${getBackendUrl()}/api/generate-resume-from-prompt`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

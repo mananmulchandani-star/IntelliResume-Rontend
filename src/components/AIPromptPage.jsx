@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getBackendUrl } from '../config';
 import './AIPromptPage.css';
 
 const AIPromptPage = () => {
@@ -16,10 +17,7 @@ const AIPromptPage = () => {
     location: ''
   });
 
-  //  Backend URL from environment variable (works on local dev AND production)
-  const getBackendUrl = () => {
-    return import.meta.env.VITE_API_BASE_URL || 'https://insightr-backend-production.up.railway.app';
-  };
+  
 
 
   //  CRITICAL FIX: Load formData from Dashboard navigation state
