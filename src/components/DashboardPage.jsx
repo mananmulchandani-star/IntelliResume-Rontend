@@ -7,18 +7,18 @@ import './DashboardPage.css';
 
 // Icons (you can replace with actual icon library like react-icons)
 const Icons = {
-  Sun: () => <span>️</span>,
-  Moon: () => <span></span>,
+  Sun: () => <span>☀️</span>,
+  Moon: () => <span>🌙</span>,
   Logout: () => <span className="logout-text">Logout</span>, // Changed back to text with class
   Create: () => <span>+</span>,
   AI: () => <span>AI</span>,
-  Edit: () => <span></span>,
-  Delete: () => <span></span>,
-  Calendar: () => <span></span>,
-  Document: () => <span></span>,
+  Edit: () => <span>✏️</span>,
+  Delete: () => <span>🗑️</span>,
+  Calendar: () => <span>📅</span>,
+  Document: () => <span>📄</span>,
   Close: () => <span>×</span>,
-  Sparkle: () => <span></span>,
-  Robot: () => <span></span>
+  Sparkle: () => <span>✨</span>,
+  Robot: () => <span>🤖</span>
 };
 
 const DashboardPage = () => {
@@ -729,7 +729,7 @@ const DashboardPage = () => {
       <motion.div className="db-welcome-banner" variants={itemVariants}>
         <div className="db-banner-inner">
           <div>
-            <div className="db-banner-title">Good to see you, {userName.split(' ')[0]} </div>
+            <div className="db-banner-title">Good to see you, {userName.split(' ')[0]} 👋</div>
             <div className="db-banner-sub">Your AI-powered resume workspace</div>
           </div>
           <div className="db-stats-chips">
@@ -738,11 +738,11 @@ const DashboardPage = () => {
               <div className="db-stat-chip-label">Resumes</div>
             </div>
             <div className="db-stat-chip">
-              <div className="db-stat-chip-value"></div>
+              <div className="db-stat-chip-value">🤖</div>
               <div className="db-stat-chip-label">AI Ready</div>
             </div>
             <div className="db-stat-chip">
-              <div className="db-stat-chip-value"></div>
+              <div className="db-stat-chip-value">✅</div>
               <div className="db-stat-chip-label">ATS Optimised</div>
             </div>
           </div>

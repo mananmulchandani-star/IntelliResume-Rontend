@@ -149,11 +149,11 @@ const FAQPage = () => {
   };
 
   const categories = [
-    { id: 'general', name: 'General', icon: '', count: faqData.general.length },
-    { id: 'features', name: 'Features', icon: '', count: faqData.features.length },
-    { id: 'account', name: 'Account', icon: '', count: faqData.account.length },
-    { id: 'technical', name: 'Technical', icon: '', count: faqData.technical.length },
-    { id: 'billing', name: 'Billing', icon: '', count: faqData.billing.length }
+    { id: 'general', name: 'General', icon: '❓', count: faqData.general.length },
+    { id: 'features', name: 'Features', icon: '✨', count: faqData.features.length },
+    { id: 'account', name: 'Account', icon: '👤', count: faqData.account.length },
+    { id: 'technical', name: 'Technical', icon: '⚙️', count: faqData.technical.length },
+    { id: 'billing', name: 'Billing', icon: '💳', count: faqData.billing.length }
   ];
 
   return (
@@ -173,7 +173,7 @@ const FAQPage = () => {
       <section className="faq-hero">
         <div className="hero-content">
           <div className="hero-badge">
-            <span className="badge-icon"></span>
+            <span className="badge-icon">❓</span>
             Frequently Asked Questions
           </div>
           <h1 className="hero-title">How Can We Help You?</h1>
@@ -185,7 +185,7 @@ const FAQPage = () => {
           {/* Search Bar */}
           <div className="search-container">
             <div className="search-bar">
-              <span className="search-icon"></span>
+              <span className="search-icon">🔍</span>
               <input 
                 type="text" 
                 placeholder="Search for answers..." 
@@ -222,11 +222,11 @@ const FAQPage = () => {
               <p>Can't find the answer you're looking for? Our support team is here to help.</p>
               <div className="help-buttons">
                 <button className="help-btn primary" onClick={handleContactClick}>
-                  <span className="btn-icon"></span>
+                  <span className="btn-icon">💬</span>
                   Contact Support
                 </button>
                 <button className="help-btn secondary" onClick={handleGetStarted}>
-                  <span className="btn-icon"></span>
+                  <span className="btn-icon">🚀</span>
                   Get Started
                 </button>
               </div>
@@ -276,11 +276,11 @@ const FAQPage = () => {
                 <p>We're here to help you get the most out of InsightResume</p>
                 <div className="action-buttons">
                   <button className="action-btn primary" onClick={handleContactClick}>
-                    <span className="btn-icon"></span>
+                    <span className="btn-icon">📧</span>
                     Email Support
                   </button>
                   <button className="action-btn secondary" onClick={() => window.open('/help', '_blank')}>
-                    <span className="btn-icon"></span>
+                    <span className="btn-icon">📖</span>
                     Visit Help Center
                   </button>
                 </div>
@@ -300,12 +300,12 @@ const FAQPage = () => {
             </p>
             <div className="cta-buttons">
               <button className="cta-btn-primary" onClick={handleGetStarted}>
-                <span className="btn-sparkle"></span>
+                <span className="btn-sparkle">✨</span>
                 Start Building Now
                 <span className="btn-arrow">→</span>
               </button>
               <button className="cta-btn-secondary" onClick={handleFeaturesClick}>
-                <span className="btn-icon"></span>
+                <span className="btn-icon">🔍</span>
                 View Features
               </button>
             </div>

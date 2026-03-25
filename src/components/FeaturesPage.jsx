@@ -38,7 +38,7 @@ const FeaturesPage = () => {
   const features = [
     {
       id: 1,
-      icon: '',
+      icon: '🤖',
       title: 'AI-Powered Content Suggestions',
       description: 'Get intelligent writing suggestions tailored to your industry and experience level. Our AI analyzes your input and provides professional phrasing.',
       benefits: ['Smart bullet point generation', 'Industry-specific keywords', 'Professional language optimization', 'Real-time content improvement'],
@@ -46,7 +46,7 @@ const FeaturesPage = () => {
     },
     {
       id: 2,
-      icon: '',
+      icon: '🎯',
       title: 'ATS Optimization',
       description: 'Ensure your resume passes through Applicant Tracking Systems with flying colors. We optimize formatting and keywords automatically.',
       benefits: ['ATS-friendly templates', 'Keyword optimization', 'Format compliance', 'Scanner compatibility'],
@@ -54,7 +54,7 @@ const FeaturesPage = () => {
     },
     {
       id: 3,
-      icon: '',
+      icon: '🎨',
       title: 'One-Click Formatting',
       description: 'Transform your resume with professional layouts in seconds. Choose from multiple modern templates designed by HR experts.',
       benefits: ['Multiple template choices', 'Consistent formatting', 'Professional layouts', 'Easy customization'],
@@ -62,7 +62,7 @@ const FeaturesPage = () => {
     },
     {
       id: 4,
-      icon: '',
+      icon: '📊',
       title: 'Real-Time Analysis',
       description: 'Get instant feedback on your resume with our comprehensive analysis tool. Identify strengths and areas for improvement.',
       benefits: ['Content scoring', 'Gap identification', 'Impact measurement', 'Improvement suggestions'],
@@ -70,7 +70,7 @@ const FeaturesPage = () => {
     },
     {
       id: 5,
-      icon: '',
+      icon: '💼',
       title: 'Industry-Specific Templates',
       description: 'Choose from templates designed specifically for your industry. Whether tech, healthcare, or finance, we have you covered.',
       benefits: ['Sector-specific designs', 'Role-appropriate layouts', 'Industry standards', 'Customizable elements'],
@@ -78,7 +78,7 @@ const FeaturesPage = () => {
     },
     {
       id: 6,
-      icon: '',
+      icon: '📈',
       title: 'Progress Tracking',
       description: 'Track your resume building progress and get recommendations for completion. Visualize your journey to the perfect resume.',
       benefits: ['Completion metrics', 'Progress indicators', 'Goal tracking', 'Achievement badges'],
@@ -111,7 +111,7 @@ const FeaturesPage = () => {
         <div className="hero-content">
           <div className={`hero-text ${isVisible ? 'fade-in-up' : ''}`}>
             <div className="hero-badge">
-              <span className="badge-icon"></span>
+              <span className="badge-icon">✨</span>
               Powerful Features
             </div>
             <h1 className="hero-title">
@@ -124,11 +124,11 @@ const FeaturesPage = () => {
             </p>
             <div className="hero-buttons">
               <button className="hero-primary-btn" onClick={handleGetStarted}>
-                <span className="btn-icon"></span>
+                <span className="btn-icon">🚀</span>
                 Start Building Free
               </button>
               <button className="hero-secondary-btn" onClick={() => document.getElementById('features-grid').scrollIntoView({ behavior: 'smooth' })}>
-                <span className="btn-icon"></span>
+                <span className="btn-icon">🔍</span>
                 Explore Features
               </button>
             </div>
@@ -214,7 +214,7 @@ const FeaturesPage = () => {
                 <ul className="feature-benefits">
                   {feature.benefits.map((benefit, benefitIndex) => (
                     <li key={benefitIndex} className="benefit-item">
-                      <span className="benefit-icon"></span>
+                      <span className="benefit-icon">✅</span>
                       {benefit}
                     </li>
                   ))}
@@ -291,12 +291,12 @@ const FeaturesPage = () => {
             </p>
             <div className="cta-buttons">
               <button className="cta-btn-primary" onClick={handleGetStarted}>
-                <span className="btn-sparkle"></span>
+                <span className="btn-sparkle">✨</span>
                 Start Your Journey
                 <span className="btn-arrow">→</span>
               </button>
               <button className="cta-btn-secondary" onClick={handleContactClick}>
-                <span className="btn-icon"></span>
+                <span className="btn-icon">📞</span>
                 Talk to Experts
               </button>
             </div>

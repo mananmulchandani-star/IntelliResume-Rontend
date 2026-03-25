@@ -272,7 +272,7 @@ const ContactPage = () => {
         </div>
         
         <div className="footer-bottom">
-          <p>&copy; 2025 InsightResume. All rights reserved. Crafted with ️ for job seekers worldwide.</p>
+          <p>&copy; 2025 InsightResume. All rights reserved. Crafted with ❤️ for job seekers worldwide.</p>
         </div>
       </footer>
     </div>

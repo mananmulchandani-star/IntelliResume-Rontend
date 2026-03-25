@@ -1120,7 +1120,7 @@ const EditorPage = () => {
     setVerificationResults(results);
     setShowSkillVerification(false);
     
-    if (results.passed) {
+    if (results.passed || results.result?.passed_verification) {
       setVerifiedSkills(results.verifiedSkills);
       setIsVerificationComplete(true);
       // Automatically download after successful verification
