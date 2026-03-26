@@ -708,7 +708,7 @@ const DashboardPage = () => {
               <div className="user-avatar">{userName.charAt(0).toUpperCase()}</div>
               <div className="user-details">
                 <span className="user-greeting">Welcome back,</span>
-                <span className="user-name">{userName}</span>
+                <span className="user-name">{userName.split(' ')[0]}</span>
               </div>
               <motion.button
                 className="logout-btn"
