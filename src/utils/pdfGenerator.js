@@ -55,22 +55,38 @@ export const downloadResumePDF = async (templateType) => {
         el.style.maxWidth = '100%';
       });
       
-      // Remove absolute positioning that breaks PDF
+      // Remove absolute positioning that breaks PDF clones in some contexts
       const absoluteElements = clone.querySelectorAll('[style*="absolute"], [style*="fixed"]');
       absoluteElements.forEach(el => {
-        el.style.position = 'relative';
-        el.style.top = 'auto';
-        el.style.left = 'auto';
-        el.style.right = 'auto';
-        el.style.bottom = 'auto';
+        // Keep verification badges and specific absolute markers if needed, 
+        // but generally relative is safer for html2canvas flow
+        if (!el.classList.contains('verified-badge')) {
+          el.style.position = 'relative';
+          el.style.top = 'auto';
+          el.style.left = 'auto';
+        }
       });
       
-      // Fix flexbox/grid issues
+      // Fix flexbox/grid issues - PRESERVE them instead of flattening
       const flexContainers = clone.querySelectorAll('[style*="flex"], [style*="grid"]');
       flexContainers.forEach(container => {
-        container.style.display = 'block';
+        container.style.overflow = 'visible';
+        // DO NOT set display: block, as it ruins the layout
       });
     }
+    
+    // Global text spacing fix for html2canvas
+    const allElements = clone.querySelectorAll('*');
+    allElements.forEach(el => {
+      // html2canvas struggles with custom letter spacing
+      if (window.getComputedStyle(el).letterSpacing !== 'normal') {
+        el.style.letterSpacing = 'normal';
+      }
+      // Ensure specific font weight rendering
+      if (el.tagName.startsWith('H')) {
+        el.style.fontWeight = 'bold';
+      }
+    });
     
     // Create a temporary hidden container for PDF generation
     const tempContainer = document.createElement('div');
@@ -84,16 +100,15 @@ export const downloadResumePDF = async (templateType) => {
     
     // Generate canvas with optimized settings
     const canvas = await html2canvas(clone, {
-      scale: 2, // Higher resolution
+      scale: 2, // High resolution
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
-      width: 794, // A4 width in pixels at 96 DPI
-      height: clone.scrollHeight,
+      width: clone.offsetWidth || 794,
+      height: clone.offsetHeight || clone.scrollHeight,
       scrollX: 0,
       scrollY: 0,
-      windowWidth: clone.scrollWidth,
-      windowHeight: clone.scrollHeight,
+      windowWidth: document.documentElement.clientWidth,
       onclone: (clonedDoc, element) => {
         // Apply additional styles to the cloned document
         const style = clonedDoc.createElement('style');
@@ -103,6 +118,8 @@ export const downloadResumePDF = async (templateType) => {
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
               max-width: 100% !important;
+              letter-spacing: normal !important;
+              word-spacing: normal !important;
             }
             body {
               margin: 0 !important;
@@ -112,6 +129,19 @@ export const downloadResumePDF = async (templateType) => {
             }
             .resume-section {
               page-break-inside: avoid;
+            }
+            .verified-badge {
+              display: inline-block !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+            }
+            .verification-badge-footer {
+              display: block !important;
+              margin-top: 10px !important;
+              border-top: 1px solid #eee !important;
+              padding-top: 5px !important;
+              width: 100% !important;
+              text-align: center !important;
             }
           }
         `;
