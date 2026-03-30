@@ -2000,8 +2000,8 @@ const ProfessionalTemplate = ({ data, verifiedSkills = [] }) => {
               ))}
             </div>
             {verifiedSkills.length > 0 && (
-              <div className="verification-note">
-                <small> Verified skills certified by InsightResume</small>
+              <div className="verification-badge-footer">
+                <small>Verified skills certified by InsightResume</small>
               </div>
             )}
           </div>
@@ -2169,8 +2169,8 @@ const ModernTemplate = ({ data, verifiedSkills = [] }) => {
             ))}
           </div>
           {verifiedSkills.length > 0 && (
-            <div className="verification-note">
-              <small> Verified skills certified by InsightResume</small>
+            <div className="verification-badge-footer">
+              <small>Verified skills certified by InsightResume</small>
             </div>
           )}
         </div>
@@ -2304,8 +2304,8 @@ const CreativeTemplate = ({ data, verifiedSkills = [] }) => {
             ))}
           </div>
           {verifiedSkills.length > 0 && (
-            <div className="verification-note">
-              <small> Verified skills certified by InsightResume</small>
+            <div className="verification-badge-footer">
+              <small>Verified skills certified by InsightResume</small>
             </div>
           )}
         </div>
@@ -2481,8 +2481,8 @@ const IRMSpecialTemplate = ({ data, verifiedSkills = [] }) => {
               ))}
             </div>
             {verifiedSkills.length > 0 && (
-              <div className="verification-note">
-                <small> Verified skills certified by InsightResume</small>
+              <div className="verification-badge-footer">
+                <small>Verified skills certified by InsightResume</small>
               </div>
             )}
           </div>
@@ -2591,11 +2591,11 @@ const InsightTwinGridTemplate = ({ data, verifiedSkills = [] }) => {
                     </li>
                   ))}
                 </ul>
-                {verifiedSkills.length > 0 && (
-                  <div className="verification-note">
-                    <small> Verified skills certified by InsightResume</small>
-                  </div>
-                )}
+                  {verifiedSkills.length > 0 && (
+                    <div className="verification-badge-footer">
+                      <small>Verified skills certified by InsightResume</small>
+                    </div>
+                  )}
               </div>
             </div>
           )}
