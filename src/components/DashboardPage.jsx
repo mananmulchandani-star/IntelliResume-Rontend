@@ -727,7 +727,6 @@ const DashboardPage = () => {
       <motion.div className="db-welcome-banner" variants={itemVariants}>
         <div className="db-banner-inner">
           <div>
-            <div className="db-banner-title">Good to see you, {userName.split(' ')[0]} 👋</div>
             <div className="db-banner-sub">Your AI-powered resume workspace</div>
           </div>
           <div className="db-stats-chips">
