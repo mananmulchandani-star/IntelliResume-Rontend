@@ -46,6 +46,7 @@ export function AuthProvider({ children }) {
 
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('userRole', userRole);
+      return userRole;
     } catch {
       // 2. Fallback to Supabase auth metadata
       const userRole = supabaseUser.user_metadata?.role || ROLES.STUDENT;
@@ -63,6 +64,7 @@ export function AuthProvider({ children }) {
       setRole(userRole);
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('userRole', userRole);
+      return userRole;
     }
   }, []);
 
@@ -145,8 +147,8 @@ export function AuthProvider({ children }) {
         localStorage.setItem('token', data.session.access_token);
       }
 
-      await fetchUserProfile(data.user);
-      return data;
+      const userRole = await fetchUserProfile(data.user);
+      return { ...data, role: userRole };
     } catch (err) {
       const message = err.message || 'Login failed';
       setError(message);

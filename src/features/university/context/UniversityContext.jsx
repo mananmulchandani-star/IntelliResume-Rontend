@@ -10,7 +10,7 @@ import {
 } from '../data/mockData';
 
 const UniversityContext = createContext(null);
-const STORAGE_KEY = 'insight_resume_university_state_v1';
+const STORAGE_KEY = 'insight_resume_university_state_v2';
 
 export function UniversityProvider({ children }) {
   const [students, setStudents] = useState(() => {
@@ -378,9 +378,7 @@ export function UniversityProvider({ children }) {
     const activeDrives = drives.filter((d) => d.status === 'Active').length;
     const upcomingDrives = drives.filter((d) => d.status === 'Upcoming').length;
     const partnerCompaniesCount = companies.length;
-
-    // Total placement offers generated
-    const totalOffers = students.filter((s) => s.status === 'Placed').length + 18; // Includes multi-offers
+    const totalOffers = placedStudents;
 
     return {
       totalStudents,
@@ -391,8 +389,8 @@ export function UniversityProvider({ children }) {
       upcomingDrives,
       partnerCompaniesCount,
       totalOffers,
-      highestPackage: '₹54.0 LPA',
-      avgPackage: '₹17.8 LPA',
+      highestPackage: totalStudents > 0 ? '₹42.0 LPA' : '—',
+      avgPackage: totalStudents > 0 ? '₹14.5 LPA' : '—',
     };
   }, [students, drives, companies]);
 

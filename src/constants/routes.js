@@ -9,6 +9,8 @@ export const ROUTES = {
   PRIVACY: '/privacy',
   UNIVERSITY_SOLUTIONS: '/university-solutions',
   COMPANY_SOLUTIONS: '/company-solutions',
+  UNIVERSITY_PARTNER: '/partner/university',
+  COMPANY_PARTNER: '/partner/company',
   AI_RESUME_BUILDER: '/ai-resume-builder',
   ATS_CHECKER: '/ats-checker',
   JOB_DISCOVERY: '/jobs',

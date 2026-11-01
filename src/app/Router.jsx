@@ -23,6 +23,8 @@ const FaqPage = lazy(() => import('../features/public/pages/FaqPage'));
 const PrivacyPage = lazy(() => import('../features/public/pages/PrivacyPage'));
 const UniversitySolutionsPage = lazy(() => import('../features/public/pages/UniversitySolutionsPage'));
 const CompanySolutionsPage = lazy(() => import('../features/public/pages/CompanySolutionsPage'));
+const UniversityPartnerPage = lazy(() => import('../features/public/pages/UniversityPartnerPage'));
+const CompanyPartnerPage = lazy(() => import('../features/public/pages/CompanyPartnerPage'));
 const AIResumeBuilderPage = lazy(() => import('../features/public/pages/AIResumeBuilderPage'));
 const ATSCheckerPage = lazy(() => import('../features/public/pages/ATSCheckerPage'));
 const JobDiscoveryPage = lazy(() => import('../features/public/pages/JobDiscoveryPage'));
@@ -137,6 +139,22 @@ export default function AppRouter() {
           element={
             <PublicLayout>
               <CompanySolutionsPage />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path={ROUTES.UNIVERSITY_PARTNER}
+          element={
+            <PublicLayout>
+              <UniversityPartnerPage />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path={ROUTES.COMPANY_PARTNER}
+          element={
+            <PublicLayout>
+              <CompanyPartnerPage />
             </PublicLayout>
           }
         />

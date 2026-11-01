@@ -153,6 +153,18 @@ export default function Navbar() {
           >
             Contact
           </Link>
+
+          <Link
+            to={ROUTES.UNIVERSITY_PARTNER}
+            className={clsx(
+              'px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors',
+              (location.pathname === ROUTES.UNIVERSITY_PARTNER || location.pathname === ROUTES.COMPANY_PARTNER)
+                ? 'text-primary-700 bg-primary-50 border border-primary-200'
+                : 'text-neutral-700 hover:text-primary-600 hover:bg-neutral-50'
+            )}
+          >
+            For Partners
+          </Link>
         </nav>
 
         {/* Right CTA / Auth Buttons */}
@@ -285,6 +297,23 @@ export default function Navbar() {
             >
               Contact
             </Link>
+            <div className="pt-2 pb-1 border-t border-neutral-100">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 px-3 block mb-1">
+                Institutional Partnerships
+              </span>
+              <Link
+                to={ROUTES.UNIVERSITY_PARTNER}
+                className="px-3 py-2 text-sm font-medium rounded-lg text-neutral-700 hover:bg-neutral-100 flex items-center gap-2"
+              >
+                <GraduationCap className="w-4 h-4 text-primary-600" /> For Universities
+              </Link>
+              <Link
+                to={ROUTES.COMPANY_PARTNER}
+                className="px-3 py-2 text-sm font-medium rounded-lg text-neutral-700 hover:bg-neutral-100 flex items-center gap-2"
+              >
+                <Building2 className="w-4 h-4 text-neutral-600" /> For Employers
+              </Link>
+            </div>
           </nav>
 
           <div className="pt-3 border-t border-neutral-100 flex flex-col gap-2">

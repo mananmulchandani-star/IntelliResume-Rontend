@@ -13,12 +13,12 @@ import {
 } from '../data/mockCompanyData';
 
 const STORAGE_KEYS = {
-  PROFILE: 'insight_company_profile',
-  JOBS: 'insight_company_jobs',
-  CANDIDATES: 'insight_company_candidates',
-  UNIVERSITIES: 'insight_company_universities',
-  DRIVES: 'insight_company_drives',
-  BATCHES: 'insight_company_batches',
+  PROFILE: 'insight_company_profile_v2',
+  JOBS: 'insight_company_jobs_v2',
+  CANDIDATES: 'insight_company_candidates_v2',
+  UNIVERSITIES: 'insight_company_universities_v2',
+  DRIVES: 'insight_company_drives_v2',
+  BATCHES: 'insight_company_batches_v2',
 };
 
 export const COMPANY_DATA_CHANGED_EVENT = 'insight_company_data_changed';

@@ -102,6 +102,16 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link to={ROUTES.UNIVERSITY_PARTNER} className="hover:text-white transition-colors">
+                  University Partnership
+                </Link>
+              </li>
+              <li>
+                <Link to={ROUTES.COMPANY_PARTNER} className="hover:text-white transition-colors">
+                  Employer Partnership
+                </Link>
+              </li>
+              <li>
                 <Link to={ROUTES.PRIVACY} className="hover:text-white transition-colors">
                   Privacy Policy
                 </Link>

@@ -474,9 +474,9 @@ export default function HomePage() {
                 </ul>
               </Card.Content>
               <Card.Footer className="p-6 pt-0">
-                <Link to={ROUTES.UNIVERSITY_SOLUTIONS} className="w-full">
+                <Link to={ROUTES.UNIVERSITY_PARTNER} className="w-full">
                   <Button variant="primary" size="sm" fullWidth rightIcon={<ArrowRight size={14} />}>
-                    University Operating System
+                    Partner as University
                   </Button>
                 </Link>
               </Card.Footer>
@@ -509,13 +509,112 @@ export default function HomePage() {
                 </ul>
               </Card.Content>
               <Card.Footer className="p-6 pt-0">
-                <Link to={ROUTES.COMPANY_SOLUTIONS} className="w-full">
+                <Link to={ROUTES.COMPANY_PARTNER} className="w-full">
                   <Button variant="outline" size="sm" fullWidth rightIcon={<ArrowRight size={14} />}>
-                    Recruiter Solutions
+                    Partner as Employer
                   </Button>
                 </Link>
               </Card.Footer>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          Are you a University or Company? Callout Section
+          ───────────────────────────────────────────────────────────── */}
+      <section className="py-16 bg-gradient-to-b from-neutral-50 to-white border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <Badge variant="primary" size="sm" className="mb-2">
+              Institutional & Corporate Partnerships
+            </Badge>
+            <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900">
+              Are you a University or Company?
+            </h2>
+            <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
+              Whether you are a university placement department managing campus drives or an employer looking to hire pre-verified early talent, submit your details in brief below to get started.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* University Card */}
+            <div className="rounded-2xl border-2 border-primary-200 bg-white p-7 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-12 h-12 rounded-xl bg-primary-50 text-primary-600 border border-primary-200 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-primary-600">
+                  For Placement Cells & Deans
+                </span>
+                <h3 className="text-xl font-bold text-neutral-900 mt-1">
+                  University & College Partnership
+                </h3>
+                <p className="text-xs text-neutral-600 mt-2 leading-relaxed">
+                  Digitize your placement cell, automate CGPA/backlog eligibility criteria, invite verified recruiters, and provide student AI resume tooling.
+                </p>
+                <ul className="mt-4 space-y-2 text-xs text-neutral-700">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 size={13} className="text-primary-600 shrink-0" />
+                    Automated campus placement drives
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 size={13} className="text-primary-600 shrink-0" />
+                    Student batch roster & NIRF analytics
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 size={13} className="text-primary-600 shrink-0" />
+                    Official school provider accreditation
+                  </li>
+                </ul>
+              </div>
+              <div className="mt-6 pt-4 border-t border-neutral-100">
+                <Link to={ROUTES.UNIVERSITY_PARTNER} className="w-full">
+                  <Button variant="primary" size="md" fullWidth rightIcon={<ArrowRight size={14} />}>
+                    Submit University Details &rarr;
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Company Card */}
+            <div className="rounded-2xl border-2 border-neutral-300 bg-white p-7 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-12 h-12 rounded-xl bg-neutral-100 text-neutral-800 border border-neutral-200 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  For Talent Acquisition & Recruiters
+                </span>
+                <h3 className="text-xl font-bold text-neutral-900 mt-1">
+                  Employer & Recruiter Partnership
+                </h3>
+                <p className="text-xs text-neutral-600 mt-2 leading-relaxed">
+                  Source top college talent with standardized, high-signal resumes, verified skill scores, and direct on-campus or virtual recruitment pipeline management.
+                </p>
+                <ul className="mt-4 space-y-2 text-xs text-neutral-700">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 size={13} className="text-neutral-800 shrink-0" />
+                    Direct access to accredited partner campuses
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 size={13} className="text-neutral-800 shrink-0" />
+                    Candidate skill quiz threshold verification
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 size={13} className="text-neutral-800 shrink-0" />
+                    Zero unparseable resume formatting errors
+                  </li>
+                </ul>
+              </div>
+              <div className="mt-6 pt-4 border-t border-neutral-100">
+                <Link to={ROUTES.COMPANY_PARTNER} className="w-full">
+                  <Button variant="outline" size="md" fullWidth rightIcon={<ArrowRight size={14} />}>
+                    Submit Company Details &rarr;
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
