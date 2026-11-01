@@ -19,6 +19,7 @@ import {
 } from '../../../components/ui';
 import { ROUTES } from '../../../constants/routes';
 import adminStorage from '../services/adminStorage';
+import { supabase } from '../../../services/supabase';
 import {
   GraduationCap,
   Search,
@@ -54,8 +55,36 @@ export default function UniversityVerification() {
   const [rejectionReasonCode, setRejectionReasonCode] = useState('accreditation_deficiency');
   const [docPreviewModal, setDocPreviewModal] = useState(null);
 
-  const loadData = () => {
-    setUniversities(adminStorage.getUniversities());
+  const loadData = async () => {
+    let list = adminStorage.getUniversities();
+    try {
+      const { data, error } = await supabase.from('universities').select('*');
+      if (!error && data && data.length > 0) {
+        const formatted = data.map((d) => ({
+          id: d.id,
+          name: d.name,
+          country: d.location || 'India',
+          state: '',
+          domain: d.domain || `${d.name.toLowerCase().replace(/[^a-z]/g, '')}.edu`,
+          accreditationBoard: d.accreditation_board || 'UGC / State Approved',
+          ranking: 'Institutional Partner',
+          batchCapacity: d.batch_capacity || 1000,
+          deanName: d.dean_name,
+          deanEmail: d.dean_email,
+          phone: d.phone,
+          status: d.status || 'pending',
+          submittedDate: d.created_at ? d.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+          verifiedDate: d.verified_at,
+          documents: [],
+        }));
+        const existingNames = new Set(list.map((u) => u.name.toLowerCase()));
+        const uniqueRemote = formatted.filter((f) => !existingNames.has(f.name.toLowerCase()));
+        list = [...uniqueRemote, ...list];
+      }
+    } catch {
+      // ignore
+    }
+    setUniversities(list);
   };
 
   useEffect(() => {
@@ -68,13 +97,15 @@ export default function UniversityVerification() {
   };
 
   const filteredUnis = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     return universities.filter((u) => {
       const matchTab = selectedTab === 'all' || u.status === selectedTab;
+      if (!q) return matchTab;
       const matchSearch =
-        u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.domain.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.deanName.toLowerCase().includes(searchQuery.toLowerCase());
+        (u.name || '').toLowerCase().includes(q) ||
+        (u.country || '').toLowerCase().includes(q) ||
+        (u.domain || '').toLowerCase().includes(q) ||
+        (u.deanName || '').toLowerCase().includes(q);
       return matchTab && matchSearch;
     });
   }, [universities, selectedTab, searchQuery]);

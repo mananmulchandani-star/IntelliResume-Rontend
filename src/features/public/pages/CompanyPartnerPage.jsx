@@ -5,6 +5,7 @@ import { ROUTES } from '../../../constants/routes';
 import { Card, CardContent, Button, Input, Select, Badge } from '../../../components/ui';
 import { Textarea } from '../../../components/ui/Input';
 import adminStorage from '../../admin/services/adminStorage';
+import { supabase } from '../../../services/supabase';
 import {
   Building2,
   Users,
@@ -43,36 +44,55 @@ export default function CompanyPartnerPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.recruiterEmail) return;
 
     setLoading(true);
 
-    setTimeout(() => {
-      const code = `CMP-REF-${Math.floor(100000 + Math.random() * 900000)}`;
-      setRefCode(code);
+    const code = `CMP-REF-${Math.floor(100000 + Math.random() * 900000)}`;
+    setRefCode(code);
 
-      // Save into real adminStorage pipeline
-      adminStorage.addCompany({
+    const cmpRecord = {
+      name: formData.name,
+      logo: '🏢',
+      industry: formData.industry,
+      headquarters: formData.headquarters || 'Remote / Worldwide',
+      corporateDomains: formData.corporateDomains
+        ? formData.corporateDomains.split(',').map((d) => d.trim()).filter(Boolean)
+        : [formData.recruiterEmail.split('@')[1] || 'company.com'],
+      recruiterName: formData.recruiterName,
+      recruiterTitle: formData.recruiterTitle,
+      recruiterEmail: formData.recruiterEmail,
+      phone: formData.phone || '+1 (555) 000-0000',
+      status: 'pending',
+      notes: `Target roles: ${formData.targetRoles || 'All Tech'} • Volume: ${formData.hiringVolume} • Model: ${formData.hiringModel}. ${formData.notes}`,
+    };
+
+    // 1. Immediate client storage
+    adminStorage.addCompany(cmpRecord);
+
+    // 2. Real server database sync (if Supabase table exists)
+    try {
+      await supabase.from('companies').insert([{
         name: formData.name,
-        logo: '🏢',
         industry: formData.industry,
-        headquarters: formData.headquarters || 'Remote / Worldwide',
-        corporateDomains: formData.corporateDomains
-          ? formData.corporateDomains.split(',').map((d) => d.trim()).filter(Boolean)
-          : [formData.recruiterEmail.split('@')[1] || 'company.com'],
-        recruiterName: formData.recruiterName,
-        recruiterTitle: formData.recruiterTitle,
-        recruiterEmail: formData.recruiterEmail,
-        phone: formData.phone || '+1 (555) 000-0000',
+        domain: cmpRecord.corporateDomains[0] || 'company.com',
+        headquarters: formData.headquarters,
+        recruiter_name: formData.recruiterName,
+        recruiter_title: formData.recruiterTitle,
+        recruiter_email: formData.recruiterEmail,
+        phone: formData.phone,
+        hiring_volume: formData.hiringVolume,
         status: 'pending',
-        notes: `Target roles: ${formData.targetRoles || 'All Tech'} • Volume: ${formData.hiringVolume} • Model: ${formData.hiringModel}. ${formData.notes}`,
-      });
+        created_at: new Date().toISOString(),
+      }]);
+    } catch (err) {
+      console.warn('Server sync note:', err.message);
+    }
 
-      setLoading(false);
-      setSubmitted(true);
-    }, 600);
+    setLoading(false);
+    setSubmitted(true);
   };
 
   return (

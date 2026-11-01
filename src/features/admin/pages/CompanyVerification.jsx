@@ -19,6 +19,7 @@ import {
 } from '../../../components/ui';
 import { ROUTES } from '../../../constants/routes';
 import adminStorage from '../services/adminStorage';
+import { supabase } from '../../../services/supabase';
 import {
   Building2,
   Search,
@@ -53,8 +54,36 @@ export default function CompanyVerification() {
   const [rejectionReasonCode, setRejectionReasonCode] = useState('tax_id_mismatch');
   const [docPreviewModal, setDocPreviewModal] = useState(null);
 
-  const loadData = () => {
-    setCompanies(adminStorage.getCompanies());
+  const loadData = async () => {
+    let list = adminStorage.getCompanies();
+    try {
+      const { data, error } = await supabase.from('companies').select('*');
+      if (!error && data && data.length > 0) {
+        const formatted = data.map((d) => ({
+          id: d.id,
+          name: d.name,
+          logo: '🏢',
+          industry: d.industry || 'Software & Tech',
+          headquarters: d.headquarters || 'Remote',
+          taxId: 'Corporate Entity',
+          corporateDomains: [d.domain || 'company.com'],
+          recruiterName: d.recruiter_name,
+          recruiterTitle: d.recruiter_title || 'Talent Acquisition',
+          recruiterEmail: d.recruiter_email,
+          phone: d.phone,
+          status: d.status || 'pending',
+          submittedDate: d.created_at ? d.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+          verifiedDate: d.verified_at,
+          documents: [],
+        }));
+        const existingNames = new Set(list.map((c) => c.name.toLowerCase()));
+        const uniqueRemote = formatted.filter((f) => !existingNames.has(f.name.toLowerCase()));
+        list = [...uniqueRemote, ...list];
+      }
+    } catch {
+      // ignore
+    }
+    setCompanies(list);
   };
 
   useEffect(() => {
@@ -67,14 +96,16 @@ export default function CompanyVerification() {
   };
 
   const filteredCompanies = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     return companies.filter((c) => {
       const matchTab = selectedTab === 'all' || c.status === selectedTab;
+      if (!q) return matchTab;
       const matchSearch =
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.industry.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.taxId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.recruiterName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.corporateDomains?.some((d) => d.toLowerCase().includes(searchQuery.toLowerCase()));
+        (c.name || '').toLowerCase().includes(q) ||
+        (c.industry || '').toLowerCase().includes(q) ||
+        (c.taxId || '').toLowerCase().includes(q) ||
+        (c.recruiterName || '').toLowerCase().includes(q) ||
+        c.corporateDomains?.some((d) => (d || '').toLowerCase().includes(q));
 
       return matchTab && matchSearch;
     });

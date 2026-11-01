@@ -5,6 +5,7 @@ import { ROUTES } from '../../../constants/routes';
 import { Card, CardContent, Button, Input, Select, Badge } from '../../../components/ui';
 import { Textarea } from '../../../components/ui/Input';
 import adminStorage from '../../admin/services/adminStorage';
+import { supabase } from '../../../services/supabase';
 import {
   GraduationCap,
   Building2,
@@ -42,34 +43,53 @@ export default function UniversityPartnerPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.deanEmail) return;
 
     setLoading(true);
 
-    setTimeout(() => {
-      const code = `UNI-REF-${Math.floor(100000 + Math.random() * 900000)}`;
-      setRefCode(code);
+    const code = `UNI-REF-${Math.floor(100000 + Math.random() * 900000)}`;
+    setRefCode(code);
 
-      // Save into real adminStorage pipeline
-      adminStorage.addUniversity({
+    const uniRecord = {
+      name: formData.name,
+      domain: formData.domain || `${formData.name.toLowerCase().replace(/[^a-z]/g, '')}.edu`,
+      deanName: formData.deanName,
+      deanEmail: formData.deanEmail,
+      phone: formData.phone || '+91 98000 00000',
+      headquarters: formData.location || 'India',
+      accreditationBoard: formData.accreditationBoard,
+      batchCapacity: Number(formData.batchCapacity) || 1000,
+      status: 'pending',
+      ranking: 'Submitted via Institutional Partnership Portal',
+      notes: formData.objectives || 'Institutional partnership inquiry submitted.',
+    };
+
+    // 1. Immediate client storage
+    adminStorage.addUniversity(uniRecord);
+
+    // 2. Real server database sync (if Supabase table exists)
+    try {
+      await supabase.from('universities').insert([{
         name: formData.name,
-        domain: formData.domain || `${formData.name.toLowerCase().replace(/[^a-z]/g, '')}.edu`,
-        deanName: formData.deanName,
-        deanEmail: formData.deanEmail,
-        phone: formData.phone || '+91 98000 00000',
-        headquarters: formData.location || 'India',
-        accreditationBoard: formData.accreditationBoard,
-        batchCapacity: Number(formData.batchCapacity) || 1000,
+        type: formData.type,
+        domain: uniRecord.domain,
+        location: formData.location,
+        accreditation_board: formData.accreditationBoard,
+        dean_name: formData.deanName,
+        dean_email: formData.deanEmail,
+        phone: formData.phone,
+        batch_capacity: Number(formData.batchCapacity) || 1000,
         status: 'pending',
-        ranking: 'Submitted via Institutional Partnership Portal',
-        notes: formData.objectives || 'Institutional partnership inquiry submitted.',
-      });
+        created_at: new Date().toISOString(),
+      }]);
+    } catch (err) {
+      console.warn('Server sync note:', err.message);
+    }
 
-      setLoading(false);
-      setSubmitted(true);
-    }, 600);
+    setLoading(false);
+    setSubmitted(true);
   };
 
   return (
