@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { ROUTES } from '../../../constants/routes';
+import { ROLE_DEFAULT_ROUTES } from '../../../constants/roles';
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui';
 import { Sparkles, ArrowRight, Lock, Mail, AlertCircle, Shield } from 'lucide-react';
 
@@ -29,8 +30,9 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      await login(email.trim(), password);
-      navigate(redirectTarget || getDefaultRoute(), { replace: true });
+      const authRes = await login(email.trim(), password);
+      const targetRoute = redirectTarget || (authRes?.role && ROLE_DEFAULT_ROUTES[authRes.role]) || getDefaultRoute();
+      navigate(targetRoute, { replace: true });
     } catch (err) {
       setFormError(err.message || 'Invalid credentials. Please verify your email and password.');
     } finally {

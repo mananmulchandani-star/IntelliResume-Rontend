@@ -158,12 +158,24 @@ export default function Navbar() {
             to={ROUTES.UNIVERSITY_PARTNER}
             className={clsx(
               'px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors',
-              (location.pathname === ROUTES.UNIVERSITY_PARTNER || location.pathname === ROUTES.COMPANY_PARTNER)
+              location.pathname === ROUTES.UNIVERSITY_PARTNER
                 ? 'text-primary-700 bg-primary-50 border border-primary-200'
                 : 'text-neutral-700 hover:text-primary-600 hover:bg-neutral-50'
             )}
           >
-            For Partners
+            For Universities
+          </Link>
+
+          <Link
+            to={ROUTES.COMPANY_PARTNER}
+            className={clsx(
+              'px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors',
+              location.pathname === ROUTES.COMPANY_PARTNER
+                ? 'text-primary-700 bg-primary-50 border border-primary-200'
+                : 'text-neutral-700 hover:text-primary-600 hover:bg-neutral-50'
+            )}
+          >
+            For Employers
           </Link>
         </nav>
 

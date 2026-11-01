@@ -25,6 +25,7 @@ export default function CompanyPartnerPage() {
     name: '',
     industry: 'Software & Artificial Intelligence',
     corporateDomains: '',
+    taxId: '',
     recruiterName: '',
     recruiterTitle: 'Talent Acquisition Lead',
     recruiterEmail: '',
@@ -39,6 +40,7 @@ export default function CompanyPartnerPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [refCode, setRefCode] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -46,53 +48,71 @@ export default function CompanyPartnerPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.recruiterEmail) return;
+    setErrorMsg('');
+    if (!formData.name?.trim() || !formData.recruiterEmail?.trim()) {
+      setErrorMsg('Please enter both your company name and corporate recruiter email.');
+      return;
+    }
 
     setLoading(true);
 
-    const code = `CMP-REF-${Math.floor(100000 + Math.random() * 900000)}`;
-    setRefCode(code);
-
-    const cmpRecord = {
-      name: formData.name,
-      logo: '🏢',
-      industry: formData.industry,
-      headquarters: formData.headquarters || 'Remote / Worldwide',
-      corporateDomains: formData.corporateDomains
-        ? formData.corporateDomains.split(',').map((d) => d.trim()).filter(Boolean)
-        : [formData.recruiterEmail.split('@')[1] || 'company.com'],
-      recruiterName: formData.recruiterName,
-      recruiterTitle: formData.recruiterTitle,
-      recruiterEmail: formData.recruiterEmail,
-      phone: formData.phone || '+1 (555) 000-0000',
-      status: 'pending',
-      notes: `Target roles: ${formData.targetRoles || 'All Tech'} • Volume: ${formData.hiringVolume} • Model: ${formData.hiringModel}. ${formData.notes}`,
-    };
-
-    // 1. Immediate client storage
-    adminStorage.addCompany(cmpRecord);
-
-    // 2. Real server database sync (if Supabase table exists)
     try {
-      await supabase.from('companies').insert([{
-        name: formData.name,
-        industry: formData.industry,
-        domain: cmpRecord.corporateDomains[0] || 'company.com',
-        headquarters: formData.headquarters,
-        recruiter_name: formData.recruiterName,
-        recruiter_title: formData.recruiterTitle,
-        recruiter_email: formData.recruiterEmail,
-        phone: formData.phone,
-        hiring_volume: formData.hiringVolume,
-        status: 'pending',
-        created_at: new Date().toISOString(),
-      }]);
-    } catch (err) {
-      console.warn('Server sync note:', err.message);
-    }
+      const code = `CMP-REF-${Math.floor(100000 + Math.random() * 900000)}`;
+      setRefCode(code);
 
-    setLoading(false);
-    setSubmitted(true);
+      const domains = formData.corporateDomains?.trim()
+        ? formData.corporateDomains.split(',').map((d) => d.trim()).filter(Boolean)
+        : [formData.recruiterEmail.split('@')[1] || 'company.com'];
+
+      const cmpRecord = {
+        name: formData.name.trim(),
+        logo: '🏢',
+        industry: formData.industry,
+        headquarters: formData.headquarters?.trim() || 'Remote / Worldwide',
+        taxId: formData.taxId?.trim() || 'Corporate Verification Pending',
+        corporateDomains: domains,
+        domain: domains[0] || 'company.com',
+        recruiterName: formData.recruiterName?.trim() || 'Talent Lead',
+        recruiterTitle: formData.recruiterTitle?.trim() || 'Talent Acquisition',
+        recruiterEmail: formData.recruiterEmail.trim(),
+        phone: formData.phone?.trim() || '+1 (555) 000-0000',
+        status: 'pending',
+        notes: `Target roles: ${formData.targetRoles || 'All Tech'} • Volume: ${formData.hiringVolume} • Model: ${formData.hiringModel}. ${formData.notes || ''}`,
+      };
+
+      // 1. Immediate client storage
+      const stored = adminStorage.addCompany(cmpRecord);
+
+      // 2. Real server database sync (if Supabase table exists)
+      try {
+        const { data, error } = await supabase.from('companies').insert([{
+          name: cmpRecord.name,
+          industry: cmpRecord.industry,
+          domain: cmpRecord.domain,
+          headquarters: cmpRecord.headquarters,
+          recruiter_name: cmpRecord.recruiterName,
+          recruiter_title: cmpRecord.recruiterTitle,
+          recruiter_email: cmpRecord.recruiterEmail,
+          phone: cmpRecord.phone,
+          hiring_volume: formData.hiringVolume,
+          status: 'pending',
+          created_at: new Date().toISOString(),
+        }]).select();
+
+        if (!error && data && data[0]) {
+          adminStorage.updateCompany(stored.id, { supabaseId: data[0].id });
+        }
+      } catch (err) {
+        console.warn('Server sync note:', err.message);
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Submission error:', err);
+      setErrorMsg(err.message || 'Failed to submit company details. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -146,6 +166,7 @@ export default function CompanyPartnerPage() {
                     name: '',
                     industry: 'Software & Artificial Intelligence',
                     corporateDomains: '',
+                    taxId: '',
                     recruiterName: '',
                     recruiterTitle: 'Talent Acquisition Lead',
                     recruiterEmail: '',
@@ -182,6 +203,19 @@ export default function CompanyPartnerPage() {
 
             <CardContent className="p-6 sm:p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
+                {errorMsg && (
+                  <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center justify-between animate-shake">
+                    <span>{errorMsg}</span>
+                    <button
+                      type="button"
+                      onClick={() => setErrorMsg('')}
+                      className="text-rose-500 hover:text-rose-700 font-bold text-base leading-none ml-3"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                )}
+
                 <div>
                   <h3 className="text-sm font-bold text-neutral-900 mb-4 pb-2 border-b border-neutral-150 flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-primary-600" />
@@ -221,11 +255,17 @@ export default function CompanyPartnerPage() {
                     />
 
                     <Input
-                      label="Headquarters / Office Location *"
+                      label="Corporate Tax ID / Registration No. (Optional)"
+                      placeholder="e.g. US-EIN 12-3456789 or CIN U72200MH..."
+                      value={formData.taxId}
+                      onChange={(e) => handleChange('taxId', e.target.value)}
+                    />
+
+                    <Input
+                      label="Headquarters / Office Location"
                       placeholder="e.g. Bangalore, India or San Francisco, CA"
                       value={formData.headquarters}
                       onChange={(e) => handleChange('headquarters', e.target.value)}
-                      required
                     />
 
                     <Select
@@ -250,11 +290,10 @@ export default function CompanyPartnerPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
-                      label="Recruiter Full Name *"
+                      label="Recruiter Full Name"
                       placeholder="Sarah Jenkins"
                       value={formData.recruiterName}
                       onChange={(e) => handleChange('recruiterName', e.target.value)}
-                      required
                     />
 
                     <Input
@@ -274,11 +313,10 @@ export default function CompanyPartnerPage() {
                     />
 
                     <Input
-                      label="Direct Contact Phone *"
+                      label="Direct Contact Phone (Optional)"
                       placeholder="+1 (555) 123-4567"
                       value={formData.phone}
                       onChange={(e) => handleChange('phone', e.target.value)}
-                      required
                     />
                   </div>
                 </div>

@@ -79,9 +79,9 @@ export default function UniversityRecruitment() {
       if (!univSearch.trim()) return true;
       const q = univSearch.toLowerCase();
       return (
-        u.name.toLowerCase().includes(q) ||
-        u.location.toLowerCase().includes(q) ||
-        u.topPrograms.some((p) => p.toLowerCase().includes(q))
+        (u.name || '').toLowerCase().includes(q) ||
+        (u.location || '').toLowerCase().includes(q) ||
+        (u.topPrograms || []).some((p) => (p || '').toLowerCase().includes(q))
       );
     });
   }, [universities, univSearch]);
@@ -89,7 +89,7 @@ export default function UniversityRecruitment() {
   // Filtered batches
   const filteredBatches = useMemo(() => {
     return batches.filter((b) => {
-      if (batchYearFilter !== 'All' && !b.batchName.includes(batchYearFilter)) {
+      if (batchYearFilter !== 'All' && !(b.batchName || '').includes(batchYearFilter)) {
         return false;
       }
       if (minCgpaFilter !== 'All') {

@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Modal, ModalBo
 import { ROUTES } from '../../../constants/routes';
 import adminStorage from '../services/adminStorage';
 import AdminStatCard from '../components/AdminStatCard';
+import { supabase } from '../../../services/supabase';
 import {
   Users,
   GraduationCap,
@@ -46,10 +47,58 @@ export default function AdminDashboard() {
   });
   const [actionReason, setActionReason] = useState('');
 
-  const loadData = () => {
+  const loadData = async () => {
     setMetrics(adminStorage.getPlatformMetrics());
-    setPendingUnis(adminStorage.getUniversities().filter((u) => u.status === 'pending'));
-    setPendingCompanies(adminStorage.getCompanies().filter((c) => c.status === 'pending'));
+    let unis = adminStorage.getUniversities().filter((u) => u.status === 'pending');
+    let cmps = adminStorage.getCompanies().filter((c) => c.status === 'pending');
+
+    try {
+      const [remoteUnisRes, remoteCmpsRes] = await Promise.all([
+        supabase.from('universities').select('*').eq('status', 'pending'),
+        supabase.from('companies').select('*').eq('status', 'pending'),
+      ]);
+
+      if (!remoteUnisRes.error && remoteUnisRes.data?.length) {
+        const existingNames = new Set(unis.map((u) => (u.name || '').toLowerCase()));
+        const extras = remoteUnisRes.data
+          .filter((r) => !existingNames.has((r.name || '').toLowerCase()))
+          .map((d) => ({
+            id: d.id,
+            name: d.name,
+            domain: d.domain,
+            headquarters: d.location || 'India',
+            deanName: d.dean_name,
+            deanEmail: d.dean_email,
+            status: d.status || 'pending',
+          }));
+        unis = [...extras, ...unis];
+      }
+
+      if (!remoteCmpsRes.error && remoteCmpsRes.data?.length) {
+        const existingNames = new Set(cmps.map((c) => (c.name || '').toLowerCase()));
+        const extras = remoteCmpsRes.data
+          .filter((r) => !existingNames.has((r.name || '').toLowerCase()))
+          .map((d) => ({
+            id: d.id,
+            name: d.name,
+            logo: '🏢',
+            industry: d.industry || 'Software & Tech',
+            headquarters: d.headquarters || 'Remote',
+            taxId: d.tax_id || 'Corporate Entity',
+            corporateDomains: [d.domain || 'company.com'],
+            domain: d.domain || 'company.com',
+            recruiterName: d.recruiter_name || 'Talent Lead',
+            recruiterEmail: d.recruiter_email || '',
+            status: d.status || 'pending',
+          }));
+        cmps = [...extras, ...cmps];
+      }
+    } catch {
+      // ignore
+    }
+
+    setPendingUnis(unis);
+    setPendingCompanies(cmps);
     setFlaggedListings(adminStorage.getListings().filter((l) => l.status === 'flagged'));
     setAuditLogs(adminStorage.getAuditLogs());
   };
@@ -89,7 +138,7 @@ export default function AdminDashboard() {
     });
   };
 
-  const handleConfirmQuickAction = () => {
+  const handleConfirmQuickAction = async () => {
     const { type, item, action } = quickActionModal;
     if (!item) return;
 
@@ -101,6 +150,18 @@ export default function AdminDashboard() {
         verifiedBy: 'Admin Supervisor',
         rejectionReason: action === 'reject' ? actionReason || 'Credential requirements not met' : null,
       });
+
+      try {
+        await supabase
+          .from('universities')
+          .update({
+            status: newStatus,
+          })
+          .match({ name: item.name });
+      } catch {
+        // ignore
+      }
+
       adminStorage.addAuditLog({
         action: action === 'approve' ? 'University Approved' : 'University Rejected',
         target: item.name,
@@ -116,6 +177,19 @@ export default function AdminDashboard() {
         verifiedBy: 'Admin Supervisor',
         rejectionReason: action === 'reject' ? actionReason || 'Business verification failed' : null,
       });
+
+      try {
+        await supabase
+          .from('companies')
+          .update({
+            status: newStatus,
+            verified_at: action === 'approve' ? new Date().toISOString() : null,
+          })
+          .match({ name: item.name });
+      } catch {
+        // ignore
+      }
+
       adminStorage.addAuditLog({
         action: action === 'approve' ? 'Employer Verified' : 'Employer Rejected',
         target: item.name,
@@ -352,19 +426,19 @@ export default function AdminDashboard() {
                     >
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">{cmp.logo}</span>
+                          <span className="text-lg">{cmp.logo || '🏢'}</span>
                           <span className="font-semibold text-sm text-neutral-900 truncate">
                             {cmp.name}
                           </span>
                           <span className="text-[11px] font-mono text-neutral-500 bg-neutral-100 px-1.5 py-0.5 rounded">
-                            {cmp.taxId}
+                            {cmp.taxId || 'Corporate Entity'}
                           </span>
                         </div>
                         <p className="text-xs text-neutral-500">
-                          {cmp.industry} &bull; HQ: {cmp.headquarters}
+                          {cmp.industry || 'Software & Tech'} &bull; HQ: {cmp.headquarters || 'Remote'}
                         </p>
                         <p className="text-[11px] text-neutral-400">
-                          Recruiter: {cmp.recruiterName} ({cmp.recruiterEmail}) &bull; Domains: {cmp.corporateDomains?.join(', ')}
+                          Recruiter: {cmp.recruiterName || 'Talent Lead'} ({cmp.recruiterEmail || 'Email pending'}) &bull; Domains: {Array.isArray(cmp.corporateDomains) ? cmp.corporateDomains.join(', ') : (cmp.corporateDomains || cmp.domain || 'N/A')}
                         </p>
                       </div>
 

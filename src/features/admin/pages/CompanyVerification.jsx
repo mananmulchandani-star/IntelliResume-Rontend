@@ -54,36 +54,60 @@ export default function CompanyVerification() {
   const [rejectionReasonCode, setRejectionReasonCode] = useState('tax_id_mismatch');
   const [docPreviewModal, setDocPreviewModal] = useState(null);
 
+  // Domain normalizer helper: guarantees an array of strings
+  const getDomainsList = (domains, fallbackDomain) => {
+    if (Array.isArray(domains)) return domains.map((d) => String(d).trim()).filter(Boolean);
+    if (typeof domains === 'string' && domains.trim()) {
+      return domains.split(',').map((d) => d.trim()).filter(Boolean);
+    }
+    if (fallbackDomain) return [String(fallbackDomain).trim()];
+    return [];
+  };
+
   const loadData = async () => {
-    let list = adminStorage.getCompanies();
+    let localList = adminStorage.getCompanies().map((c) => ({
+      ...c,
+      taxId: c.taxId || 'Corporate Verification Pending',
+      corporateDomains: getDomainsList(c.corporateDomains, c.domain),
+    }));
+
     try {
       const { data, error } = await supabase.from('companies').select('*');
       if (!error && data && data.length > 0) {
-        const formatted = data.map((d) => ({
-          id: d.id,
-          name: d.name,
-          logo: '🏢',
-          industry: d.industry || 'Software & Tech',
-          headquarters: d.headquarters || 'Remote',
-          taxId: 'Corporate Entity',
-          corporateDomains: [d.domain || 'company.com'],
-          recruiterName: d.recruiter_name,
-          recruiterTitle: d.recruiter_title || 'Talent Acquisition',
-          recruiterEmail: d.recruiter_email,
-          phone: d.phone,
-          status: d.status || 'pending',
-          submittedDate: d.created_at ? d.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-          verifiedDate: d.verified_at,
-          documents: [],
-        }));
-        const existingNames = new Set(list.map((c) => c.name.toLowerCase()));
-        const uniqueRemote = formatted.filter((f) => !existingNames.has(f.name.toLowerCase()));
-        list = [...uniqueRemote, ...list];
+        const remoteMap = new Map();
+        data.forEach((d) => {
+          const doms = getDomainsList(d.domain || d.corporate_domains);
+          remoteMap.set(d.id, {
+            id: d.id,
+            supabaseId: d.id,
+            name: d.name,
+            logo: '🏢',
+            industry: d.industry || 'Software & Tech',
+            headquarters: d.headquarters || 'Remote',
+            taxId: d.tax_id || 'Corporate Entity',
+            corporateDomains: doms.length ? doms : ['company.com'],
+            domain: doms[0] || d.domain || 'company.com',
+            recruiterName: d.recruiter_name || 'Talent Lead',
+            recruiterTitle: d.recruiter_title || 'Talent Acquisition',
+            recruiterEmail: d.recruiter_email || '',
+            phone: d.phone || '',
+            status: d.status || 'pending',
+            submittedDate: d.created_at ? d.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+            verifiedDate: d.verified_at,
+            documents: [],
+          });
+        });
+
+        // Merge: keep local updates, add unique remote ones
+        const remoteList = Array.from(remoteMap.values());
+        const localNames = new Set(localList.map((c) => (c.name || '').toLowerCase()));
+        const uniqueRemote = remoteList.filter((r) => !localNames.has((r.name || '').toLowerCase()));
+        localList = [...uniqueRemote, ...localList];
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn('Could not fetch remote companies:', err);
     }
-    setCompanies(list);
+    setCompanies(localList);
   };
 
   useEffect(() => {
@@ -100,12 +124,14 @@ export default function CompanyVerification() {
     return companies.filter((c) => {
       const matchTab = selectedTab === 'all' || c.status === selectedTab;
       if (!q) return matchTab;
+      const domainsList = getDomainsList(c.corporateDomains, c.domain);
       const matchSearch =
         (c.name || '').toLowerCase().includes(q) ||
         (c.industry || '').toLowerCase().includes(q) ||
         (c.taxId || '').toLowerCase().includes(q) ||
         (c.recruiterName || '').toLowerCase().includes(q) ||
-        c.corporateDomains?.some((d) => (d || '').toLowerCase().includes(q));
+        (c.recruiterEmail || '').toLowerCase().includes(q) ||
+        domainsList.some((d) => (d || '').toLowerCase().includes(q));
 
       return matchTab && matchSearch;
     });
@@ -123,15 +149,20 @@ export default function CompanyVerification() {
   const handleOpenReview = (cmp, defaultDecision = 'approve') => {
     setReviewCmp(cmp);
     setDecisionAction(defaultDecision);
+    const domainDisplay = getDomainsList(cmp.corporateDomains, cmp.domain)[0] || 'company.com';
     setAuditNotes(
       defaultDecision === 'approve'
-        ? `Tax identification ${cmp.taxId} and corporate domain ${cmp.corporateDomains?.[0]} validated with state registry.`
+        ? `Tax identification ${cmp.taxId || 'N/A'} and corporate domain ${domainDisplay} validated with state registry.`
         : ''
     );
   };
 
-  const handleExecuteDecision = () => {
+  const handleExecuteDecision = async () => {
     if (!reviewCmp) return;
+
+    const domainsList = getDomainsList(reviewCmp.corporateDomains, reviewCmp.domain);
+    const domainText = domainsList.join(', ') || 'N/A';
+    const taxText = reviewCmp.taxId || 'Corporate Entity';
 
     if (decisionAction === 'approve') {
       adminStorage.updateCompany(reviewCmp.id, {
@@ -140,11 +171,25 @@ export default function CompanyVerification() {
         verifiedBy: 'Admin Supervisor',
         rejectionReason: null,
       });
+
+      // Also sync to remote Supabase database if connected
+      try {
+        await supabase
+          .from('companies')
+          .update({
+            status: 'approved',
+            verified_at: new Date().toISOString(),
+          })
+          .match({ name: reviewCmp.name });
+      } catch (err) {
+        console.warn('Remote sync error:', err.message);
+      }
+
       adminStorage.addAuditLog({
         action: 'Employer Verified',
-        target: `${reviewCmp.name} (${reviewCmp.taxId})`,
+        target: `${reviewCmp.name} (${taxText})`,
         type: 'success',
-        details: `Approved business registration & whitelisted recruiting domains [${reviewCmp.corporateDomains?.join(', ')}]. Notes: ${auditNotes}`,
+        details: `Approved business registration & whitelisted recruiting domains [${domainText}]. Notes: ${auditNotes}`,
       });
       showToast(`${reviewCmp.name} is now a verified hiring partner.`);
     } else {
@@ -162,9 +207,23 @@ export default function CompanyVerification() {
         verifiedBy: 'Admin Supervisor',
         rejectionReason: finalReason,
       });
+
+      // Also sync rejection to remote Supabase database
+      try {
+        await supabase
+          .from('companies')
+          .update({
+            status: 'rejected',
+            verified_at: null,
+          })
+          .match({ name: reviewCmp.name });
+      } catch (err) {
+        console.warn('Remote sync error:', err.message);
+      }
+
       adminStorage.addAuditLog({
         action: 'Employer Verification Rejected',
-        target: `${reviewCmp.name} (${reviewCmp.taxId})`,
+        target: `${reviewCmp.name} (${taxText})`,
         type: 'error',
         details: `Employer verification rejected: ${finalReason}`,
       });
@@ -272,11 +331,11 @@ export default function CompanyVerification() {
                   <div className="flex items-center gap-3 text-xs text-neutral-600 flex-wrap pt-1">
                     <span className="flex items-center gap-1 bg-neutral-100 px-2.5 py-1 rounded-md text-neutral-700 font-mono font-medium">
                       <Hash className="w-3.5 h-3.5 text-neutral-500" />
-                      Tax ID: {cmp.taxId}
+                      Tax ID: {cmp.taxId || 'Corporate Verification Pending'}
                     </span>
                     <span className="flex items-center gap-1 bg-neutral-100 px-2.5 py-1 rounded-md text-neutral-700 font-medium">
                       <Globe className="w-3.5 h-3.5 text-primary-600" />
-                      Domains: {cmp.corporateDomains?.join(', ')}
+                      Domains: {getDomainsList(cmp.corporateDomains, cmp.domain).join(', ') || 'Domain Pending'}
                     </span>
                   </div>
 
@@ -376,7 +435,7 @@ export default function CompanyVerification() {
               <strong className="text-neutral-800">Authorized Recruiter:</strong> {reviewCmp?.recruiterName} ({reviewCmp?.recruiterEmail}) &bull; {reviewCmp?.phone}
             </p>
             <p className="text-neutral-500">
-              <strong className="text-neutral-800">Recruiting Domains:</strong> {reviewCmp?.corporateDomains?.join(', ')}
+              <strong className="text-neutral-800">Recruiting Domains:</strong> {getDomainsList(reviewCmp?.corporateDomains, reviewCmp?.domain).join(', ') || 'N/A'}
             </p>
           </div>
 
