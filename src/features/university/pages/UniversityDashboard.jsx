@@ -45,9 +45,13 @@ import {
 
 function UniversityDashboardContent() {
   const navigate = useNavigate();
-  const { students, drives, kpis, addDrive } = useUniversity();
+  const universityData = useUniversity() || {};
+  const { students = [], drives = [], kpis = {}, addDrive = () => {} } = universityData;
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
+
+  const safeStudents = Array.isArray(students) ? students : [];
+  const safeDrives = Array.isArray(drives) ? drives : [];
 
   // New Drive Form state
   const [newDrive, setNewDrive] = useState({
@@ -103,13 +107,13 @@ function UniversityDashboardContent() {
   };
 
   // Recent placements from students
-  const placedStudents = students
-    .filter((s) => s.status === 'Placed' && s.placedCompany)
+  const placedStudents = safeStudents
+    .filter((s) => s && s.status === 'Placed' && s.placedCompany)
     .slice(0, 6);
 
   // Active drives
-  const activeDrives = drives.filter((d) => d.status === 'Active');
-  const upcomingDrives = drives.filter((d) => d.status === 'Upcoming');
+  const activeDrives = safeDrives.filter((d) => d && d.status === 'Active');
+  const upcomingDrives = safeDrives.filter((d) => d && d.status === 'Upcoming');
 
   const breadcrumbs = [
     { label: 'University' },
@@ -166,7 +170,7 @@ function UniversityDashboardContent() {
                 <Users className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-neutral-900 tracking-tight">{kpis.totalStudents}</div>
+            <div className="text-2xl font-bold text-neutral-900 tracking-tight">{kpis?.totalStudents ?? 0}</div>
             <div className="mt-1 flex items-center text-xs text-neutral-500">
               <span className="text-success-600 font-medium inline-flex items-center mr-1">
                 <TrendingUp className="w-3 h-3 mr-0.5" /> 100%
@@ -185,7 +189,7 @@ function UniversityDashboardContent() {
                 <GraduationCap className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-neutral-900 tracking-tight">{kpis.eligibleStudents}</div>
+            <div className="text-2xl font-bold text-neutral-900 tracking-tight">{kpis?.eligibleStudents ?? 0}</div>
             <div className="mt-1 flex items-center text-xs text-neutral-500">
               <span className="text-neutral-700 font-medium mr-1">CGPA ≥ 6.5</span>
               <span>• 0 backlogs</span>
@@ -203,13 +207,13 @@ function UniversityDashboardContent() {
               </div>
             </div>
             <div className="text-2xl font-bold text-neutral-900 tracking-tight flex items-center gap-2">
-              {kpis.activeDrives}
+              {kpis?.activeDrives ?? 0}
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
                 Live
               </span>
             </div>
             <div className="mt-1 text-xs text-neutral-500">
-              <span>{kpis.upcomingDrives} upcoming this month</span>
+              <span>{kpis?.upcomingDrives ?? 0} upcoming this month</span>
             </div>
           </CardContent>
         </Card>
@@ -223,7 +227,7 @@ function UniversityDashboardContent() {
                 <Building2 className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-neutral-900 tracking-tight">{kpis.partnerCompaniesCount}</div>
+            <div className="text-2xl font-bold text-neutral-900 tracking-tight">{kpis?.partnerCompaniesCount ?? 0}</div>
             <div className="mt-1 flex items-center text-xs text-neutral-500">
               <span className="text-purple-600 font-medium mr-1">MoU Signed</span>
               <span>corporate partners</span>
@@ -240,9 +244,9 @@ function UniversityDashboardContent() {
                 <Trophy className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-neutral-900 tracking-tight">{kpis.totalOffers}</div>
+            <div className="text-2xl font-bold text-neutral-900 tracking-tight">{kpis?.totalOffers ?? 0}</div>
             <div className="mt-1 text-xs text-neutral-500 truncate">
-              Highest <span className="font-semibold text-neutral-800">{kpis.highestPackage}</span>
+              Highest <span className="font-semibold text-neutral-800">{kpis?.highestPackage || '—'}</span>
             </div>
           </CardContent>
         </Card>
@@ -256,11 +260,11 @@ function UniversityDashboardContent() {
                 <Sparkles className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-primary-900 tracking-tight">{kpis.placementRate}%</div>
+            <div className="text-2xl font-bold text-primary-900 tracking-tight">{kpis?.placementRate ?? 0}%</div>
             <div className="w-full bg-primary-200/60 rounded-full h-1.5 mt-2 overflow-hidden">
               <div
                 className="bg-primary-600 h-1.5 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(kpis.placementRate, 100)}%` }}
+                style={{ width: `${Math.min(Number(kpis?.placementRate) || 0, 100)}%` }}
               />
             </div>
           </CardContent>

@@ -40,7 +40,8 @@ export default function StudentDashboard() {
       // 1. Resumes
       const savedResumes = localStorage.getItem('userResumes');
       if (savedResumes) {
-        setResumes(JSON.parse(savedResumes));
+        const parsed = JSON.parse(savedResumes);
+        setResumes(Array.isArray(parsed) ? parsed : []);
       } else {
         setResumes([]);
       }
@@ -48,7 +49,8 @@ export default function StudentDashboard() {
       // 2. Verified skills
       const savedVerified = localStorage.getItem('verifiedSkills');
       if (savedVerified) {
-        setVerifiedSkills(JSON.parse(savedVerified));
+        const parsed = JSON.parse(savedVerified);
+        setVerifiedSkills(Array.isArray(parsed) ? parsed : []);
       } else {
         setVerifiedSkills([]);
       }
@@ -56,7 +58,8 @@ export default function StudentDashboard() {
       // 3. Applications
       const savedApps = localStorage.getItem('jobApplications');
       if (savedApps) {
-        setApplications(JSON.parse(savedApps));
+        const parsed = JSON.parse(savedApps);
+        setApplications(Array.isArray(parsed) ? parsed : []);
       } else {
         setApplications([]);
       }
@@ -105,12 +108,16 @@ export default function StudentDashboard() {
 
   const displayName = user?.name || user?.email?.split('@')[0] || 'Student';
 
+  const safeResumes = Array.isArray(resumes) ? resumes : [];
+  const safeVerifiedSkills = Array.isArray(verifiedSkills) ? verifiedSkills : [];
+  const safeApplications = Array.isArray(applications) ? applications : [];
+
   // Calculate metrics
-  const activeResumesCount = resumes.length;
-  const verifiedCount = verifiedSkills.length;
-  const activeAppsCount = applications.filter((a) => a.status !== 'Rejected').length;
-  const avgATS = resumes.length
-    ? Math.round(resumes.reduce((acc, curr) => acc + (curr.atsScore || 85), 0) / resumes.length)
+  const activeResumesCount = safeResumes.length;
+  const verifiedCount = safeVerifiedSkills.length;
+  const activeAppsCount = safeApplications.filter((a) => a && a.status !== 'Rejected').length;
+  const avgATS = safeResumes.length
+    ? Math.round(safeResumes.reduce((acc, curr) => acc + (Number(curr?.atsScore) || 85), 0) / safeResumes.length)
     : 85;
 
   return (

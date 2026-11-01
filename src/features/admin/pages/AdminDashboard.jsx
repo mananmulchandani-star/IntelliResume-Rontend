@@ -69,6 +69,9 @@ export default function AdminDashboard() {
             headquarters: d.location || 'India',
             deanName: d.dean_name,
             deanEmail: d.dean_email,
+            accreditationBoard: d.accreditation_board || 'Accreditation Pending',
+            batchCapacity: Number(d.batch_capacity) || 0,
+            submittedDate: d.created_at ? d.created_at.split('T')[0] : 'Recently',
             status: d.status || 'pending',
           }));
         unis = [...extras, ...unis];
@@ -89,6 +92,7 @@ export default function AdminDashboard() {
             domain: d.domain || 'company.com',
             recruiterName: d.recruiter_name || 'Talent Lead',
             recruiterEmail: d.recruiter_email || '',
+            submittedDate: d.created_at ? d.created_at.split('T')[0] : 'Recently',
             status: d.status || 'pending',
           }));
         cmps = [...extras, ...cmps];
@@ -255,8 +259,8 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <AdminStatCard
           title="Total Users"
-          value={metrics.userCountDisplay}
-          trend={metrics.userGrowth}
+          value={metrics?.userCountDisplay || '0'}
+          trend={metrics?.userGrowth || 'Live Data'}
           trendType="positive"
           icon={Users}
           subvalue="Across Students, Staff & Recruiters"
@@ -265,9 +269,9 @@ export default function AdminDashboard() {
 
         <AdminStatCard
           title="Verified Universities"
-          value={metrics.verifiedUniversities}
-          trend={metrics.pendingUniversities > 0 ? `${metrics.pendingUniversities} Pending` : 'All Caught Up'}
-          trendType={metrics.pendingUniversities > 0 ? 'neutral' : 'positive'}
+          value={metrics?.verifiedUniversities || 0}
+          trend={(metrics?.pendingUniversities || 0) > 0 ? `${metrics.pendingUniversities} Pending` : 'All Caught Up'}
+          trendType={(metrics?.pendingUniversities || 0) > 0 ? 'neutral' : 'positive'}
           icon={GraduationCap}
           subvalue="Institutional placement hubs"
           badgeText="Accredited degree campuses"
@@ -275,9 +279,9 @@ export default function AdminDashboard() {
 
         <AdminStatCard
           title="Verified Employers"
-          value={metrics.verifiedCompanies}
-          trend={metrics.pendingCompanies > 0 ? `${metrics.pendingCompanies} Pending` : 'Up to date'}
-          trendType={metrics.pendingCompanies > 0 ? 'neutral' : 'positive'}
+          value={metrics?.verifiedCompanies || 0}
+          trend={(metrics?.pendingCompanies || 0) > 0 ? `${metrics.pendingCompanies} Pending` : 'Up to date'}
+          trendType={(metrics?.pendingCompanies || 0) > 0 ? 'neutral' : 'positive'}
           icon={Building2}
           subvalue="Direct hiring partners"
           badgeText="Tier-1 & verified startups"
@@ -285,8 +289,8 @@ export default function AdminDashboard() {
 
         <AdminStatCard
           title="Total Placements"
-          value={metrics.totalPlacements}
-          trend={metrics.placementGrowth}
+          value={metrics?.totalPlacements || '0'}
+          trend={metrics?.placementGrowth || 'Live'}
           trendType="positive"
           icon={Briefcase}
           subvalue="Offers accepted via portal"
@@ -295,11 +299,11 @@ export default function AdminDashboard() {
 
         <AdminStatCard
           title="System Health"
-          value={metrics.systemHealth}
+          value={metrics?.systemHealth || '100% Operational'}
           trend="Operational"
           trendType="live"
           icon={Activity}
-          subvalue={`Latency: ${metrics.apiLatency} | 0 incidents`}
+          subvalue={`Latency: ${metrics?.apiLatency || 'Normal'} | 0 incidents`}
           badgeText="99.98% 30-day uptime"
         />
       </div>
@@ -315,8 +319,8 @@ export default function AdminDashboard() {
                 <CardTitle className="text-base flex items-center gap-2">
                   <GraduationCap className="w-4 h-4 text-primary-600" />
                   <span>Pending University Verifications</span>
-                  <Badge variant={pendingUnis.length > 0 ? 'warning' : 'default'} size="sm">
-                    {pendingUnis.length} awaiting
+                  <Badge variant={(pendingUnis || []).length > 0 ? 'warning' : 'default'} size="sm">
+                    {(pendingUnis || []).length} awaiting
                   </Badge>
                 </CardTitle>
                 <p className="text-xs text-neutral-500 mt-1">
@@ -332,7 +336,7 @@ export default function AdminDashboard() {
               </Link>
             </CardHeader>
             <CardContent className="p-0">
-              {pendingUnis.length === 0 ? (
+              {(pendingUnis || []).length === 0 ? (
                 <div className="p-8 text-center text-xs text-neutral-500">
                   <CheckCircle2 className="w-7 h-7 text-emerald-500 mx-auto mb-2 opacity-80" />
                   <p className="font-medium text-neutral-800">All university verifications resolved</p>
@@ -340,7 +344,7 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="divide-y divide-neutral-150">
-                  {pendingUnis.map((uni) => (
+                  {(pendingUnis || []).map((uni) => (
                     <div
                       key={uni.id}
                       className="p-4 hover:bg-neutral-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
@@ -355,10 +359,10 @@ export default function AdminDashboard() {
                           </span>
                         </div>
                         <p className="text-xs text-neutral-500">
-                          {uni.accreditationBoard} &bull; Capacity: <span className="font-medium text-neutral-700">{uni.batchCapacity.toLocaleString()} students</span>
+                          {uni.accreditationBoard || 'Accreditation Pending'} &bull; Capacity: <span className="font-medium text-neutral-700">{(uni.batchCapacity || 0).toLocaleString()} students</span>
                         </p>
                         <p className="text-[11px] text-neutral-400">
-                          Contact: {uni.deanName} ({uni.deanEmail}) &bull; Submitted {uni.submittedDate}
+                          Contact: {uni.deanName || 'Registrar'} ({uni.deanEmail || 'Email pending'}) &bull; Submitted {uni.submittedDate || 'Recently'}
                         </p>
                       </div>
 
@@ -394,8 +398,8 @@ export default function AdminDashboard() {
                 <CardTitle className="text-base flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-primary-600" />
                   <span>Pending Employer Verifications</span>
-                  <Badge variant={pendingCompanies.length > 0 ? 'warning' : 'default'} size="sm">
-                    {pendingCompanies.length} awaiting
+                  <Badge variant={(pendingCompanies || []).length > 0 ? 'warning' : 'default'} size="sm">
+                    {(pendingCompanies || []).length} awaiting
                   </Badge>
                 </CardTitle>
                 <p className="text-xs text-neutral-500 mt-1">
@@ -411,7 +415,7 @@ export default function AdminDashboard() {
               </Link>
             </CardHeader>
             <CardContent className="p-0">
-              {pendingCompanies.length === 0 ? (
+              {(pendingCompanies || []).length === 0 ? (
                 <div className="p-8 text-center text-xs text-neutral-500">
                   <CheckCircle2 className="w-7 h-7 text-emerald-500 mx-auto mb-2 opacity-80" />
                   <p className="font-medium text-neutral-800">All employer onboarding reviews completed</p>
@@ -419,7 +423,7 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="divide-y divide-neutral-150">
-                  {pendingCompanies.map((cmp) => (
+                  {(pendingCompanies || []).map((cmp) => (
                     <div
                       key={cmp.id}
                       className="p-4 hover:bg-neutral-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
@@ -474,8 +478,8 @@ export default function AdminDashboard() {
                 <CardTitle className="text-base flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
                   <span>Flagged Job & Internship Postings</span>
-                  <Badge variant={flaggedListings.length > 0 ? 'error' : 'default'} size="sm">
-                    {flaggedListings.length} flagged
+                  <Badge variant={(flaggedListings || []).length > 0 ? 'error' : 'default'} size="sm">
+                    {(flaggedListings || []).length} flagged
                   </Badge>
                 </CardTitle>
                 <p className="text-xs text-neutral-500 mt-1">
@@ -491,7 +495,7 @@ export default function AdminDashboard() {
               </Link>
             </CardHeader>
             <CardContent className="p-0">
-              {flaggedListings.length === 0 ? (
+              {(flaggedListings || []).length === 0 ? (
                 <div className="p-8 text-center text-xs text-neutral-500">
                   <CheckCircle2 className="w-7 h-7 text-emerald-500 mx-auto mb-2 opacity-80" />
                   <p className="font-medium text-neutral-800">Clean moderation feed</p>
@@ -499,7 +503,7 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="divide-y divide-neutral-150">
-                  {flaggedListings.map((listing) => (
+                  {(flaggedListings || []).map((listing) => (
                     <div
                       key={listing.id}
                       className="p-4 hover:bg-neutral-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
@@ -620,33 +624,39 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-neutral-150 max-h-[460px] overflow-y-auto scrollbar-thin">
-                {auditLogs.map((log) => {
-                  let badgeVariant = 'info';
-                  if (log.type === 'success') badgeVariant = 'success';
-                  if (log.type === 'warning') badgeVariant = 'warning';
-                  if (log.type === 'error') badgeVariant = 'error';
+                {(auditLogs || []).length === 0 ? (
+                  <div className="p-8 text-center text-xs text-neutral-400">
+                    No administrative audit events recorded yet.
+                  </div>
+                ) : (
+                  (auditLogs || []).map((log) => {
+                    let badgeVariant = 'info';
+                    if (log.type === 'success') badgeVariant = 'success';
+                    if (log.type === 'warning') badgeVariant = 'warning';
+                    if (log.type === 'error') badgeVariant = 'error';
 
-                  return (
-                    <div key={log.id} className="p-3.5 hover:bg-neutral-50/60 transition-colors space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <Badge variant={badgeVariant} size="sm">
-                          {log.action}
-                        </Badge>
-                        <span className="text-[11px] text-neutral-400">{log.timestamp}</span>
+                    return (
+                      <div key={log.id} className="p-3.5 hover:bg-neutral-50/60 transition-colors space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <Badge variant={badgeVariant} size="sm">
+                            {log.action}
+                          </Badge>
+                          <span className="text-[11px] text-neutral-400">{log.timestamp}</span>
+                        </div>
+                        <p className="text-xs font-medium text-neutral-900 truncate">
+                          {log.target}
+                        </p>
+                        <p className="text-[11px] text-neutral-500 line-clamp-2 leading-relaxed">
+                          {log.details}
+                        </p>
+                        <div className="text-[10px] text-neutral-400 flex items-center gap-1 pt-0.5">
+                          <span>Actor:</span>
+                          <span className="font-medium text-neutral-600">{log.actor}</span>
+                        </div>
                       </div>
-                      <p className="text-xs font-medium text-neutral-900 truncate">
-                        {log.target}
-                      </p>
-                      <p className="text-[11px] text-neutral-500 line-clamp-2 leading-relaxed">
-                        {log.details}
-                      </p>
-                      <div className="text-[10px] text-neutral-400 flex items-center gap-1 pt-0.5">
-                        <span>Actor:</span>
-                        <span className="font-medium text-neutral-600">{log.actor}</span>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </CardContent>
           </Card>

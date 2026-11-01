@@ -37,7 +37,10 @@ function getStoredItem(key, fallback) {
       localStorage.setItem(key, JSON.stringify(fallback));
       return fallback;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (parsed === null || parsed === undefined) return fallback;
+    if (Array.isArray(fallback) && !Array.isArray(parsed)) return fallback;
+    return parsed;
   } catch (err) {
     console.error(`Error reading ${key} from localStorage:`, err);
     return fallback;
@@ -258,15 +261,15 @@ export function getVerifiedCampusBatches() {
    Dynamic Hiring Metrics
    ============================================================ */
 export function getHiringMetrics() {
-  const jobs = getJobs();
-  const candidates = getCandidates();
-  const drives = getCampusDrives();
+  const jobs = Array.isArray(getJobs()) ? getJobs() : [];
+  const candidates = Array.isArray(getCandidates()) ? getCandidates() : [];
+  const drives = Array.isArray(getCampusDrives()) ? getCampusDrives() : [];
 
-  const activeVacancies = jobs.filter((j) => j.status === 'Active').length;
+  const activeVacancies = jobs.filter((j) => j && j.status === 'Active').length;
   const totalApplicants = candidates.length;
-  const inInterview = candidates.filter((c) => c.status === 'Interview').length;
-  const offersExtended = candidates.filter((c) => c.status === 'Offered').length;
-  const activeCampusDrives = drives.filter((d) => d.participating).length;
+  const inInterview = candidates.filter((c) => c && c.status === 'Interview').length;
+  const offersExtended = candidates.filter((c) => c && c.status === 'Offered').length;
+  const activeCampusDrives = drives.filter((d) => d && d.participating).length;
 
   return {
     activeVacancies,
@@ -277,7 +280,7 @@ export function getHiringMetrics() {
     timeToHireDays: 19,
     offerAcceptanceRate: '88%',
     avgAtsScore: Math.round(
-      candidates.reduce((acc, c) => acc + (c.atsScore || 80), 0) / (candidates.length || 1)
+      candidates.reduce((acc, c) => acc + (Number(c?.atsScore) || 80), 0) / (candidates.length || 1)
     ),
   };
 }

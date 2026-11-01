@@ -16,7 +16,9 @@ export function UniversityProvider({ children }) {
   const [students, setStudents] = useState(() => {
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY}_students`);
-      return saved ? JSON.parse(saved) : INITIAL_STUDENTS;
+      if (!saved) return INITIAL_STUDENTS;
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : INITIAL_STUDENTS;
     } catch {
       return INITIAL_STUDENTS;
     }
@@ -25,7 +27,9 @@ export function UniversityProvider({ children }) {
   const [drives, setDrives] = useState(() => {
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY}_drives`);
-      return saved ? JSON.parse(saved) : INITIAL_DRIVES;
+      if (!saved) return INITIAL_DRIVES;
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : INITIAL_DRIVES;
     } catch {
       return INITIAL_DRIVES;
     }
@@ -34,7 +38,9 @@ export function UniversityProvider({ children }) {
   const [companies, setCompanies] = useState(() => {
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY}_companies`);
-      return saved ? JSON.parse(saved) : INITIAL_COMPANIES;
+      if (!saved) return INITIAL_COMPANIES;
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : INITIAL_COMPANIES;
     } catch {
       return INITIAL_COMPANIES;
     }
@@ -43,7 +49,9 @@ export function UniversityProvider({ children }) {
   const [settings, setSettings] = useState(() => {
     try {
       const saved = localStorage.getItem(`${STORAGE_KEY}_settings`);
-      return saved ? JSON.parse(saved) : INITIAL_UNIVERSITY_SETTINGS;
+      if (!saved) return INITIAL_UNIVERSITY_SETTINGS;
+      const parsed = JSON.parse(saved);
+      return (parsed && typeof parsed === 'object') ? parsed : INITIAL_UNIVERSITY_SETTINGS;
     } catch {
       return INITIAL_UNIVERSITY_SETTINGS;
     }
@@ -371,13 +379,17 @@ export function UniversityProvider({ children }) {
 
   // Computed KPI Metrics
   const kpis = useMemo(() => {
-    const totalStudents = students.length;
-    const placedStudents = students.filter((s) => s.status === 'Placed').length;
-    const eligibleStudents = students.filter((s) => s.cgpa >= 6.5 && s.backlogs === 0).length;
+    const safeStudents = Array.isArray(students) ? students : [];
+    const safeDrives = Array.isArray(drives) ? drives : [];
+    const safeCompanies = Array.isArray(companies) ? companies : [];
+
+    const totalStudents = safeStudents.length;
+    const placedStudents = safeStudents.filter((s) => s && s.status === 'Placed').length;
+    const eligibleStudents = safeStudents.filter((s) => s && Number(s.cgpa) >= 6.5 && Number(s.backlogs) === 0).length;
     const placementRate = totalStudents > 0 ? Math.round((placedStudents / totalStudents) * 100) : 0;
-    const activeDrives = drives.filter((d) => d.status === 'Active').length;
-    const upcomingDrives = drives.filter((d) => d.status === 'Upcoming').length;
-    const partnerCompaniesCount = companies.length;
+    const activeDrives = safeDrives.filter((d) => d && d.status === 'Active').length;
+    const upcomingDrives = safeDrives.filter((d) => d && d.status === 'Upcoming').length;
+    const partnerCompaniesCount = safeCompanies.length;
     const totalOffers = placedStudents;
 
     return {
