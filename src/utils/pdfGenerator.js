@@ -109,7 +109,7 @@ export const downloadResumePDF = async (templateType) => {
       scrollX: 0,
       scrollY: 0,
       windowWidth: document.documentElement.clientWidth,
-      onclone: (clonedDoc, element) => {
+      onclone: (clonedDoc) => {
         // Apply additional styles to the cloned document
         const style = clonedDoc.createElement('style');
         style.textContent = `
