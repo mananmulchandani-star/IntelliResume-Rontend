@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../services/supabase';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { ROUTES } from '../../../constants/routes';
+import { ROLES, ROLE_DEFAULT_ROUTES } from '../../../constants/roles';
 import { Spinner } from '../../../components/ui';
 import { Sparkles, AlertCircle } from 'lucide-react';
 import Button from '../../../components/ui/Button';
@@ -23,14 +24,20 @@ export default function AuthCallbackPage() {
 
         if (session?.user) {
           if (mounted) {
-            navigate(getDefaultRoute(), { replace: true });
+            const userEmail = (session.user.email || '').toLowerCase().trim();
+            const targetRole = userEmail === 'ceo@insight.in' ? ROLES.PLATFORM_ADMIN : (session.user.user_metadata?.role || ROLES.STUDENT);
+            const targetRoute = ROLE_DEFAULT_ROUTES[targetRole] || getDefaultRoute();
+            navigate(targetRoute, { replace: true });
           }
         } else {
           // Listen once for auth state change
           const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (session?.user && mounted) {
               subscription.unsubscribe();
-              navigate(getDefaultRoute(), { replace: true });
+              const userEmail = (session.user.email || '').toLowerCase().trim();
+              const targetRole = userEmail === 'ceo@insight.in' ? ROLES.PLATFORM_ADMIN : (session.user.user_metadata?.role || ROLES.STUDENT);
+              const targetRoute = ROLE_DEFAULT_ROUTES[targetRole] || getDefaultRoute();
+              navigate(targetRoute, { replace: true });
             }
           });
 

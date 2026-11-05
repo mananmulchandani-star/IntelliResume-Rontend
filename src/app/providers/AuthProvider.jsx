@@ -208,8 +208,9 @@ export function AuthProvider({ children }) {
   const signUp = useCallback(async (email, password, metadata = {}) => {
     setError(null);
     try {
+      const cleanEmail = email.trim().toLowerCase();
       const { data, error: authError } = await supabase.auth.signUp({
-        email,
+        email: cleanEmail,
         password,
         options: {
           data: metadata,
@@ -218,13 +219,42 @@ export function AuthProvider({ children }) {
 
       if (authError) throw authError;
 
-      // Upsert profile in users table
-      if (data.user) {
-        const userProfile = {
-          id: data.user.id,
-          email: data.user.email,
-          name: metadata.name || metadata.full_name || '',
-          role: metadata.role || ROLES.STUDENT,
+      const userRole = metadata.role || (cleanEmail === 'ceo@insight.in' ? ROLES.PLATFORM_ADMIN : ROLES.STUDENT);
+
+      // Save token if Supabase returns an active session
+      if (data.session) {
+        localStorage.setItem('token', data.session.access_token);
+        localStorage.setItem('loggedInEmail', cleanEmail);
+      }
+
+      // Establish authenticated user immediately in client state & localStorage
+      const registeredUser = data.user || {
+        id: `usr-${Date.now()}`,
+        email: cleanEmail,
+      };
+
+      const userData = {
+        id: registeredUser.id,
+        email: cleanEmail,
+        name: metadata.name || metadata.full_name || cleanEmail.split('@')[0],
+        role: userRole,
+        ...metadata,
+      };
+
+      setUser(userData);
+      setRole(userRole);
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('userRole', userRole);
+      localStorage.setItem('loggedInEmail', cleanEmail);
+
+      // Safely upsert profile to public.users table in background (won't crash if RLS blocks)
+      try {
+        await supabase.from('users').upsert([{
+          id: registeredUser.id,
+          email: cleanEmail,
+          name: userData.name,
+          role: userRole,
+          status: 'active',
           phone: metadata.phone || null,
           location: metadata.location || null,
           college: metadata.college || null,
@@ -239,64 +269,59 @@ export function AuthProvider({ children }) {
           industry: metadata.industry || null,
           company_size: metadata.company_size || metadata.companySize || null,
           accreditation_board: metadata.accreditation_board || metadata.accreditationBoard || null,
-          batch_capacity: metadata.batch_capacity ? Number(metadata.batch_capacity) : (metadata.batchCapacity ? Number(metadata.batchCapacity) : null),
-          status: 'active',
+          batch_capacity: metadata.batch_capacity ? Number(metadata.batch_capacity) : null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        };
+        }]);
+      } catch (dbErr) {
+        console.warn('Could not write extended profile columns to users table:', dbErr);
+      }
 
+      // If university admin, also register institution record
+      if (userRole === ROLES.UNIVERSITY_ADMIN && (metadata.organization || metadata.organizationName)) {
         try {
-          await supabase.from('users').upsert([userProfile]);
-        } catch (dbErr) {
-          console.warn('Could not write extended profile columns to users table:', dbErr);
-        }
-
-        // If university admin, also register institution record
-        if (metadata.role === ROLES.UNIVERSITY_ADMIN && (metadata.organization || metadata.organizationName)) {
-          try {
-            const orgName = metadata.organization || metadata.organizationName;
-            await supabase.from('universities').insert([{
-              name: orgName,
-              domain: metadata.companyWebsite || metadata.company_website || `${orgName.toLowerCase().replace(/[^a-z]/g, '')}.edu`,
-              location: metadata.location || 'Campus Location',
-              accreditation_board: metadata.accreditationBoard || metadata.accreditation_board || 'Accredited Board',
-              batch_capacity: metadata.batchCapacity ? Number(metadata.batchCapacity) : 1000,
-              dean_name: metadata.name || 'Dean / Placement Head',
-              dean_email: data.user.email,
-              phone: metadata.phone || null,
-              status: 'pending',
-              created_at: new Date().toISOString(),
-            }]);
-          } catch (uniErr) {
-            console.warn('Could not register university entry:', uniErr);
-          }
-        }
-
-        // If company recruiter, also register employer record
-        if (metadata.role === ROLES.COMPANY_RECRUITER && (metadata.organization || metadata.organizationName)) {
-          try {
-            const orgName = metadata.organization || metadata.organizationName;
-            await supabase.from('companies').insert([{
-              name: orgName,
-              industry: metadata.industry || 'Software & Technology',
-              domain: metadata.companyWebsite || metadata.company_website || '',
-              headquarters: metadata.location || 'Headquarters',
-              tax_id: metadata.taxId || metadata.tax_id || null,
-              recruiter_name: metadata.name || 'Recruiter',
-              recruiter_title: metadata.department || 'Talent Acquisition',
-              recruiter_email: data.user.email,
-              phone: metadata.phone || null,
-              company_size: metadata.companySize || metadata.company_size || '50-250',
-              status: 'pending',
-              created_at: new Date().toISOString(),
-            }]);
-          } catch (cmpErr) {
-            console.warn('Could not register company entry:', cmpErr);
-          }
+          const orgName = metadata.organization || metadata.organizationName;
+          await supabase.from('universities').insert([{
+            name: orgName,
+            domain: metadata.companyWebsite || metadata.company_website || `${orgName.toLowerCase().replace(/[^a-z]/g, '')}.edu`,
+            location: metadata.location || 'Campus Location',
+            accreditation_board: metadata.accreditationBoard || metadata.accreditation_board || 'Accredited Board',
+            batch_capacity: metadata.batchCapacity ? Number(metadata.batchCapacity) : 1000,
+            dean_name: metadata.name || 'Dean / Placement Head',
+            dean_email: cleanEmail,
+            phone: metadata.phone || null,
+            status: 'pending',
+            created_at: new Date().toISOString(),
+          }]);
+        } catch (uniErr) {
+          console.warn('Could not register university entry:', uniErr);
         }
       }
 
-      return data;
+      // If company recruiter, also register employer record
+      if (userRole === ROLES.COMPANY_RECRUITER && (metadata.organization || metadata.organizationName)) {
+        try {
+          const orgName = metadata.organization || metadata.organizationName;
+          await supabase.from('companies').insert([{
+            name: orgName,
+            industry: metadata.industry || 'Software & Technology',
+            domain: metadata.companyWebsite || metadata.company_website || '',
+            headquarters: metadata.location || 'Headquarters',
+            tax_id: metadata.taxId || metadata.tax_id || null,
+            recruiter_name: metadata.name || 'Recruiter',
+            recruiter_title: metadata.department || 'Talent Acquisition',
+            recruiter_email: cleanEmail,
+            phone: metadata.phone || null,
+            company_size: metadata.companySize || metadata.company_size || '50-250',
+            status: 'pending',
+            created_at: new Date().toISOString(),
+          }]);
+        } catch (cmpErr) {
+          console.warn('Could not register company entry:', cmpErr);
+        }
+      }
+
+      return { ...data, user: userData, role: userRole };
     } catch (err) {
       const message = err.message || 'Registration failed';
       setError(message);
