@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { ROUTES } from '../../../constants/routes';
+import { exportElementToPDF, exportResumeDataToPDF } from '../../../utils/pdfGenerator';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import { Button, Card, Input, Select, Badge, Tabs, Tab } from '../../../components/ui';
 import { Textarea } from '../../../components/ui/Input';
@@ -298,53 +298,21 @@ export default function ResumeEditor() {
 
   // PDF Export
   const handleExportPDF = async () => {
-    if (!previewRef.current) return;
     setIsExporting(true);
 
     try {
-      const element = previewRef.current.querySelector('#resume-preview-document') || previewRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save(`${(resumeData.personalInfo.fullName || 'Resume').replace(/\s+/g, '_')}_InsightResume.pdf`);
+      // Guaranteed isolated PDF containing strictly the resume page (zero editor UI)
+      await exportResumeDataToPDF(resumeData, verifiedSkills);
     } catch (err) {
       console.error('PDF export error:', err);
-      window.print();
+      if (previewRef.current) {
+        const candidateName = resumeData.personalInfo?.fullName || resumeData.title || 'Resume';
+        const fileName = `${candidateName.replace(/[^a-zA-Z0-9_\- ]/g, '').replace(/\s+/g, '_')}_InsightResume.pdf`;
+        await exportElementToPDF(previewRef.current, fileName);
+      }
     } finally {
       setIsExporting(false);
     }
-  };
-
-  // Export JSON backup
-  const handleExportJSON = () => {
-    const blob = new Blob([JSON.stringify(resumeData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${(resumeData.personalInfo.fullName || 'resume').toLowerCase().replace(/\s+/g, '_')}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   const handleManualSave = () => {
@@ -375,21 +343,13 @@ export default function ResumeEditor() {
             ATS Scan
           </Button>
           <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<FileDown className="w-3.5 h-3.5" />}
-            onClick={handleExportJSON}
-          >
-            JSON
-          </Button>
-          <Button
             variant="primary"
             size="sm"
             isLoading={isExporting}
-            leftIcon={<Download className="w-3.5 h-3.5" />}
+            leftIcon={<Download className="w-4 h-4" />}
             onClick={handleExportPDF}
           >
-            Export PDF
+            Download PDF
           </Button>
         </div>
       }

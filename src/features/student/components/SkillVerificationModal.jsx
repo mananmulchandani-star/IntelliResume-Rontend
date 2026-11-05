@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { verificationService } from '../../../services/api';
+import { generateDynamicSkillQuestion } from '../../../services/skillQuestionGenerator';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../../../components/ui/Modal';
 import Button from '../../../components/ui/Button';
 import Badge from '../../../components/ui/Badge';
@@ -121,41 +122,37 @@ export default function SkillVerificationModal({
         return;
       }
 
-      // 2. Fetch AI Generated Question for this skill
+      // 2. Fetch or dynamically synthesize AI Question for this skill
+      let loadedQuestion = null;
       try {
         const questionRes = await verificationService.generateQuestion(currentSkill, jobTitle);
         if (questionRes && (questionRes.question || questionRes.options)) {
           const q = questionRes.question?.question ? questionRes.question : questionRes;
-          setQuestionData({
-            question: q.question || `What core problem does ${currentSkill} solve in modern software architecture?`,
-            options: q.options || {
-              A: `It provides standard patterns for scalable ${currentSkill} workflows.`,
-              B: 'It acts solely as a static file compression engine.',
-              C: 'It replaces underlying operating system networking drivers.',
-              D: 'It is exclusively used for hardware BIOS updates.',
-            },
-            correct_answer: q.correct_answer || 'A',
-            explanation: q.explanation || `${currentSkill} is an industry standard used to develop reliable, high-performance applications.`,
-          });
-          startTimer();
-        } else {
-          throw new Error('Invalid question response format');
+          const questionText = q.question || '';
+          const isGenericBackendDummy =
+            questionText.toLowerCase().includes('most important when working with') ||
+            JSON.stringify(q.options || {}).toLowerCase().includes('core concepts and fundamentals');
+
+          if (!isGenericBackendDummy && q.options && Object.keys(q.options).length === 4) {
+            loadedQuestion = {
+              question: q.question,
+              options: q.options,
+              correct_answer: q.correct_answer || 'A',
+              explanation: q.explanation || `${currentSkill} is an industry standard used to develop reliable, high-performance applications.`,
+            };
+          }
         }
       } catch (genErr) {
-        console.warn('Using intelligent fallback question for skill:', currentSkill, genErr);
-        setQuestionData({
-          question: `In modern software development, what is the primary architectural purpose of ${currentSkill}?`,
-          options: {
-            A: `To structure and optimize modular components and logic related to ${currentSkill}.`,
-            B: 'To function solely as a network firewall bypass.',
-            C: 'To recompile CPU microcode instructions.',
-            D: 'To encrypt plain disk sectors without algorithmic keys.',
-          },
-          correct_answer: 'A',
-          explanation: `${currentSkill} is deployed in production environments to build maintainable, performant, and scalable applications.`,
-        });
-        startTimer();
+        console.warn('Backend question generation failed, using dynamic AI generator:', genErr);
       }
+
+      // If backend returned generic repetitive template or failed, synthesize 100% dynamic question with shuffled options (A/B/C/D)
+      if (!loadedQuestion) {
+        loadedQuestion = generateDynamicSkillQuestion(currentSkill, jobTitle);
+      }
+
+      setQuestionData(loadedQuestion);
+      startTimer();
     } catch (error) {
       console.error('Error during verification load:', error);
     } finally {

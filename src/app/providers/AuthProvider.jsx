@@ -28,7 +28,15 @@ export function AuthProvider({ children }) {
         .eq('id', supabaseUser.id)
         .single();
 
-      const userRole = profile?.role || supabaseUser.user_metadata?.role || ROLES.STUDENT;
+      const userEmail = (supabaseUser.email || profile?.email || '').toLowerCase().trim();
+      let userRole = profile?.role || supabaseUser.user_metadata?.role;
+
+      // Platform admin override for the CEO
+      if (userEmail === 'ceo@insight.in') {
+        userRole = ROLES.PLATFORM_ADMIN;
+      } else if (!userRole) {
+        userRole = ROLES.STUDENT;
+      }
 
       const userData = {
         id: supabaseUser.id,
@@ -49,7 +57,14 @@ export function AuthProvider({ children }) {
       return userRole;
     } catch {
       // 2. Fallback to Supabase auth metadata
-      const userRole = supabaseUser.user_metadata?.role || ROLES.STUDENT;
+      const userEmail = (supabaseUser.email || '').toLowerCase().trim();
+      let userRole = supabaseUser.user_metadata?.role;
+      if (userEmail === 'ceo@insight.in') {
+        userRole = ROLES.PLATFORM_ADMIN;
+      } else if (!userRole) {
+        userRole = ROLES.STUDENT;
+      }
+
       const userData = {
         id: supabaseUser.id,
         email: supabaseUser.email,
@@ -136,15 +151,25 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     setError(null);
     try {
+      const cleanEmail = email.trim().toLowerCase();
       const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
+        email: cleanEmail,
         password,
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        if (authError.message?.toLowerCase().includes('email not confirmed')) {
+          throw new Error('Email not confirmed. Please verify your email inbox or disable email confirmation in your Supabase project settings.');
+        }
+        if (authError.message?.toLowerCase().includes('invalid login credentials')) {
+          throw new Error('Invalid email or password. Please check your credentials and try again.');
+        }
+        throw authError;
+      }
 
       if (data.session) {
         localStorage.setItem('token', data.session.access_token);
+        localStorage.setItem('loggedInEmail', cleanEmail);
       }
 
       const userRole = await fetchUserProfile(data.user);
@@ -171,15 +196,80 @@ export function AuthProvider({ children }) {
 
       // Upsert profile in users table
       if (data.user) {
-        await supabase.from('users').upsert([{
+        const userProfile = {
           id: data.user.id,
           email: data.user.email,
           name: metadata.name || metadata.full_name || '',
           role: metadata.role || ROLES.STUDENT,
-          organization: metadata.organization || '',
+          phone: metadata.phone || null,
+          location: metadata.location || null,
+          college: metadata.college || null,
+          degree: metadata.degree || null,
+          grad_year: metadata.grad_year || metadata.gradYear || null,
+          cgpa: metadata.cgpa || null,
+          target_role: metadata.target_role || metadata.targetRole || null,
+          organization: metadata.organization || metadata.organizationName || '',
           department: metadata.department || '',
+          company_website: metadata.company_website || metadata.companyWebsite || null,
+          tax_id: metadata.tax_id || metadata.taxId || null,
+          industry: metadata.industry || null,
+          company_size: metadata.company_size || metadata.companySize || null,
+          accreditation_board: metadata.accreditation_board || metadata.accreditationBoard || null,
+          batch_capacity: metadata.batch_capacity ? Number(metadata.batch_capacity) : (metadata.batchCapacity ? Number(metadata.batchCapacity) : null),
+          status: 'active',
           created_at: new Date().toISOString(),
-        }]);
+          updated_at: new Date().toISOString(),
+        };
+
+        try {
+          await supabase.from('users').upsert([userProfile]);
+        } catch (dbErr) {
+          console.warn('Could not write extended profile columns to users table:', dbErr);
+        }
+
+        // If university admin, also register institution record
+        if (metadata.role === ROLES.UNIVERSITY_ADMIN && (metadata.organization || metadata.organizationName)) {
+          try {
+            const orgName = metadata.organization || metadata.organizationName;
+            await supabase.from('universities').insert([{
+              name: orgName,
+              domain: metadata.companyWebsite || metadata.company_website || `${orgName.toLowerCase().replace(/[^a-z]/g, '')}.edu`,
+              location: metadata.location || 'Campus Location',
+              accreditation_board: metadata.accreditationBoard || metadata.accreditation_board || 'Accredited Board',
+              batch_capacity: metadata.batchCapacity ? Number(metadata.batchCapacity) : 1000,
+              dean_name: metadata.name || 'Dean / Placement Head',
+              dean_email: data.user.email,
+              phone: metadata.phone || null,
+              status: 'pending',
+              created_at: new Date().toISOString(),
+            }]);
+          } catch (uniErr) {
+            console.warn('Could not register university entry:', uniErr);
+          }
+        }
+
+        // If company recruiter, also register employer record
+        if (metadata.role === ROLES.COMPANY_RECRUITER && (metadata.organization || metadata.organizationName)) {
+          try {
+            const orgName = metadata.organization || metadata.organizationName;
+            await supabase.from('companies').insert([{
+              name: orgName,
+              industry: metadata.industry || 'Software & Technology',
+              domain: metadata.companyWebsite || metadata.company_website || '',
+              headquarters: metadata.location || 'Headquarters',
+              tax_id: metadata.taxId || metadata.tax_id || null,
+              recruiter_name: metadata.name || 'Recruiter',
+              recruiter_title: metadata.department || 'Talent Acquisition',
+              recruiter_email: data.user.email,
+              phone: metadata.phone || null,
+              company_size: metadata.companySize || metadata.company_size || '50-250',
+              status: 'pending',
+              created_at: new Date().toISOString(),
+            }]);
+          } catch (cmpErr) {
+            console.warn('Could not register company entry:', cmpErr);
+          }
+        }
       }
 
       return data;

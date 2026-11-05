@@ -22,7 +22,9 @@ import {
   ExternalLink,
   ChevronRight,
   ShieldCheck,
+  Download,
 } from 'lucide-react';
+import { exportResumeDataToPDF } from '../../../utils/pdfGenerator';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -33,6 +35,7 @@ export default function StudentDashboard() {
   const [applications, setApplications] = useState([]);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [selectedSkillToVerify, setSelectedSkillToVerify] = useState(null);
+  const [downloadingResumeId, setDownloadingResumeId] = useState(null);
 
   // Load user data from localStorage
   useEffect(() => {
@@ -93,6 +96,18 @@ export default function StudentDashboard() {
     const updated = resumes.filter((r) => r.id !== id);
     setResumes(updated);
     localStorage.setItem('userResumes', JSON.stringify(updated));
+  };
+
+  const handleDownloadPDF = async (resume) => {
+    try {
+      setDownloadingResumeId(resume.id);
+      await exportResumeDataToPDF(resume, verifiedSkills);
+    } catch (err) {
+      console.error('Failed to download resume PDF:', err);
+      handleEditResume(resume);
+    } finally {
+      setDownloadingResumeId(null);
+    }
   };
 
   const handleOpenVerifyModal = (skill = null) => {
@@ -321,9 +336,18 @@ export default function StudentDashboard() {
                       <Button
                         variant="primary"
                         size="sm"
+                        leftIcon={<Download className="w-3.5 h-3.5" />}
+                        isLoading={downloadingResumeId === resume.id}
+                        onClick={() => handleDownloadPDF(resume)}
+                      >
+                        Download PDF
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleEditResume(resume)}
                       >
-                        Open Editor
+                        Edit
                       </Button>
                       <Button
                         variant="ghost"

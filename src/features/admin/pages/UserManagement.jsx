@@ -22,6 +22,7 @@ import Pagination from '../../../components/shared/Pagination';
 import { ROUTES } from '../../../constants/routes';
 import { ROLE_LABELS, ROLES } from '../../../constants/roles';
 import adminStorage from '../services/adminStorage';
+import supabase from '../../../services/supabase';
 import {
   Users,
   Search,
@@ -41,6 +42,14 @@ import {
   UserX,
   AlertCircle,
   RefreshCw,
+  Eye,
+  Phone,
+  MapPin,
+  Globe,
+  GraduationCap,
+  FileBadge,
+  Info,
+  ExternalLink,
 } from 'lucide-react';
 
 const ROLE_OPTIONS = [
@@ -70,6 +79,7 @@ export default function UserManagement() {
   const [toastMessage, setToastMessage] = useState(null);
 
   // Modals
+  const [inspectUser, setInspectUser] = useState(null);
   const [roleModalUser, setRoleModalUser] = useState(null);
   const [newRoleValue, setNewRoleValue] = useState('');
   const [roleChangeReason, setRoleChangeReason] = useState('');
@@ -86,8 +96,60 @@ export default function UserManagement() {
     department: '',
   });
 
-  const loadUsers = () => {
-    setUsers(adminStorage.getUsers());
+  const loadUsers = async () => {
+    try {
+      const { data: dbUsers, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      const localUsers = adminStorage.getUsers() || [];
+
+      if (!error && Array.isArray(dbUsers)) {
+        const mappedDbUsers = dbUsers.map((u) => ({
+          id: u.id,
+          name: u.name || u.email?.split('@')[0] || 'User',
+          email: u.email,
+          role: u.role || ROLES.STUDENT,
+          organization: u.organization || u.college || 'Independent',
+          department: u.department || u.degree || '',
+          phone: u.phone || '',
+          location: u.location || '',
+          college: u.college || '',
+          degree: u.degree || '',
+          gradYear: u.grad_year || '',
+          cgpa: u.cgpa || '',
+          targetRole: u.target_role || '',
+          companyWebsite: u.company_website || '',
+          taxId: u.tax_id || '',
+          industry: u.industry || '',
+          companySize: u.company_size || '',
+          accreditationBoard: u.accreditation_board || '',
+          batchCapacity: u.batch_capacity || '',
+          skills: u.skills || [],
+          status: u.status || 'active',
+          joinedDate: u.created_at ? new Date(u.created_at).toISOString().split('T')[0] : 'Recently',
+          lastLogin: u.updated_at ? new Date(u.updated_at).toLocaleDateString() : 'Active',
+          rawMetadata: u,
+        }));
+
+        const seen = new Set();
+        const merged = [];
+        for (const u of [...mappedDbUsers, ...localUsers]) {
+          const key = u.email?.toLowerCase() || u.id;
+          if (!seen.has(key)) {
+            seen.add(key);
+            merged.push(u);
+          }
+        }
+        setUsers(merged);
+      } else {
+        setUsers(localUsers);
+      }
+    } catch (err) {
+      console.warn('Error loading Supabase users in admin:', err);
+      setUsers(adminStorage.getUsers() || []);
+    }
   };
 
   useEffect(() => {
@@ -373,6 +435,17 @@ export default function UserManagement() {
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setInspectUser(user)}
+                        title="View comprehensive user details"
+                        className="!h-8 !px-2.5 text-xs text-neutral-700 hover:text-neutral-900 font-medium"
+                        leftIcon={<Eye className="w-3.5 h-3.5 text-neutral-500" />}
+                      >
+                        Inspect
+                      </Button>
+
+                      <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleOpenRoleModal(user)}
@@ -599,6 +672,183 @@ export default function UserManagement() {
             </Button>
           </ModalFooter>
         </form>
+      </Modal>
+
+      {/* Comprehensive User Details Inspection Modal */}
+      <Modal
+        isOpen={Boolean(inspectUser)}
+        onClose={() => setInspectUser(null)}
+        title={`User Details: ${inspectUser?.name}`}
+        description="Comprehensive audit view of registered credentials, profile information, and metadata."
+        size="lg"
+      >
+        <ModalBody className="space-y-4 max-h-[75vh] overflow-y-auto">
+          {inspectUser && (
+            <>
+              {/* Profile Header Card */}
+              <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-primary-100 border border-primary-200 text-primary-700 font-bold text-lg flex items-center justify-center shrink-0">
+                    {inspectUser.name?.charAt(0) || 'U'}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base text-neutral-900">{inspectUser.name}</h3>
+                    <p className="text-xs text-neutral-500 flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5" />
+                      {inspectUser.email}
+                    </p>
+                    <p className="text-[11px] text-neutral-400 font-mono mt-0.5">
+                      UUID: {inspectUser.id}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {getRoleBadge(inspectUser.role)}
+                  {getStatusBadge(inspectUser.status)}
+                </div>
+              </div>
+
+              {/* General Contact & Account Info */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-lg border border-neutral-200 bg-white space-y-1.5">
+                  <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider block">
+                    Contact & Geography
+                  </span>
+                  <div className="flex items-center gap-2 text-neutral-800">
+                    <Phone className="w-3.5 h-3.5 text-neutral-400" />
+                    <span>{inspectUser.phone || 'Phone not provided'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-neutral-800">
+                    <MapPin className="w-3.5 h-3.5 text-neutral-400" />
+                    <span>{inspectUser.location || 'Location not specified'}</span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg border border-neutral-200 bg-white space-y-1.5">
+                  <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider block">
+                    Registration & Timestamps
+                  </span>
+                  <div className="flex items-center gap-2 text-neutral-800">
+                    <Calendar className="w-3.5 h-3.5 text-neutral-400" />
+                    <span>Registered: {inspectUser.joinedDate}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-neutral-800">
+                    <Clock className="w-3.5 h-3.5 text-neutral-400" />
+                    <span>Last Updated: {inspectUser.lastLogin}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Student Profile Card (if student) */}
+              {(inspectUser.role === ROLES.STUDENT || inspectUser.college || inspectUser.degree) && (
+                <div className="p-4 rounded-xl border border-blue-100 bg-blue-50/40 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-blue-600" />
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-blue-900">
+                      Academic & Placement Profile
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div>
+                      <p className="text-neutral-500 text-[11px]">Institution / College</p>
+                      <p className="font-semibold text-neutral-900 mt-0.5">{inspectUser.college || inspectUser.organization || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p className="text-neutral-500 text-[11px]">Degree & Stream</p>
+                      <p className="font-semibold text-neutral-900 mt-0.5">{inspectUser.degree || inspectUser.department || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p className="text-neutral-500 text-[11px]">Grad Cohort & Score</p>
+                      <p className="font-semibold text-neutral-900 mt-0.5">
+                        {inspectUser.gradYear ? `Class of ${inspectUser.gradYear}` : 'Year N/A'}
+                        {inspectUser.cgpa ? ` • ${inspectUser.cgpa} CGPA/GPA` : ''}
+                      </p>
+                    </div>
+                  </div>
+                  {inspectUser.targetRole && (
+                    <div className="text-xs">
+                      <p className="text-neutral-500 text-[11px]">Target Career Path</p>
+                      <p className="font-semibold text-blue-700 mt-0.5">{inspectUser.targetRole}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Organization & Corporate Details (if University or Recruiter) */}
+              {(inspectUser.role === ROLES.UNIVERSITY_ADMIN || inspectUser.role === ROLES.COMPANY_RECRUITER || inspectUser.companyWebsite || inspectUser.taxId) && (
+                <div className="p-4 rounded-xl border border-indigo-100 bg-indigo-50/40 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Building className="w-4 h-4 text-indigo-600" />
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-indigo-900">
+                      Enterprise / Institution Credentials
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <p className="text-neutral-500 text-[11px]">Organization Name</p>
+                      <p className="font-semibold text-neutral-900 mt-0.5">{inspectUser.organization || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p className="text-neutral-500 text-[11px]">Department / Title</p>
+                      <p className="font-semibold text-neutral-900 mt-0.5">{inspectUser.department || 'Not provided'}</p>
+                    </div>
+                    {inspectUser.companyWebsite && (
+                      <div>
+                        <p className="text-neutral-500 text-[11px]">Domain / Website</p>
+                        <p className="font-semibold text-indigo-700 mt-0.5">{inspectUser.companyWebsite}</p>
+                      </div>
+                    )}
+                    {inspectUser.taxId && (
+                      <div>
+                        <p className="text-neutral-500 text-[11px]">Tax ID / CIN / EIN</p>
+                        <p className="font-semibold text-neutral-900 mt-0.5 font-mono">{inspectUser.taxId}</p>
+                      </div>
+                    )}
+                    {inspectUser.industry && (
+                      <div>
+                        <p className="text-neutral-500 text-[11px]">Industry Sector</p>
+                        <p className="font-semibold text-neutral-900 mt-0.5">{inspectUser.industry}</p>
+                      </div>
+                    )}
+                    {inspectUser.companySize && (
+                      <div>
+                        <p className="text-neutral-500 text-[11px]">Workforce Size</p>
+                        <p className="font-semibold text-neutral-900 mt-0.5">{inspectUser.companySize} employees</p>
+                      </div>
+                    )}
+                    {inspectUser.accreditationBoard && (
+                      <div>
+                        <p className="text-neutral-500 text-[11px]">Accreditation Board</p>
+                        <p className="font-semibold text-neutral-900 mt-0.5">{inspectUser.accreditationBoard}</p>
+                      </div>
+                    )}
+                    {inspectUser.batchCapacity && (
+                      <div>
+                        <p className="text-neutral-500 text-[11px]">Annual Capacity</p>
+                        <p className="font-semibold text-neutral-900 mt-0.5">{Number(inspectUser.batchCapacity).toLocaleString()} students</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Raw JSON Technical Audit */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider block">
+                  Raw Technical Metadata (Database Record)
+                </span>
+                <pre className="p-3 bg-neutral-900 text-neutral-200 text-[11px] rounded-lg overflow-x-auto font-mono max-h-40">
+                  {JSON.stringify(inspectUser.rawMetadata || inspectUser, null, 2)}
+                </pre>
+              </div>
+            </>
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="primary" size="sm" onClick={() => setInspectUser(null)}>
+            Close Inspection
+          </Button>
+        </ModalFooter>
       </Modal>
     </DashboardLayout>
   );

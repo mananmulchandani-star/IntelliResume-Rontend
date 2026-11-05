@@ -48,15 +48,40 @@ export default function AdminDashboard() {
   const [actionReason, setActionReason] = useState('');
 
   const loadData = async () => {
-    setMetrics(adminStorage.getPlatformMetrics());
+    let currentMetrics = adminStorage.getPlatformMetrics();
+    setMetrics(currentMetrics);
     let unis = adminStorage.getUniversities().filter((u) => u.status === 'pending');
     let cmps = adminStorage.getCompanies().filter((c) => c.status === 'pending');
 
     try {
-      const [remoteUnisRes, remoteCmpsRes] = await Promise.all([
+      const [remoteUnisRes, remoteCmpsRes, remoteUsersRes, allUnisRes, allCmpsRes] = await Promise.all([
         supabase.from('universities').select('*').eq('status', 'pending'),
         supabase.from('companies').select('*').eq('status', 'pending'),
+        supabase.from('users').select('id, role', { count: 'exact' }),
+        supabase.from('universities').select('id, status'),
+        supabase.from('companies').select('id, status'),
       ]);
+
+      // Calculate real total users from Supabase and local storage
+      const localUsers = adminStorage.getUsers();
+      const remoteUserCount = remoteUsersRes.count ?? (remoteUsersRes.data ? remoteUsersRes.data.length : 0);
+      const totalUserCount = Math.max(localUsers.length, remoteUserCount);
+
+      // Calculate real universities counts
+      const remoteUnis = allUnisRes.data || [];
+      const localUnis = adminStorage.getUniversities();
+      const verifiedUnisCount = Math.max(
+        localUnis.filter((u) => u.status === 'approved').length,
+        remoteUnis.filter((u) => u.status === 'approved').length
+      );
+
+      // Calculate real companies counts
+      const remoteCmps = allCmpsRes.data || [];
+      const localCmps = adminStorage.getCompanies();
+      const verifiedCmpsCount = Math.max(
+        localCmps.filter((c) => c.status === 'approved').length,
+        remoteCmps.filter((c) => c.status === 'approved').length
+      );
 
       if (!remoteUnisRes.error && remoteUnisRes.data?.length) {
         const existingNames = new Set(unis.map((u) => (u.name || '').toLowerCase()));
@@ -97,6 +122,16 @@ export default function AdminDashboard() {
           }));
         cmps = [...extras, ...cmps];
       }
+
+      setMetrics({
+        ...currentMetrics,
+        totalUsers: totalUserCount,
+        userCountDisplay: totalUserCount.toLocaleString(),
+        verifiedUniversities: verifiedUnisCount,
+        pendingUniversities: unis.length,
+        verifiedCompanies: verifiedCmpsCount,
+        pendingCompanies: cmps.length,
+      });
     } catch {
       // ignore
     }

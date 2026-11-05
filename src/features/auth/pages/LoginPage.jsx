@@ -30,8 +30,9 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      const authRes = await login(email.trim(), password);
-      const targetRoute = redirectTarget || (authRes?.role && ROLE_DEFAULT_ROUTES[authRes.role]) || getDefaultRoute();
+      const cleanEmail = email.trim().toLowerCase();
+      const authRes = await login(cleanEmail, password);
+      const targetRoute = (authRes?.role && ROLE_DEFAULT_ROUTES[authRes.role]) || redirectTarget || getDefaultRoute();
       navigate(targetRoute, { replace: true });
     } catch (err) {
       setFormError(err.message || 'Invalid credentials. Please verify your email and password.');

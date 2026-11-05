@@ -264,3 +264,48 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ============================================================
+   Print & PDF Isolation Styles
+   Ensure ONLY the clean resume document prints, never the editor UI
+   ============================================================ */
+
+@media print {
+  /* Hide all app chrome, sidebars, headers, editor inputs, and buttons */
+  header,
+  nav,
+  aside,
+  footer,
+  button,
+  input,
+  textarea,
+  select,
+  .no-print,
+  .dashboard-sidebar,
+  .dashboard-header,
+  .editor-controls,
+  .breadcrumbs {
+    display: none !important;
+  }
+
+  body, html {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #000000 !important;
+  }
+
+  /* Display only the resume document page */
+  #resume-preview-document {
+    display: block !important;
+    position: relative !important;
+    margin: 0 auto !important;
+    padding: 16mm 18mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: 297mm !important;
+    background: #ffffff !important;
+  }
+}

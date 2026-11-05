@@ -1,311 +1,168 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { getTemplateComponent } from '../features/student/components/ResumeTemplates';
 
 /**
- * Main PDF download function for resumes
- * @param {string} templateType - The template type ('modern', 'irm', 'simple', etc.)
+ * Exports ONLY the resume document (never editor panels, sidebars, or controls) to an A4 PDF document.
+ * @param {HTMLElement|string} target - The DOM element or query selector string
+ * @param {string} fileName - Destination filename (must end in .pdf)
  */
-export const downloadResumePDF = async (templateType) => {
+export const exportElementToPDF = async (target, fileName = 'Resume.pdf') => {
+  let tempHolder = null;
   try {
-    console.log('Starting PDF generation for template:', templateType);
-    
-    // Find the resume content element
-    const resumeElement = document.getElementById('resume-content');
-    if (!resumeElement) {
-      throw new Error('Resume content element not found. Make sure you have an element with id="resume-content"');
+    let sourceElement = null;
+    if (typeof target === 'string') {
+      sourceElement = document.querySelector(target);
+    } else {
+      sourceElement = target;
     }
-    
-    // Create a deep clone of the resume element
-    const clone = resumeElement.cloneNode(true);
-    
-    // Apply PDF-specific classes and styles
-    clone.classList.add('pdf-export');
-    clone.style.width = '210mm'; // A4 width
-    clone.style.minHeight = '297mm'; // A4 height
-    clone.style.margin = '0';
-    clone.style.padding = '20px';
-    clone.style.backgroundColor = 'white';
-    clone.style.color = 'black';
-    
-    // Remove interactive and problematic elements
-    const elementsToRemove = clone.querySelectorAll(
-      'button, a, [onclick], .no-print, .interactive, .download-btn, .edit-btn'
+
+    if (!sourceElement) {
+      sourceElement = document.querySelector('#resume-preview-document') || document.querySelector('#resume-content');
+    }
+
+    if (!sourceElement) {
+      throw new Error('Resume element not found for PDF generation');
+    }
+
+    // Extract ONLY the pure resume paper document element, never the editor chrome/wrapper
+    const resumeDoc = sourceElement.id === 'resume-preview-document'
+      ? sourceElement
+      : (sourceElement.querySelector('#resume-preview-document') || sourceElement);
+
+    // Deep clone to isolate from editor DOM
+    const clone = resumeDoc.cloneNode(true);
+
+    // Remove any interactive, buttons, or editor controls from clone
+    const unwanted = clone.querySelectorAll(
+      'button, a[href="#"], [onclick], .no-print, input, textarea, select, .edit-btn, .action-btn'
     );
-    elementsToRemove.forEach(el => el.remove());
-    
-    // Template-specific fixes
-    if (templateType === 'modern' || templateType === 'irm') {
-      console.log('Applying Modern/IRM template fixes...');
-      
-      // Fix container overflows
-      const containers = clone.querySelectorAll('.container, .section, .resume-section, .content');
-      containers.forEach(container => {
-        container.style.overflow = 'visible';
-        container.style.height = 'auto';
-        container.style.maxHeight = 'none';
-        container.classList.add('pdf-fix');
-      });
-      
-      // Fix text rendering
-      const textElements = clone.querySelectorAll('p, span, div, li, h1, h2, h3, h4, h5, h6');
-      textElements.forEach(el => {
-        el.style.whiteSpace = 'normal';
-        el.style.wordWrap = 'break-word';
-        el.style.overflow = 'visible';
-        el.style.maxWidth = '100%';
-      });
-      
-      // Remove absolute positioning that breaks PDF clones in some contexts
-      const absoluteElements = clone.querySelectorAll('[style*="absolute"], [style*="fixed"]');
-      absoluteElements.forEach(el => {
-        // Keep verification badges and specific absolute markers if needed, 
-        // but generally relative is safer for html2canvas flow
-        if (!el.classList.contains('verified-badge')) {
-          el.style.position = 'relative';
-          el.style.top = 'auto';
-          el.style.left = 'auto';
-        }
-      });
-      
-      // Fix flexbox/grid issues - PRESERVE them instead of flattening
-      const flexContainers = clone.querySelectorAll('[style*="flex"], [style*="grid"]');
-      flexContainers.forEach(container => {
-        container.style.overflow = 'visible';
-        // DO NOT set display: block, as it ruins the layout
-      });
-    }
-    
-    // Global text spacing fix for html2canvas
-    const allElements = clone.querySelectorAll('*');
-    allElements.forEach(el => {
-      // html2canvas struggles with custom letter spacing
-      if (window.getComputedStyle(el).letterSpacing !== 'normal') {
-        el.style.letterSpacing = 'normal';
-      }
-      // Ensure specific font weight rendering
-      if (el.tagName.startsWith('H')) {
-        el.style.fontWeight = 'bold';
-      }
-    });
-    
-    // Create a temporary hidden container for PDF generation
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'fixed';
-    tempContainer.style.left = '-9999px';
-    tempContainer.style.top = '0';
-    tempContainer.style.zIndex = '-9999';
-    tempContainer.style.visibility = 'hidden';
-    tempContainer.appendChild(clone);
-    document.body.appendChild(tempContainer);
-    
-    // Generate canvas with optimized settings
+    unwanted.forEach((el) => el.remove());
+
+    // Force strict A4 styling on the clone (no editor borders or outer margins)
+    clone.style.width = '210mm';
+    clone.style.minHeight = '297mm';
+    clone.style.maxWidth = '210mm';
+    clone.style.margin = '0';
+    clone.style.boxShadow = 'none';
+    clone.style.border = 'none';
+    clone.style.backgroundColor = '#ffffff';
+
+    // Mount clone in a clean offscreen wrapper
+    tempHolder = document.createElement('div');
+    tempHolder.style.position = 'fixed';
+    tempHolder.style.top = '0';
+    tempHolder.style.left = '-9999px';
+    tempHolder.style.width = '210mm';
+    tempHolder.style.zIndex = '-9999';
+    tempHolder.style.backgroundColor = '#ffffff';
+    tempHolder.appendChild(clone);
+    document.body.appendChild(tempHolder);
+
+    // High resolution canvas capture of ONLY the isolated resume clone
     const canvas = await html2canvas(clone, {
-      scale: 2, // High resolution
+      scale: 2, // High DPI
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
-      width: clone.offsetWidth || 794,
-      height: clone.offsetHeight || clone.scrollHeight,
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: document.documentElement.clientWidth,
-      onclone: (clonedDoc) => {
-        // Apply additional styles to the cloned document
-        const style = clonedDoc.createElement('style');
-        style.textContent = `
-          @media print {
-            * {
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-              max-width: 100% !important;
-              letter-spacing: normal !important;
-              word-spacing: normal !important;
-            }
-            body {
-              margin: 0 !important;
-              padding: 0 !important;
-              width: 210mm !important;
-              background: white !important;
-            }
-            .resume-section {
-              page-break-inside: avoid;
-            }
-            .verified-badge {
-              display: inline-block !important;
-              visibility: visible !important;
-              opacity: 1 !important;
-            }
-            .verification-badge-footer {
-              display: block !important;
-              margin-top: 10px !important;
-              border-top: 1px solid #eee !important;
-              padding-top: 5px !important;
-              width: 100% !important;
-              text-align: center !important;
-            }
-          }
-        `;
-        clonedDoc.head.appendChild(style);
-      }
+      windowWidth: 1200,
     });
-    
-    // Clean up temporary container
-    document.body.removeChild(tempContainer);
-    
-    // Convert canvas to PDF
-    const imgData = canvas.toDataURL('image/png', 1.0);
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-    
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    
-    // Calculate image dimensions to fit PDF
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
-    const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-    const scaledWidth = imgWidth * ratio;
-    const scaledHeight = imgHeight * ratio;
-    
-    // Add image to PDF
-    pdf.addImage(imgData, 'PNG', 0, 0, scaledWidth, scaledHeight, '', 'FAST');
-    
-    // Save the PDF
-    pdf.save('resume.pdf');
-    
-    console.log('PDF generated successfully');
-    
-  } catch (error) {
-    console.error('PDF download error:', error);
-    
-    // User-friendly error message
-    let errorMessage = 'PDF generation failed. ';
-    
-    if (error.message.includes('element not found')) {
-      errorMessage += 'Please make sure the resume is properly loaded.';
-    } else if (error.message.includes('network') || error.message.includes('CORS')) {
-      errorMessage += 'Network issue detected. Please check your connection.';
-    } else {
-      errorMessage += 'Please try the "Print to PDF" option in your browser or use the Simple template.';
-    }
-    
-    alert(errorMessage);
-    throw error;
-  }
-};
 
-/**
- * Simple fallback PDF generator (text-based)
- * Use this if the main function fails
- */
-export const downloadSimplePDF = async (resumeData) => {
-  try {
+    const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF('p', 'mm', 'a4');
-    let yPosition = 20;
-    const lineHeight = 7;
-    const margin = 20;
-    const pageWidth = pdf.internal.pageSize.getWidth() - (margin * 2);
-    
-    // Set default font
-    pdf.setFont('helvetica');
-    
-    // Name
-    if (resumeData.fullName) {
-      pdf.setFontSize(20);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(resumeData.fullName, margin, yPosition);
-      yPosition += lineHeight * 2;
-    }
-    
-    // Contact info
-    const contactInfo = [];
-    if (resumeData.email) contactInfo.push(resumeData.email);
-    if (resumeData.phone) contactInfo.push(resumeData.phone);
-    if (resumeData.location) contactInfo.push(resumeData.location);
-    
-    if (contactInfo.length > 0) {
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(contactInfo.join(' | '), margin, yPosition);
-      yPosition += lineHeight * 1.5;
-    }
-    
-    // Professional Summary
-    if (resumeData.summary) {
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('PROFESSIONAL SUMMARY', margin, yPosition);
-      yPosition += lineHeight;
-      
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      const summaryLines = pdf.splitTextToSize(resumeData.summary, pageWidth);
-      pdf.text(summaryLines, margin, yPosition);
-      yPosition += (summaryLines.length * lineHeight) + lineHeight;
-    }
-    
-    // Check for page break
-    if (yPosition > 250) {
+    const pdfWidth = 210; // A4 standard width in mm
+    const pageHeight = 297; // A4 standard height in mm
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // First page
+    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight, '', 'FAST');
+    heightLeft -= pageHeight;
+
+    // Additional pages if resume exceeds single A4 page
+    while (heightLeft > 5) {
+      position = heightLeft - imgHeight;
       pdf.addPage();
-      yPosition = 20;
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight, '', 'FAST');
+      heightLeft -= pageHeight;
     }
-    
-    // Skills
-    if (resumeData.skills && resumeData.skills.length > 0) {
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('SKILLS', margin, yPosition);
-      yPosition += lineHeight;
-      
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      const skillsText = Array.isArray(resumeData.skills) 
-        ? resumeData.skills.join(', ')
-        : resumeData.skills;
-      const skillsLines = pdf.splitTextToSize(skillsText, pageWidth);
-      pdf.text(skillsLines, margin, yPosition);
-      yPosition += (skillsLines.length * lineHeight) + lineHeight;
-    }
-    
-    // Education
-    if (resumeData.education && resumeData.education.length > 0) {
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('EDUCATION', margin, yPosition);
-      yPosition += lineHeight;
-      
-      pdf.setFontSize(10);
-      resumeData.education.forEach(edu => {
-        const educationText = `${edu.degree} - ${edu.school} (${edu.year})`;
-        const eduLines = pdf.splitTextToSize(educationText, pageWidth);
-        pdf.text(eduLines, margin, yPosition);
-        yPosition += (eduLines.length * lineHeight) + lineHeight;
-      });
-      yPosition += lineHeight;
-    }
-    
-    // Save the PDF
-    pdf.save('resume-simple.pdf');
-    
+
+    const safeName = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+    pdf.save(safeName);
+    return true;
   } catch (error) {
-    console.error('Simple PDF generation failed:', error);
-    alert('Simple PDF generation also failed. Please use browser print to PDF.');
+    console.error('Error generating PDF from element:', error);
+    window.print();
+    return false;
+  } finally {
+    if (tempHolder && tempHolder.parentNode) {
+      tempHolder.parentNode.removeChild(tempHolder);
+    }
   }
 };
 
 /**
- * Utility function to check if element exists and is visible
+ * Renders any resume data object in the background and immediately downloads ONLY the resume page as a crisp PDF.
+ * Works from any page (Resume Editor, Student Dashboard) without requiring or capturing any editor UI.
+ * @param {Object} resumeData - Standard resume data object
+ * @param {Array} verifiedSkills - Array of verified skill names
  */
-export const validateResumeElement = () => {
-  const element = document.getElementById('resume-content');
-  if (!element) {
-    return { isValid: false, error: 'Resume element not found' };
-  }
-  if (element.offsetWidth === 0 || element.offsetHeight === 0) {
-    return { isValid: false, error: 'Resume element is not visible' };
-  }
-  return { isValid: true, error: null };
+export const exportResumeDataToPDF = async (resumeData, verifiedSkills = []) => {
+  if (!resumeData) return false;
+
+  // Determine target template component
+  const TemplateComponent = getTemplateComponent(resumeData.selectedTemplate || 'Professional');
+
+  // Create temporary offscreen container
+  const container = document.createElement('div');
+  container.id = 'offscreen-resume-pdf-container';
+  container.style.position = 'fixed';
+  container.style.top = '0';
+  container.style.left = '-9999px';
+  container.style.width = '210mm';
+  container.style.zIndex = '-9999';
+  container.style.backgroundColor = '#ffffff';
+  document.body.appendChild(container);
+
+  const root = createRoot(container);
+
+  return new Promise((resolve) => {
+    root.render(
+      React.createElement(
+        'div',
+        { style: { width: '210mm', backgroundColor: '#ffffff', padding: '0', margin: '0' } },
+        React.createElement(TemplateComponent, { data: resumeData, verifiedSkills })
+      )
+    );
+
+    // Allow React to mount and fonts/styles to compute
+    setTimeout(async () => {
+      try {
+        const targetElement = container.querySelector('#resume-preview-document') || container;
+        const candidateName = resumeData.personalInfo?.fullName || resumeData.title || 'Resume';
+        const fileName = `${candidateName.replace(/[^a-zA-Z0-9_\- ]/g, '').replace(/\s+/g, '_')}_InsightResume.pdf`;
+
+        await exportElementToPDF(targetElement, fileName);
+        resolve(true);
+      } catch (err) {
+        console.error('Failed to export resume data as PDF:', err);
+        resolve(false);
+      } finally {
+        try {
+          root.unmount();
+          container.remove();
+        } catch {
+          // ignore cleanup issues
+        }
+      }
+    }, 350);
+  });
+};
+
+export default {
+  exportElementToPDF,
+  exportResumeDataToPDF,
 };
