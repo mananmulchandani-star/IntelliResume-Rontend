@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { ROUTES } from '../../../constants/routes';
@@ -55,8 +55,17 @@ export default function RegisterPage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { signUp } = useAuth();
+  const { user, role, signUp, getDefaultRoute } = useAuth();
   const navigate = useNavigate();
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      const activeRole = role || (user.email === 'ceo@insight.in' ? ROLES.PLATFORM_ADMIN : ROLES.STUDENT);
+      const targetRoute = ROLE_DEFAULT_ROUTES[activeRole] || getDefaultRoute();
+      navigate(targetRoute, { replace: true });
+    }
+  }, [user, role, navigate, getDefaultRoute]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
