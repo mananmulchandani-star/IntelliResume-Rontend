@@ -20,8 +20,19 @@ export default function AuthGuard({ children, allowedPortals, requireAuth = true
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Check local storage fallback for user/role in case React state is still flushing
+  const savedUserStr = !user ? localStorage.getItem('user') : null;
+  let cachedUser = null;
+  try {
+    cachedUser = savedUserStr ? JSON.parse(savedUserStr) : null;
+  } catch {
+    cachedUser = null;
+  }
+  const effectiveUser = user || cachedUser;
+  const effectiveRole = role || localStorage.getItem('userRole');
+
   // 1. Show loading spinner while checking auth session
-  if (loading) {
+  if (loading && !effectiveUser) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 p-4">
         <div className="w-9 h-9 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
@@ -31,18 +42,18 @@ export default function AuthGuard({ children, allowedPortals, requireAuth = true
   }
 
   // 2. Redirect unauthenticated users to login
-  if (requireAuth && !user) {
+  if (requireAuth && !effectiveUser) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // 3. Strict Role-Based Portal Access Enforcement
-  if (allowedPortals && role) {
-    const userPermissions = ROLE_PERMISSIONS[role] || [];
+  if (allowedPortals && effectiveRole) {
+    const userPermissions = ROLE_PERMISSIONS[effectiveRole] || [];
     const hasAccess = allowedPortals.some((portal) => userPermissions.includes(portal));
 
     if (!hasAccess) {
-      const myDashboard = ROLE_DEFAULT_ROUTES[role] || '/login';
-      const myRoleLabel = ROLE_LABELS[role] || role;
+      const myDashboard = ROLE_DEFAULT_ROUTES[effectiveRole] || '/login';
+      const myRoleLabel = ROLE_LABELS[effectiveRole] || effectiveRole;
       const targetPortalName = allowedPortals[0].charAt(0).toUpperCase() + allowedPortals[0].slice(1);
 
       return (

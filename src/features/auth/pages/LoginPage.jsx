@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { ROUTES } from '../../../constants/routes';
-import { ROLE_DEFAULT_ROUTES } from '../../../constants/roles';
+import { ROLES, ROLE_DEFAULT_ROUTES } from '../../../constants/roles';
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui';
 import { Sparkles, ArrowRight, Lock, Mail, AlertCircle, Shield } from 'lucide-react';
 
@@ -13,26 +13,42 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
 
-  const { login, loginWithGoogle, getDefaultRoute, loginAsDemo } = useAuth();
+  const { user, role, login, loginWithGoogle, getDefaultRoute } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const redirectTarget = location.state?.from?.pathname;
 
+  // Auto-redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      const activeRole = role || (user.email === 'ceo@insight.in' ? ROLES.PLATFORM_ADMIN : ROLES.STUDENT);
+      const targetRoute = (activeRole && ROLE_DEFAULT_ROUTES[activeRole]) || redirectTarget || getDefaultRoute();
+      navigate(targetRoute, { replace: true });
+    }
+  }, [user, role, navigate, redirectTarget, getDefaultRoute]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
 
-    if (!email.trim() || !password) {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) {
       setFormError('Please enter both email and password.');
       return;
     }
 
     try {
       setLoading(true);
-      const cleanEmail = email.trim().toLowerCase();
       const authRes = await login(cleanEmail, password);
-      const targetRoute = (authRes?.role && ROLE_DEFAULT_ROUTES[authRes.role]) || redirectTarget || getDefaultRoute();
+      const targetRole =
+        authRes?.role ||
+        role ||
+        (cleanEmail === 'ceo@insight.in' ? ROLES.PLATFORM_ADMIN : ROLES.STUDENT);
+      const targetRoute =
+        (targetRole && ROLE_DEFAULT_ROUTES[targetRole]) ||
+        redirectTarget ||
+        getDefaultRoute();
       navigate(targetRoute, { replace: true });
     } catch (err) {
       setFormError(err.message || 'Invalid credentials. Please verify your email and password.');
@@ -129,18 +145,22 @@ export default function LoginPage() {
             {/* Email/Password Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
+                id="login-email"
+                name="email"
                 label="Email Address"
                 type="email"
+                autoComplete="email"
                 placeholder="you@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 leftIcon={<Mail className="w-4 h-4 text-neutral-400" />}
+                disabled={loading}
                 required
               />
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-neutral-700">Password</label>
+                  <label htmlFor="login-password" className="text-xs font-medium text-neutral-700">Password</label>
                   <Link
                     to={ROUTES.FORGOT_PASSWORD}
                     className="text-xs text-primary-600 hover:text-primary-700 font-medium"
@@ -149,11 +169,15 @@ export default function LoginPage() {
                   </Link>
                 </div>
                 <Input
+                  id="login-password"
+                  name="password"
                   type="password"
+                  autoComplete="current-password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   leftIcon={<Lock className="w-4 h-4 text-neutral-400" />}
+                  disabled={loading}
                   required
                 />
               </div>
