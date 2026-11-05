@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
         .from('users')
         .select('*')
         .eq('id', supabaseUser.id)
-        .single();
+        .maybeSingle();
 
       const userEmail = (supabaseUser.email || profile?.email || '').toLowerCase().trim();
       let userRole = profile?.role || supabaseUser.user_metadata?.role;
