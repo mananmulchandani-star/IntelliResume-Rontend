@@ -57,34 +57,41 @@ export default function UniversityVerification() {
 
   const loadData = async () => {
     let list = adminStorage.getUniversities();
+    const localStatusByName = new Map(list.map((u) => [(u.name || '').toLowerCase(), u]));
+
     try {
       const { data, error } = await supabase.from('universities').select('*');
       if (!error && data && data.length > 0) {
-        const formatted = data.map((d) => ({
-          id: d.id,
-          name: d.name,
-          country: d.location || 'India',
-          state: '',
-          domain: d.domain || `${d.name.toLowerCase().replace(/[^a-z]/g, '')}.edu`,
-          accreditationBoard: d.accreditation_board || 'UGC / State Approved',
-          ranking: 'Institutional Partner',
-          batchCapacity: d.batch_capacity || 1000,
-          deanName: d.dean_name,
-          deanEmail: d.dean_email,
-          phone: d.phone,
-          status: d.status || 'pending',
-          submittedDate: d.created_at ? d.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-          verifiedDate: d.verified_at,
-          documents: [],
-        }));
-        const existingNames = new Set(list.map((u) => u.name.toLowerCase()));
-        const uniqueRemote = formatted.filter((f) => !existingNames.has(f.name.toLowerCase()));
-        list = [...uniqueRemote, ...list];
+        data.forEach((d) => {
+          const nameKey = (d.name || '').toLowerCase();
+          const localItem = localStatusByName.get(nameKey);
+          if (localItem) {
+            // Keep local item status (e.g. approved / rejected)
+            return;
+          }
+          list.push({
+            id: d.id,
+            name: d.name,
+            country: d.location || 'India',
+            state: '',
+            domain: d.domain || `${d.name.toLowerCase().replace(/[^a-z]/g, '')}.edu`,
+            accreditationBoard: d.accreditation_board || 'UGC / State Approved',
+            ranking: 'Institutional Partner',
+            batchCapacity: d.batch_capacity || 1000,
+            deanName: d.dean_name,
+            deanEmail: d.dean_email,
+            phone: d.phone,
+            status: d.status || 'pending',
+            submittedDate: d.created_at ? d.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+            verifiedDate: d.verified_at,
+            documents: [],
+          });
+        });
       }
     } catch {
       // ignore
     }
-    setUniversities(list);
+    setUniversities([...list]);
   };
 
   useEffect(() => {
@@ -129,7 +136,7 @@ export default function UniversityVerification() {
     );
   };
 
-  const handleExecuteDecision = () => {
+  const handleExecuteDecision = async () => {
     if (!reviewUni) return;
 
     if (decisionAction === 'approve') {
@@ -138,7 +145,40 @@ export default function UniversityVerification() {
         verifiedDate: new Date().toISOString().split('T')[0],
         verifiedBy: 'Admin Supervisor',
         rejectionReason: null,
-      });
+      }, reviewUni.name);
+
+      // Immediately update local UI state
+      setUniversities((prev) =>
+        prev.map((u) =>
+          u.id === reviewUni.id || (u.name || '').toLowerCase() === (reviewUni.name || '').toLowerCase()
+            ? { ...u, status: 'approved', verifiedDate: new Date().toISOString().split('T')[0], rejectionReason: null }
+            : u
+        )
+      );
+
+      // Sync approval to remote Supabase database
+      try {
+        const { error } = await supabase
+          .from('universities')
+          .update({
+            status: 'approved',
+            verified_at: new Date().toISOString(),
+          })
+          .eq('id', reviewUni.id);
+        // Fallback: match by name if id-based update didn't affect rows
+        if (error) {
+          await supabase
+            .from('universities')
+            .update({
+              status: 'approved',
+              verified_at: new Date().toISOString(),
+            })
+            .match({ name: reviewUni.name });
+        }
+      } catch {
+        // ignore remote sync errors
+      }
+
       adminStorage.addAuditLog({
         action: 'University Verified',
         target: `${reviewUni.name} (${reviewUni.domain})`,
@@ -160,7 +200,40 @@ export default function UniversityVerification() {
         verifiedDate: null,
         verifiedBy: 'Admin Supervisor',
         rejectionReason: finalReason,
-      });
+      }, reviewUni.name);
+
+      // Immediately update local UI state
+      setUniversities((prev) =>
+        prev.map((u) =>
+          u.id === reviewUni.id || (u.name || '').toLowerCase() === (reviewUni.name || '').toLowerCase()
+            ? { ...u, status: 'rejected', rejectionReason: finalReason }
+            : u
+        )
+      );
+
+      // Sync rejection to remote Supabase database
+      try {
+        const { error } = await supabase
+          .from('universities')
+          .update({
+            status: 'rejected',
+            verified_at: null,
+          })
+          .eq('id', reviewUni.id);
+        // Fallback: match by name if id-based update didn't affect rows
+        if (error) {
+          await supabase
+            .from('universities')
+            .update({
+              status: 'rejected',
+              verified_at: null,
+            })
+            .match({ name: reviewUni.name });
+        }
+      } catch {
+        // ignore remote sync errors
+      }
+
       adminStorage.addAuditLog({
         action: 'University Application Rejected',
         target: `${reviewUni.name} (${reviewUni.domain})`,

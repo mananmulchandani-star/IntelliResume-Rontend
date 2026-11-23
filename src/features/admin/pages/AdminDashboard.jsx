@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   const [metrics, setMetrics] = useState(adminStorage.getPlatformMetrics());
   const [pendingUnis, setPendingUnis] = useState([]);
   const [pendingCompanies, setPendingCompanies] = useState([]);
+  const [registeredUsers, setRegisteredUsers] = useState([]);
   const [flaggedListings, setFlaggedListings] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [isHealthRefreshing, setIsHealthRefreshing] = useState(false);
@@ -48,45 +49,62 @@ export default function AdminDashboard() {
   const [actionReason, setActionReason] = useState('');
 
   const loadData = async () => {
-    let currentMetrics = adminStorage.getPlatformMetrics();
-    setMetrics(currentMetrics);
-    let unis = adminStorage.getUniversities().filter((u) => u.status === 'pending');
-    let cmps = adminStorage.getCompanies().filter((c) => c.status === 'pending');
+    // 1. Load local datasets
+    const localUsers = adminStorage.getUsers() || [];
+    const localUnis = adminStorage.getUniversities() || [];
+    const localCmps = adminStorage.getCompanies() || [];
+
+    // Keep track of resolved (approved or rejected) items so remote stale data doesn't revive them
+    const resolvedUniNames = new Set(
+      localUnis.filter((u) => u.status !== 'pending').map((u) => (u.name || '').toLowerCase())
+    );
+    const resolvedCmpNames = new Set(
+      localCmps.filter((c) => c.status !== 'pending').map((c) => (c.name || '').toLowerCase())
+    );
+
+    let unis = localUnis.filter((u) => u.status === 'pending');
+    let cmps = localCmps.filter((c) => c.status === 'pending');
+    let allUsers = [...localUsers];
 
     try {
       const [remoteUnisRes, remoteCmpsRes, remoteUsersRes, allUnisRes, allCmpsRes] = await Promise.all([
         supabase.from('universities').select('*').eq('status', 'pending'),
         supabase.from('companies').select('*').eq('status', 'pending'),
-        supabase.from('users').select('id, role', { count: 'exact' }),
+        supabase.from('users').select('*'),
         supabase.from('universities').select('id, status'),
         supabase.from('companies').select('id, status'),
       ]);
 
-      // Calculate real total users from Supabase and local storage
-      const localUsers = adminStorage.getUsers();
-      const remoteUserCount = remoteUsersRes.count ?? (remoteUsersRes.data ? remoteUsersRes.data.length : 0);
-      const totalUserCount = Math.max(localUsers.length, remoteUserCount);
+      // Merge remote users seamlessly
+      if (!remoteUsersRes.error && Array.isArray(remoteUsersRes.data)) {
+        const seenEmails = new Set(allUsers.map((u) => (u.email || '').toLowerCase()));
+        remoteUsersRes.data.forEach((ru) => {
+          const emailKey = (ru.email || '').toLowerCase();
+          if (!seenEmails.has(emailKey)) {
+            seenEmails.add(emailKey);
+            allUsers.push({
+              id: ru.id,
+              name: ru.name || emailKey.split('@')[0],
+              email: ru.email,
+              role: ru.role || 'student',
+              organization: ru.organization || ru.college || 'Independent',
+              department: ru.department || ru.degree || '',
+              status: ru.status || 'active',
+              joinedDate: ru.created_at ? ru.created_at.split('T')[0] : 'Recently',
+              lastLogin: 'Active',
+            });
+          }
+        });
+      }
 
-      // Calculate real universities counts
-      const remoteUnis = allUnisRes.data || [];
-      const localUnis = adminStorage.getUniversities();
-      const verifiedUnisCount = Math.max(
-        localUnis.filter((u) => u.status === 'approved').length,
-        remoteUnis.filter((u) => u.status === 'approved').length
-      );
-
-      // Calculate real companies counts
-      const remoteCmps = allCmpsRes.data || [];
-      const localCmps = adminStorage.getCompanies();
-      const verifiedCmpsCount = Math.max(
-        localCmps.filter((c) => c.status === 'approved').length,
-        remoteCmps.filter((c) => c.status === 'approved').length
-      );
-
+      // Merge remote universities (skip any already approved/rejected locally)
       if (!remoteUnisRes.error && remoteUnisRes.data?.length) {
-        const existingNames = new Set(unis.map((u) => (u.name || '').toLowerCase()));
+        const existingPendingNames = new Set(unis.map((u) => (u.name || '').toLowerCase()));
         const extras = remoteUnisRes.data
-          .filter((r) => !existingNames.has((r.name || '').toLowerCase()))
+          .filter((r) => {
+            const nameKey = (r.name || '').toLowerCase();
+            return !resolvedUniNames.has(nameKey) && !existingPendingNames.has(nameKey);
+          })
           .map((d) => ({
             id: d.id,
             name: d.name,
@@ -102,10 +120,14 @@ export default function AdminDashboard() {
         unis = [...extras, ...unis];
       }
 
+      // Merge remote companies (skip any already approved/rejected locally)
       if (!remoteCmpsRes.error && remoteCmpsRes.data?.length) {
-        const existingNames = new Set(cmps.map((c) => (c.name || '').toLowerCase()));
+        const existingPendingNames = new Set(cmps.map((c) => (c.name || '').toLowerCase()));
         const extras = remoteCmpsRes.data
-          .filter((r) => !existingNames.has((r.name || '').toLowerCase()))
+          .filter((r) => {
+            const nameKey = (r.name || '').toLowerCase();
+            return !resolvedCmpNames.has(nameKey) && !existingPendingNames.has(nameKey);
+          })
           .map((d) => ({
             id: d.id,
             name: d.name,
@@ -123,8 +145,23 @@ export default function AdminDashboard() {
         cmps = [...extras, ...cmps];
       }
 
+      // Calculate verified counts
+      const remoteUnis = allUnisRes.data || [];
+      const verifiedUnisCount = Math.max(
+        localUnis.filter((u) => u.status === 'approved').length,
+        remoteUnis.filter((u) => u.status === 'approved').length
+      );
+
+      const remoteCmps = allCmpsRes.data || [];
+      const verifiedCmpsCount = Math.max(
+        localCmps.filter((c) => c.status === 'approved').length,
+        remoteCmps.filter((c) => c.status === 'approved').length
+      );
+
+      const totalUserCount = allUsers.length;
+
       setMetrics({
-        ...currentMetrics,
+        ...adminStorage.getPlatformMetrics(),
         totalUsers: totalUserCount,
         userCountDisplay: totalUserCount.toLocaleString(),
         verifiedUniversities: verifiedUnisCount,
@@ -133,11 +170,12 @@ export default function AdminDashboard() {
         pendingCompanies: cmps.length,
       });
     } catch {
-      // ignore
+      // safe fallback
     }
 
     setPendingUnis(unis);
     setPendingCompanies(cmps);
+    setRegisteredUsers(allUsers);
     setFlaggedListings(adminStorage.getListings().filter((l) => l.status === 'flagged'));
     setAuditLogs(adminStorage.getAuditLogs());
   };
@@ -188,15 +226,29 @@ export default function AdminDashboard() {
         verifiedDate: action === 'approve' ? new Date().toISOString().split('T')[0] : null,
         verifiedBy: 'Admin Supervisor',
         rejectionReason: action === 'reject' ? actionReason || 'Credential requirements not met' : null,
-      });
+      }, item.name);
+
+      setPendingUnis((prev) =>
+        prev.filter((u) => u.id !== item.id && (u.name || '').toLowerCase() !== (item.name || '').toLowerCase())
+      );
 
       try {
-        await supabase
+        const { error } = await supabase
           .from('universities')
           .update({
             status: newStatus,
+            verified_at: action === 'approve' ? new Date().toISOString() : null,
           })
-          .match({ name: item.name });
+          .eq('id', item.id);
+        if (error) {
+          await supabase
+            .from('universities')
+            .update({
+              status: newStatus,
+              verified_at: action === 'approve' ? new Date().toISOString() : null,
+            })
+            .match({ name: item.name });
+        }
       } catch {
         // ignore
       }
@@ -215,16 +267,29 @@ export default function AdminDashboard() {
         verifiedDate: action === 'approve' ? new Date().toISOString().split('T')[0] : null,
         verifiedBy: 'Admin Supervisor',
         rejectionReason: action === 'reject' ? actionReason || 'Business verification failed' : null,
-      });
+      }, item.name);
+
+      setPendingCompanies((prev) =>
+        prev.filter((c) => c.id !== item.id && (c.name || '').toLowerCase() !== (item.name || '').toLowerCase())
+      );
 
       try {
-        await supabase
+        const { error } = await supabase
           .from('companies')
           .update({
             status: newStatus,
             verified_at: action === 'approve' ? new Date().toISOString() : null,
           })
-          .match({ name: item.name });
+          .eq('id', item.id);
+        if (error) {
+          await supabase
+            .from('companies')
+            .update({
+              status: newStatus,
+              verified_at: action === 'approve' ? new Date().toISOString() : null,
+            })
+            .match({ name: item.name });
+        }
       } catch {
         // ignore
       }
@@ -584,6 +649,106 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Section 4: Registered Platform Users Directory */}
+          <Card className="border border-neutral-200">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary-600" />
+                  <span>Platform Users Directory</span>
+                  <Badge variant="default" size="sm">
+                    {(registeredUsers || []).length} registered
+                  </Badge>
+                </CardTitle>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Active platform accounts across students, university placement cells, and corporate recruiters.
+                </p>
+              </div>
+              <Link
+                to={ROUTES.USER_MANAGEMENT}
+                className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1 shrink-0"
+              >
+                View Full Directory
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </CardHeader>
+            <CardContent className="p-0">
+              {(registeredUsers || []).length === 0 ? (
+                <div className="p-8 text-center text-xs text-neutral-500">
+                  <Users className="w-7 h-7 text-neutral-400 mx-auto mb-2 opacity-80" />
+                  <p className="font-medium text-neutral-800">No registered users recorded</p>
+                  <p className="text-neutral-400 mt-0.5">User accounts created through registration or auth will appear here.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-neutral-150">
+                  {(registeredUsers || []).slice(0, 5).map((u) => (
+                    <div
+                      key={u.id || u.email}
+                      className="p-4 hover:bg-neutral-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-full bg-primary-50 text-primary-700 border border-primary-100 flex items-center justify-center font-bold text-xs shrink-0">
+                          {(u.name || u.email || 'U').charAt(0).toUpperCase()}
+                        </div>
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm text-neutral-900 truncate">
+                              {u.name}
+                            </span>
+                            <Badge
+                              variant={
+                                u.role === 'platform_admin'
+                                  ? 'error'
+                                  : u.role === 'university_admin'
+                                  ? 'info'
+                                  : u.role === 'company_recruiter'
+                                  ? 'warning'
+                                  : 'default'
+                              }
+                              size="sm"
+                            >
+                              {u.role === 'platform_admin'
+                                ? 'Admin'
+                                : u.role === 'university_admin'
+                                ? 'University'
+                                : u.role === 'company_recruiter'
+                                ? 'Recruiter'
+                                : 'Student'}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-neutral-500 truncate">
+                            {u.email} &bull; <span className="text-neutral-600">{u.organization || 'Independent'}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <span className="text-[11px] text-neutral-400">
+                          Joined {u.joinedDate || 'Recently'}
+                        </span>
+                        <Link to={ROUTES.USER_MANAGEMENT}>
+                          <Button variant="outline" size="sm" className="!h-7 text-xs">
+                            Manage
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                  {(registeredUsers || []).length > 5 && (
+                    <div className="p-3 text-center bg-neutral-50/50 border-t border-neutral-150">
+                      <Link
+                        to={ROUTES.USER_MANAGEMENT}
+                        className="text-xs font-medium text-primary-600 hover:text-primary-700"
+                      >
+                        + {(registeredUsers.length - 5)} more users in directory &rarr;
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

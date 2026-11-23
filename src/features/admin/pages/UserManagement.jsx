@@ -22,7 +22,7 @@ import Pagination from '../../../components/shared/Pagination';
 import { ROUTES } from '../../../constants/routes';
 import { ROLE_LABELS, ROLES } from '../../../constants/roles';
 import adminStorage from '../services/adminStorage';
-import supabase from '../../../services/supabase';
+import { supabase } from '../../../services/supabase';
 import {
   Users,
   Search,
@@ -189,9 +189,16 @@ export default function UserManagement() {
     setRoleChangeReason('');
   };
 
-  const handleConfirmRoleChange = () => {
+  const handleConfirmRoleChange = async () => {
     if (!roleModalUser) return;
-    adminStorage.updateUser(roleModalUser.id, { role: newRoleValue });
+    adminStorage.updateUser(roleModalUser.id, { role: newRoleValue }, roleModalUser.email);
+
+    try {
+      await supabase.from('users').update({ role: newRoleValue }).eq('id', roleModalUser.id);
+    } catch {
+      // non-blocking
+    }
+
     adminStorage.addAuditLog({
       action: 'User Role Modified',
       target: `${roleModalUser.name} (${roleModalUser.email})`,
@@ -209,12 +216,19 @@ export default function UserManagement() {
     setStatusChangeReason('');
   };
 
-  const handleConfirmStatusToggle = () => {
+  const handleConfirmStatusToggle = async () => {
     if (!statusModalUser) return;
     const isCurrentlyActive = statusModalUser.status === 'active';
     const nextStatus = isCurrentlyActive ? 'deactivated' : 'active';
 
-    adminStorage.updateUser(statusModalUser.id, { status: nextStatus });
+    adminStorage.updateUser(statusModalUser.id, { status: nextStatus }, statusModalUser.email);
+
+    try {
+      await supabase.from('users').update({ status: nextStatus }).eq('id', statusModalUser.id);
+    } catch {
+      // non-blocking
+    }
+
     adminStorage.addAuditLog({
       action: isCurrentlyActive ? 'User Account Deactivated' : 'User Account Activated',
       target: `${statusModalUser.name} (${statusModalUser.email})`,

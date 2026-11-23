@@ -48,9 +48,12 @@ export const adminStorage = {
     writeStorage(STORAGE_KEYS.USERS, users);
     return users;
   },
-  updateUser(id, updates) {
+  updateUser(id, updates, email = null) {
     const users = this.getUsers();
-    const index = users.findIndex((u) => u.id === id);
+    let index = users.findIndex((u) => u.id === id);
+    if (index === -1 && email) {
+      index = users.findIndex((u) => (u.email || '').toLowerCase() === email.toLowerCase());
+    }
     if (index !== -1) {
       users[index] = { ...users[index], ...updates };
       this.saveUsers(users);
@@ -59,11 +62,21 @@ export const adminStorage = {
     return null;
   },
   addUser(newUser) {
+    if (!newUser) return null;
     const users = this.getUsers();
+    const existingIndex = users.findIndex(
+      (u) => (newUser.id && u.id === newUser.id) ||
+             (newUser.email && (u.email || '').toLowerCase() === (newUser.email || '').toLowerCase())
+    );
+    if (existingIndex !== -1) {
+      users[existingIndex] = { ...users[existingIndex], ...newUser };
+      this.saveUsers(users);
+      return users[existingIndex];
+    }
     const user = {
-      id: `usr-${Date.now()}`,
+      id: newUser.id || `usr-${Date.now()}`,
       joinedDate: new Date().toISOString().split('T')[0],
-      lastLogin: 'Never',
+      lastLogin: 'Active',
       status: 'active',
       ...newUser,
     };
@@ -73,7 +86,7 @@ export const adminStorage = {
       action: 'User Registered',
       target: `${user.name || user.email} (${user.role})`,
       type: 'info',
-      details: `User profile created for ${user.organization || 'Individual'}.`,
+      details: `User profile registered for ${user.organization || 'Platform Member'}.`,
     });
     return user;
   },
@@ -92,10 +105,20 @@ export const adminStorage = {
     return unis;
   },
   addUniversity(newUni) {
+    if (!newUni) return null;
     const unis = this.getUniversities();
+    const existingIndex = unis.findIndex(
+      (u) => (newUni.id && u.id === newUni.id) ||
+             (newUni.name && (u.name || '').toLowerCase() === (newUni.name || '').toLowerCase())
+    );
+    if (existingIndex !== -1) {
+      unis[existingIndex] = { ...unis[existingIndex], ...newUni };
+      this.saveUniversities(unis);
+      return unis[existingIndex];
+    }
     const uni = {
-      id: `uni-${Date.now()}`,
-      status: 'pending',
+      id: newUni.id || `uni-${Date.now()}`,
+      status: newUni.status || 'pending',
       submittedDate: new Date().toISOString().split('T')[0],
       verifiedDate: null,
       verifiedBy: null,
@@ -112,15 +135,28 @@ export const adminStorage = {
     });
     return uni;
   },
-  updateUniversity(id, updates) {
+  updateUniversity(id, updates, name = null) {
     const unis = this.getUniversities();
-    const index = unis.findIndex((u) => u.id === id);
+    let index = unis.findIndex((u) => u.id === id);
+    if (index === -1 && name) {
+      index = unis.findIndex((u) => (u.name || '').toLowerCase() === name.toLowerCase());
+    }
     if (index !== -1) {
       unis[index] = { ...unis[index], ...updates };
       this.saveUniversities(unis);
       return unis[index];
     }
-    return null;
+    // If not found in local storage, insert it with the updated state
+    const newUni = {
+      id: id || `uni-${Date.now()}`,
+      name: name || 'Institutional Partner',
+      status: 'approved',
+      submittedDate: new Date().toISOString().split('T')[0],
+      ...updates,
+    };
+    unis.unshift(newUni);
+    this.saveUniversities(unis);
+    return newUni;
   },
 
   // --- COMPANIES ---
@@ -132,10 +168,20 @@ export const adminStorage = {
     return companies;
   },
   addCompany(newCmp) {
+    if (!newCmp) return null;
     const companies = this.getCompanies();
+    const existingIndex = companies.findIndex(
+      (c) => (newCmp.id && c.id === newCmp.id) ||
+             (newCmp.name && (c.name || '').toLowerCase() === (newCmp.name || '').toLowerCase())
+    );
+    if (existingIndex !== -1) {
+      companies[existingIndex] = { ...companies[existingIndex], ...newCmp };
+      this.saveCompanies(companies);
+      return companies[existingIndex];
+    }
     const cmp = {
-      id: `cmp-${Date.now()}`,
-      status: 'pending',
+      id: newCmp.id || `cmp-${Date.now()}`,
+      status: newCmp.status || 'pending',
       submittedDate: new Date().toISOString().split('T')[0],
       verifiedDate: null,
       verifiedBy: null,
@@ -152,15 +198,28 @@ export const adminStorage = {
     });
     return cmp;
   },
-  updateCompany(id, updates) {
+  updateCompany(id, updates, name = null) {
     const companies = this.getCompanies();
-    const index = companies.findIndex((c) => c.id === id);
+    let index = companies.findIndex((c) => c.id === id);
+    if (index === -1 && name) {
+      index = companies.findIndex((c) => (c.name || '').toLowerCase() === name.toLowerCase());
+    }
     if (index !== -1) {
       companies[index] = { ...companies[index], ...updates };
       this.saveCompanies(companies);
       return companies[index];
     }
-    return null;
+    // If not found in local storage, insert it with the updated state
+    const newCmp = {
+      id: id || `cmp-${Date.now()}`,
+      name: name || 'Employer Partner',
+      status: 'approved',
+      submittedDate: new Date().toISOString().split('T')[0],
+      ...updates,
+    };
+    companies.unshift(newCmp);
+    this.saveCompanies(companies);
+    return newCmp;
   },
 
   // --- LISTINGS ---

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "../../services/supabase";
 import { ROLES, ROLE_DEFAULT_ROUTES } from "../../constants/roles";
+import adminStorage from "../../features/admin/services/adminStorage";
 
 const AuthContext = createContext(null);
 
@@ -53,6 +54,11 @@ export function AuthProvider({ children }) {
       localStorage.setItem("loggedInEmail", userData.email || "");
       if (token) {
         localStorage.setItem("token", token);
+      }
+      try {
+        adminStorage.addUser(userData);
+      } catch (err) {
+        // non-blocking
       }
     } else {
       localStorage.removeItem("user");
@@ -262,6 +268,41 @@ export function AuthProvider({ children }) {
 
       const token = data?.session?.access_token || ("token-" + Date.now());
       persistSession(registeredUser, targetRole, token);
+
+      // Immediately track in platform administrator registry
+      try {
+        adminStorage.addUser(registeredUser);
+        if (targetRole === ROLES.UNIVERSITY_ADMIN && (metadata.organization || metadata.organizationName)) {
+          const orgName = metadata.organization || metadata.organizationName;
+          adminStorage.addUniversity({
+            name: orgName,
+            domain: metadata.companyWebsite || metadata.company_website || (orgName.toLowerCase().replace(/[^a-z]/g, "") + ".edu"),
+            location: metadata.location || "Campus Location",
+            accreditationBoard: metadata.accreditationBoard || metadata.accreditation_board || "Tier-1 NIRF",
+            batchCapacity: metadata.batchCapacity ? Number(metadata.batchCapacity) : 1000,
+            deanName: metadata.name || "Dean / Placement Head",
+            deanEmail: cleanEmail,
+            phone: metadata.phone || null,
+            status: "pending",
+          });
+        }
+        if ((targetRole === ROLES.COMPANY_RECRUITER || targetRole === ROLES.COMPANY_ADMIN) && (metadata.organization || metadata.organizationName)) {
+          const orgName = metadata.organization || metadata.organizationName;
+          adminStorage.addCompany({
+            name: orgName,
+            industry: metadata.industry || "Software & Technology",
+            domain: metadata.companyWebsite || metadata.company_website || "company.com",
+            headquarters: metadata.location || "Corporate Headquarters",
+            taxId: metadata.taxId || metadata.tax_id || "Corporate Entity",
+            recruiterName: metadata.name || "Talent Lead",
+            recruiterEmail: cleanEmail,
+            phone: metadata.phone || null,
+            status: "pending",
+          });
+        }
+      } catch (storageErr) {
+        console.warn("[AuthProvider] adminStorage registration notice:", storageErr);
+      }
 
       // Fire non-blocking database writes in detached background worker
       setTimeout(async () => {

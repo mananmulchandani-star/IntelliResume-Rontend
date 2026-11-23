@@ -170,17 +170,36 @@ export default function CompanyVerification() {
         verifiedDate: new Date().toISOString().split('T')[0],
         verifiedBy: 'Admin Supervisor',
         rejectionReason: null,
-      });
+      }, reviewCmp.name);
+
+      // Immediately update local UI state
+      setCompanies((prev) =>
+        prev.map((c) =>
+          c.id === reviewCmp.id || (c.name || '').toLowerCase() === (reviewCmp.name || '').toLowerCase()
+            ? { ...c, status: 'approved', verifiedDate: new Date().toISOString().split('T')[0], rejectionReason: null }
+            : c
+        )
+      );
 
       // Also sync to remote Supabase database if connected
       try {
-        await supabase
+        const { error } = await supabase
           .from('companies')
           .update({
             status: 'approved',
             verified_at: new Date().toISOString(),
           })
-          .match({ name: reviewCmp.name });
+          .eq('id', reviewCmp.id);
+        // Fallback: match by name if id-based update didn't affect rows
+        if (error) {
+          await supabase
+            .from('companies')
+            .update({
+              status: 'approved',
+              verified_at: new Date().toISOString(),
+            })
+            .match({ name: reviewCmp.name });
+        }
       } catch (err) {
         console.warn('Remote sync error:', err.message);
       }
@@ -206,17 +225,36 @@ export default function CompanyVerification() {
         verifiedDate: null,
         verifiedBy: 'Admin Supervisor',
         rejectionReason: finalReason,
-      });
+      }, reviewCmp.name);
+
+      // Immediately update local UI state
+      setCompanies((prev) =>
+        prev.map((c) =>
+          c.id === reviewCmp.id || (c.name || '').toLowerCase() === (reviewCmp.name || '').toLowerCase()
+            ? { ...c, status: 'rejected', rejectionReason: finalReason }
+            : c
+        )
+      );
 
       // Also sync rejection to remote Supabase database
       try {
-        await supabase
+        const { error } = await supabase
           .from('companies')
           .update({
             status: 'rejected',
             verified_at: null,
           })
-          .match({ name: reviewCmp.name });
+          .eq('id', reviewCmp.id);
+        // Fallback: match by name if id-based update didn't affect rows
+        if (error) {
+          await supabase
+            .from('companies')
+            .update({
+              status: 'rejected',
+              verified_at: null,
+            })
+            .match({ name: reviewCmp.name });
+        }
       } catch (err) {
         console.warn('Remote sync error:', err.message);
       }

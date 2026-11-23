@@ -73,6 +73,7 @@ export default function ResumeBuilder() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const loadingSteps = [
     'Analyzing target role keywords and industry specifications...',
@@ -81,8 +82,94 @@ export default function ResumeBuilder() {
     'Compiling verified structure and modular templates...',
   ];
 
+  const validateForm = () => {
+    const errors = {};
+
+    // Full Name: required, min 2 chars, only letters/spaces/hyphens/periods
+    if (!formData.fullName || formData.fullName.trim().length < 2) {
+      errors.fullName = 'Full name is required and must be at least 2 characters.';
+    } else if (!/^[A-Za-z\s\-\.]+$/.test(formData.fullName.trim())) {
+      errors.fullName = 'Full name can only contain letters, spaces, hyphens, and periods.';
+    }
+
+    // Email: required, valid format
+    if (!formData.email || formData.email.trim().length === 0) {
+      errors.email = 'Email address is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errors.email = 'Please enter a valid email address.';
+    }
+
+    // Phone: optional, but if filled validate format
+    if (formData.phone && formData.phone.trim().length > 0) {
+      const digitsOnly = formData.phone.replace(/[^0-9]/g, '');
+      if (!/^[\+\d\s\-\(\)]+$/.test(formData.phone.trim())) {
+        errors.phone = 'Phone number can only contain digits, +, spaces, dashes, and parentheses.';
+      } else if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+        errors.phone = 'Phone number must contain between 7 and 15 digits.';
+      }
+    }
+
+    // Location: required, min 2 chars
+    if (!formData.location || formData.location.trim().length < 2) {
+      errors.location = 'Location is required and must be at least 2 characters.';
+    }
+
+    // Target Role: required, min 3 chars
+    if (!formData.targetRole || formData.targetRole.trim().length < 3) {
+      errors.targetRole = 'Target role is required and must be at least 3 characters.';
+    }
+
+    // Academic Stream: required, min 2 chars
+    if (!formData.stream || formData.stream.trim().length < 2) {
+      errors.stream = 'Academic stream is required and must be at least 2 characters.';
+    }
+
+    // Degree Program: if filled, min 2 chars
+    if (formData.degree && formData.degree.trim().length < 2) {
+      errors.degree = 'Degree program must be at least 2 characters.';
+    }
+
+    // College / University: if filled, min 2 chars
+    if (formData.college && formData.college.trim().length < 2) {
+      errors.college = 'College name must be at least 2 characters.';
+    }
+
+    // GPA / Score: if filled, must be valid number between 0 and 100
+    if (formData.gpa && formData.gpa.trim().length > 0) {
+      const gpaNum = parseFloat(formData.gpa.trim());
+      if (isNaN(gpaNum) || gpaNum < 0 || gpaNum > 100) {
+        errors.gpa = 'Please enter a valid GPA or percentage (e.g. 3.85 or 8.5).';
+      }
+    }
+
+    // Key Skills: required, at least 3 comma-separated skills, each at least 2 chars
+    if (!formData.keySkills || formData.keySkills.trim().length === 0) {
+      errors.keySkills = 'Key skills are required. Please enter at least 3 comma-separated skills.';
+    } else {
+      const skills = formData.keySkills
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (skills.length < 3) {
+        errors.keySkills = 'Please enter at least 3 comma-separated skills.';
+      } else {
+        const tooShort = skills.filter((s) => s.length < 2);
+        if (tooShort.length > 0) {
+          errors.keySkills = 'Each skill must be at least 2 characters long.';
+        }
+      }
+    }
+
+    return { isValid: Object.keys(errors).length === 0, errors };
+  };
+
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setFieldErrors((prev) => {
+      const n = { ...prev };
+      delete n[field];
+      return n;
+    });
   };
 
   const handleApplyPreset = (preset) => {
@@ -93,10 +180,28 @@ export default function ResumeBuilder() {
       keySkills: preset.skills,
       prompt: preset.prompt,
     }));
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next.targetRole;
+      delete next.stream;
+      delete next.keySkills;
+      delete next.prompt;
+      return next;
+    });
   };
 
   const handleGenerate = async (e) => {
     e?.preventDefault();
+
+    // Client-side validation before proceeding
+    const { isValid, errors } = validateForm();
+    if (!isValid) {
+      setFieldErrors(errors);
+      setErrorMessage('Please fix the highlighted fields before generating your resume.');
+      return;
+    }
+
+    setFieldErrors({});
     setIsLoading(true);
     setErrorMessage('');
     setCurrentStep(0);
@@ -491,6 +596,7 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                   required
                   placeholder="e.g. Anaisha Parvati"
                   value={formData.fullName}
+                  error={fieldErrors.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
                 />
                 <Input
@@ -499,18 +605,21 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                   required
                   placeholder="e.g. anaisha@university.edu"
                   value={formData.email}
+                  error={fieldErrors.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                 />
                 <Input
                   label="Phone Number"
                   placeholder="e.g. +1 (555) 234-5678"
                   value={formData.phone}
+                  error={fieldErrors.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                 />
                 <Input
                   label="Location (City, State / Country)"
                   placeholder="e.g. San Francisco, CA"
                   value={formData.location}
+                  error={fieldErrors.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
                 />
               </div>
@@ -531,6 +640,7 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                   required
                   placeholder="e.g. Full Stack Software Engineer"
                   value={formData.targetRole}
+                  error={fieldErrors.targetRole}
                   onChange={(e) => handleInputChange('targetRole', e.target.value)}
                 />
                 <Input
@@ -538,12 +648,14 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                   required
                   placeholder="e.g. Computer Science, Mechanical Engineering"
                   value={formData.stream}
+                  error={fieldErrors.stream}
                   onChange={(e) => handleInputChange('stream', e.target.value)}
                 />
                 <Input
                   label="Degree Program"
                   placeholder="e.g. B.S. in Computer Science"
                   value={formData.degree}
+                  error={fieldErrors.degree}
                   onChange={(e) => handleInputChange('degree', e.target.value)}
                 />
                 <div className="grid grid-cols-2 gap-2">
@@ -551,12 +663,14 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                     label="College / University"
                     placeholder="e.g. State University"
                     value={formData.college}
+                    error={fieldErrors.college}
                     onChange={(e) => handleInputChange('college', e.target.value)}
                   />
                   <Input
                     label="Score / GPA"
                     placeholder="e.g. 3.85 / 4.0"
                     value={formData.gpa}
+                    error={fieldErrors.gpa}
                     onChange={(e) => handleInputChange('gpa', e.target.value)}
                   />
                 </div>
@@ -579,6 +693,7 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                   placeholder="e.g. React, Node.js, Python, SQL, Docker, TailwindCSS"
                   helperText="These skills will be targeted for verification and emphasized in project descriptions."
                   value={formData.keySkills}
+                  error={fieldErrors.keySkills}
                   onChange={(e) => handleInputChange('keySkills', e.target.value)}
                 />
               </div>
@@ -590,6 +705,7 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                   placeholder="e.g. Focus on distributed systems, open source contributions, and metrics like latency and throughput reduction..."
                   helperText="Guide the AI model to highlight specific achievements, awards, or target company preferences."
                   value={formData.prompt}
+                  error={fieldErrors.prompt}
                   onChange={(e) => handleInputChange('prompt', e.target.value)}
                 />
               </div>
