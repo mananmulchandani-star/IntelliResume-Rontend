@@ -6,6 +6,8 @@ import { ROUTES } from '../../../constants/routes';
 import { exportElementToPDF, exportResumeDataToPDF } from '../../../utils/pdfGenerator';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import { Button, Card, Input, Select, Badge, Tabs, Tab } from '../../../components/ui';
+import PhoneInputWithCountry from '../../../components/ui/PhoneInputWithCountry';
+import { DEGREE_OPTIONS, STREAM_OPTIONS, validators } from '../../../constants/validationData';
 import { Textarea } from '../../../components/ui/Input';
 import SkillVerificationModal from '../components/SkillVerificationModal';
 import {
@@ -145,6 +147,57 @@ export default function ResumeEditor() {
   const [saveToast, setSaveToast] = useState(false);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [skillToVerify, setSkillToVerify] = useState(null);
+
+  // Live Section-by-Section Validation Calculations
+  const personalErrors = {
+    fullName: validators.fullName(resumeData.personalInfo?.fullName, 'Full Legal Name'),
+    email: validators.email(resumeData.personalInfo?.email),
+    phone: validators.phone(
+      (resumeData.personalInfo?.phone || '').replace(/^\+[0-9]+\s*/, ''),
+      (resumeData.personalInfo?.phone || '').match(/^\+[0-9]+/)?.[0] || '+91'
+    ),
+    jobTitle: !resumeData.personalInfo?.jobTitle?.trim() ? 'Job title or headline is required.' : null,
+    location: !resumeData.personalInfo?.location?.trim() ? 'Location is required.' : null,
+  };
+
+  const educationErrors = (resumeData.education || []).map((edu) => ({
+    degree: validators.degree(edu.degree),
+    institution: validators.institution(edu.institution || edu.school || edu.university),
+    year: validators.year(edu.year || edu.dates),
+    score: validators.gpa(edu.score),
+  }));
+
+  const experienceErrors = (resumeData.workExperience || []).map((exp) =>
+    validators.experienceEntry(exp)
+  );
+
+  const projectErrors = (resumeData.projects || []).map((proj) =>
+    validators.projectEntry(proj)
+  );
+
+  const skillsError = validators.skills(resumeData.skills);
+
+  const personalErrorCount = Object.values(personalErrors).filter(Boolean).length;
+  const educationErrorCount = educationErrors.reduce(
+    (acc, curr) => acc + Object.values(curr).filter(Boolean).length,
+    0
+  );
+  const experienceErrorCount = experienceErrors.reduce(
+    (acc, curr) => acc + Object.values(curr).filter(Boolean).length,
+    0
+  );
+  const projectErrorCount = projectErrors.reduce(
+    (acc, curr) => acc + Object.values(curr).filter(Boolean).length,
+    0
+  );
+  const skillsErrorCount = skillsError ? 1 : 0;
+
+  const totalErrorCount =
+    personalErrorCount +
+    educationErrorCount +
+    experienceErrorCount +
+    projectErrorCount +
+    skillsErrorCount;
 
   // Auto-save debounced or on change to localStorage
   useEffect(() => {
@@ -334,6 +387,17 @@ export default function ResumeEditor() {
               <Check className="w-3.5 h-3.5" /> Saved!
             </span>
           )}
+
+          {totalErrorCount === 0 ? (
+            <span className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md">
+              <Check className="w-3.5 h-3.5 text-emerald-600" /> All Sections Verified & Legit
+            </span>
+          ) : (
+            <span className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-600" /> {totalErrorCount} Field{totalErrorCount > 1 ? 's' : ''} Need Review
+            </span>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -421,12 +485,12 @@ export default function ResumeEditor() {
               {/* Form Navigation Tabs */}
               <div className="flex border-b border-neutral-200 overflow-x-auto bg-neutral-50/70 p-1.5 gap-1">
                 {[
-                  { id: 'personal', label: 'Personal', icon: User },
-                  { id: 'education', label: 'Education', icon: GraduationCap },
-                  { id: 'experience', label: 'Experience', icon: Briefcase },
-                  { id: 'projects', label: 'Projects', icon: FolderGit2 },
-                  { id: 'skills', label: 'Skills', icon: Code2 },
-                  { id: 'more', label: 'More', icon: Layers },
+                  { id: 'personal', label: 'Personal', icon: User, errorCount: personalErrorCount },
+                  { id: 'education', label: 'Education', icon: GraduationCap, errorCount: educationErrorCount },
+                  { id: 'experience', label: 'Experience', icon: Briefcase, errorCount: experienceErrorCount },
+                  { id: 'projects', label: 'Projects', icon: FolderGit2, errorCount: projectErrorCount },
+                  { id: 'skills', label: 'Skills', icon: Code2, errorCount: skillsErrorCount },
+                  { id: 'more', label: 'More', icon: Layers, errorCount: 0 },
                 ].map((t) => {
                   const Icon = t.icon;
                   const isActive = activeTab === t.id;
@@ -443,6 +507,13 @@ export default function ResumeEditor() {
                     >
                       <Icon className="w-3.5 h-3.5" />
                       {t.label}
+                      {t.errorCount > 0 ? (
+                        <span className="w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+                          {t.errorCount}
+                        </span>
+                      ) : (
+                        <Check className="w-3 h-3 text-emerald-600" />
+                      )}
                     </button>
                   );
                 })}
@@ -451,37 +522,58 @@ export default function ResumeEditor() {
               {/* Tab 1: Personal Info */}
               {activeTab === 'personal' && (
                 <div className="p-5 space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-                    Contact & Identification
-                  </h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+                      Contact & Identification
+                    </h4>
+                    {personalErrorCount === 0 ? (
+                      <Badge variant="success" size="sm">Valid Section</Badge>
+                    ) : (
+                      <Badge variant="warning" size="sm">{personalErrorCount} Error(s)</Badge>
+                    )}
+                  </div>
+
                   <Input
                     label="Full Name"
+                    required
+                    placeholder="e.g. Manan Mulchandani"
                     value={resumeData.personalInfo.fullName}
+                    error={personalErrors.fullName}
                     onChange={(e) => handlePersonalInfoChange('fullName', e.target.value)}
                   />
                   <Input
                     label="Job Title / Professional Headline"
+                    required
+                    placeholder="e.g. Full Stack Software Engineer"
                     value={resumeData.personalInfo.jobTitle}
+                    error={personalErrors.jobTitle}
                     onChange={(e) => handlePersonalInfoChange('jobTitle', e.target.value)}
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Input
                       label="Email Address"
                       type="email"
+                      required
+                      placeholder="e.g. manan@medicaps.ac.in"
                       value={resumeData.personalInfo.email}
+                      error={personalErrors.email}
                       onChange={(e) => handlePersonalInfoChange('email', e.target.value)}
                     />
-                    <Input
-                      label="Phone Number"
+                    <PhoneInputWithCountry
+                      label="Contact Mobile Number"
+                      required
                       value={resumeData.personalInfo.phone}
-                      onChange={(e) => handlePersonalInfoChange('phone', e.target.value)}
+                      error={personalErrors.phone}
+                      onChange={(val) => handlePersonalInfoChange('phone', val)}
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Input
-                      label="Location"
-                      placeholder="e.g. San Francisco, CA"
+                      label="Location (City, State / Country)"
+                      required
+                      placeholder="e.g. Indore, M.P."
                       value={resumeData.personalInfo.location}
+                      error={personalErrors.location}
                       onChange={(e) => handlePersonalInfoChange('location', e.target.value)}
                     />
                     <Input
@@ -528,6 +620,7 @@ export default function ResumeEditor() {
                     label="Professional Summary / About Me"
                     rows={4}
                     value={resumeData.personalInfo.about}
+                    placeholder="Summarize your professional capabilities and quantified technical accomplishments..."
                     onChange={(e) => handlePersonalInfoChange('about', e.target.value)}
                   />
                 </div>
@@ -538,7 +631,7 @@ export default function ResumeEditor() {
                 <div className="p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-                      Education History
+                      Education History & Credentials
                     </h4>
                     <Button
                       variant="outline"
@@ -564,29 +657,58 @@ export default function ResumeEditor() {
                         <Trash2 className="w-4 h-4" />
                       </button>
 
-                      <Input
-                        label="Degree / Major"
-                        value={edu.degree}
-                        placeholder="e.g. B.S. in Computer Science"
-                        onChange={(e) => handleUpdateEducation(idx, 'degree', e.target.value)}
-                      />
+                      <div className="space-y-1.5">
+                        <Select
+                          label="Degree / Academic Course Program"
+                          required
+                          value={
+                            DEGREE_OPTIONS.some((d) => d.value === edu.degree)
+                              ? edu.degree
+                              : 'CUSTOM'
+                          }
+                          error={educationErrors[idx]?.degree}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            handleUpdateEducation(idx, 'degree', val === 'CUSTOM' ? '' : val);
+                          }}
+                          options={DEGREE_OPTIONS.map((d) => ({
+                            value: d.value,
+                            label: `${d.label} (${d.group})`,
+                          }))}
+                        />
+                        {(!DEGREE_OPTIONS.some((d) => d.value === edu.degree) ||
+                          edu.degree === 'CUSTOM') && (
+                          <Input
+                            placeholder="Specify custom accredited degree (e.g. BCA Cloud & Security)"
+                            value={edu.degree === 'CUSTOM' ? '' : edu.degree}
+                            error={educationErrors[idx]?.degree}
+                            onChange={(e) => handleUpdateEducation(idx, 'degree', e.target.value)}
+                          />
+                        )}
+                      </div>
+
                       <Input
                         label="Institution / University"
+                        required
                         value={edu.institution || edu.school || edu.university || ''}
-                        placeholder="e.g. State University of Technology"
+                        error={educationErrors[idx]?.institution}
+                        placeholder="e.g. Medi-Caps University, Indore"
                         onChange={(e) => handleUpdateEducation(idx, 'institution', e.target.value)}
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <Input
                           label="Year / Duration"
+                          required
                           value={edu.year || edu.dates || ''}
+                          error={educationErrors[idx]?.year}
                           placeholder="e.g. 2022 - 2026"
                           onChange={(e) => handleUpdateEducation(idx, 'year', e.target.value)}
                         />
                         <Input
-                          label="GPA / Grade"
+                          label="CGPA / Score"
                           value={edu.score || ''}
-                          placeholder="e.g. 3.88 / 4.0"
+                          error={educationErrors[idx]?.score}
+                          placeholder="e.g. 8.85 / 10.0"
                           onChange={(e) => handleUpdateEducation(idx, 'score', e.target.value)}
                         />
                       </div>
@@ -628,14 +750,18 @@ export default function ResumeEditor() {
 
                       <Input
                         label="Position / Role"
+                        required
                         value={exp.position || exp.jobTitle || ''}
-                        placeholder="e.g. Software Engineering Intern"
+                        error={experienceErrors[idx]?.position}
+                        placeholder="e.g. Full Stack Engineering Intern"
                         onChange={(e) => handleUpdateExperience(idx, 'position', e.target.value)}
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <Input
-                          label="Company"
+                          label="Company / Organization"
+                          required
                           value={exp.company}
+                          error={experienceErrors[idx]?.company}
                           placeholder="e.g. TechFlow Solutions"
                           onChange={(e) => handleUpdateExperience(idx, 'company', e.target.value)}
                         />
@@ -660,13 +786,19 @@ export default function ResumeEditor() {
                           onChange={(e) => handleUpdateExperience(idx, 'endDate', e.target.value)}
                         />
                       </div>
-                      <Textarea
-                        label="Responsibilities & Impact"
-                        rows={3}
-                        value={exp.description}
-                        placeholder="Quantify your achievements: e.g. Reduced latency by 25%..."
-                        onChange={(e) => handleUpdateExperience(idx, 'description', e.target.value)}
-                      />
+                      <div className="space-y-1">
+                        <Textarea
+                          label="Responsibilities & Impact"
+                          rows={3}
+                          value={exp.description}
+                          error={experienceErrors[idx]?.description}
+                          placeholder="Quantify your achievements using Google's XYZ formula: Accomplished [X] measured by [Y] doing [Z]..."
+                          onChange={(e) => handleUpdateExperience(idx, 'description', e.target.value)}
+                        />
+                        <span className="text-[11px] text-neutral-400 block italic">
+                          Tip: Include metrics (e.g. reduced latency by 34%, handled 180k users) for higher ATS pass rates.
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -705,15 +837,19 @@ export default function ResumeEditor() {
 
                       <Input
                         label="Project Title"
+                        required
                         value={proj.title}
+                        error={projectErrors[idx]?.title}
                         placeholder="e.g. Distributed Key-Value Store"
                         onChange={(e) => handleUpdateProject(idx, 'title', e.target.value)}
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <Input
-                          label="Technologies"
+                          label="Technologies Used"
+                          required
                           value={proj.technologies || ''}
-                          placeholder="e.g. React, Node.js, Redis"
+                          error={projectErrors[idx]?.technologies}
+                          placeholder="e.g. React, Node.js, Redis, Docker"
                           onChange={(e) => handleUpdateProject(idx, 'technologies', e.target.value)}
                         />
                         <Input
@@ -727,7 +863,8 @@ export default function ResumeEditor() {
                         label="Description & Implementation"
                         rows={3}
                         value={proj.description}
-                        placeholder="Describe the problem, technologies deployed, and outcome..."
+                        error={projectErrors[idx]?.description}
+                        placeholder="Describe the architectural challenge, tech stack deployed, and measurable outcome..."
                         onChange={(e) => handleUpdateProject(idx, 'description', e.target.value)}
                       />
                     </div>
@@ -740,12 +877,19 @@ export default function ResumeEditor() {
                 <div className="p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-                      Technical Skills
+                      Technical Skills & Competencies
                     </h4>
-                    <Badge variant="info" size="sm">
-                      {resumeData.skills.length} skills listed
+                    <Badge variant={resumeData.skills.length >= 3 ? 'success' : 'warning'} size="sm">
+                      {resumeData.skills.length} skills (Min 3 required)
                     </Badge>
                   </div>
+
+                  {skillsError && (
+                    <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{skillsError}</span>
+                    </div>
+                  )}
 
                   <form onSubmit={handleAddSkill} className="flex gap-2">
                     <Input

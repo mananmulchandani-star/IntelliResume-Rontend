@@ -43,3 +43,4 @@ export {
   DropdownLabel,
 } from './Dropdown';
 export { default as Tooltip, Tooltip as TooltipComponent } from './Tooltip';
+export { default as PhoneInputWithCountry } from './PhoneInputWithCountry';

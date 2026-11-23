@@ -6,6 +6,8 @@ import { resumeService } from '../../../services/api';
 import { ROUTES } from '../../../constants/routes';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import { Button, Card, Input, Select, Badge, Spinner } from '../../../components/ui';
+import PhoneInputWithCountry from '../../../components/ui/PhoneInputWithCountry';
+import { DEGREE_OPTIONS, STREAM_OPTIONS, validators } from '../../../constants/validationData';
 import { Textarea } from '../../../components/ui/Input';
 import {
   Sparkles,
@@ -58,14 +60,17 @@ export default function ResumeBuilder() {
   const [formData, setFormData] = useState({
     fullName: user?.name || '',
     email: user?.email || '',
-    phone: '',
-    location: 'San Francisco, CA',
+    phone: user?.phone || '+91 9876543210',
+    location: 'Indore, India',
     targetRole: 'Full Stack Software Engineer',
     stream: 'Computer Science & Engineering',
     experienceLevel: 'Entry-Level / Fresher',
-    college: 'State University of Technology',
-    degree: 'B.S. in Computer Science',
-    gpa: '3.85',
+    college: 'Medi-Caps University, Indore',
+    degree: 'BCA',
+    customDegree: '',
+    isCustomDegree: false,
+    gpa: '8.85',
+    gradYear: '2026',
     keySkills: 'React, JavaScript, Node.js, Python, SQL, Git',
     prompt: '',
   });
@@ -85,80 +90,58 @@ export default function ResumeBuilder() {
   const validateForm = () => {
     const errors = {};
 
-    // Full Name: required, min 2 chars, only letters/spaces/hyphens/periods
-    if (!formData.fullName || formData.fullName.trim().length < 2) {
-      errors.fullName = 'Full name is required and must be at least 2 characters.';
-    } else if (!/^[A-Za-z\s\-\.]+$/.test(formData.fullName.trim())) {
-      errors.fullName = 'Full name can only contain letters, spaces, hyphens, and periods.';
-    }
+    // Full Name: required, min 2 chars, letters, spaces, hyphens, periods only
+    const nameErr = validators.fullName(formData.fullName, 'Full legal name');
+    if (nameErr) errors.fullName = nameErr;
 
-    // Email: required, valid format
-    if (!formData.email || formData.email.trim().length === 0) {
-      errors.email = 'Email address is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      errors.email = 'Please enter a valid email address.';
-    }
+    // Email: required, RFC-5322 strict pattern
+    const emailErr = validators.email(formData.email);
+    if (emailErr) errors.email = emailErr;
 
-    // Phone: optional, but if filled validate format
-    if (formData.phone && formData.phone.trim().length > 0) {
-      const digitsOnly = formData.phone.replace(/[^0-9]/g, '');
-      if (!/^[\+\d\s\-\(\)]+$/.test(formData.phone.trim())) {
-        errors.phone = 'Phone number can only contain digits, +, spaces, dashes, and parentheses.';
-      } else if (digitsOnly.length < 7 || digitsOnly.length > 15) {
-        errors.phone = 'Phone number must contain between 7 and 15 digits.';
+    // Phone: with country code verification
+    if (formData.phone) {
+      const digits = formData.phone.replace(/[^\d]/g, '');
+      if (digits.length < 7 || digits.length > 15) {
+        errors.phone = 'Please enter a valid mobile number with country code.';
       }
-    }
-
-    // Location: required, min 2 chars
-    if (!formData.location || formData.location.trim().length < 2) {
-      errors.location = 'Location is required and must be at least 2 characters.';
-    }
-
-    // Target Role: required, min 3 chars
-    if (!formData.targetRole || formData.targetRole.trim().length < 3) {
-      errors.targetRole = 'Target role is required and must be at least 3 characters.';
-    }
-
-    // Academic Stream: required, min 2 chars
-    if (!formData.stream || formData.stream.trim().length < 2) {
-      errors.stream = 'Academic stream is required and must be at least 2 characters.';
-    }
-
-    // Degree Program: if filled, min 2 chars
-    if (formData.degree && formData.degree.trim().length < 2) {
-      errors.degree = 'Degree program must be at least 2 characters.';
-    }
-
-    // College / University: if filled, min 2 chars
-    if (formData.college && formData.college.trim().length < 2) {
-      errors.college = 'College name must be at least 2 characters.';
-    }
-
-    // GPA / Score: if filled, must be valid number between 0 and 100
-    if (formData.gpa && formData.gpa.trim().length > 0) {
-      const gpaNum = parseFloat(formData.gpa.trim());
-      if (isNaN(gpaNum) || gpaNum < 0 || gpaNum > 100) {
-        errors.gpa = 'Please enter a valid GPA or percentage (e.g. 3.85 or 8.5).';
-      }
-    }
-
-    // Key Skills: required, at least 3 comma-separated skills, each at least 2 chars
-    if (!formData.keySkills || formData.keySkills.trim().length === 0) {
-      errors.keySkills = 'Key skills are required. Please enter at least 3 comma-separated skills.';
     } else {
-      const skills = formData.keySkills
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (skills.length < 3) {
-        errors.keySkills = 'Please enter at least 3 comma-separated skills.';
-      } else {
-        const tooShort = skills.filter((s) => s.length < 2);
-        if (tooShort.length > 0) {
-          errors.keySkills = 'Each skill must be at least 2 characters long.';
-        }
-      }
+      errors.phone = 'Mobile contact number is required.';
     }
+
+    // Location: required
+    if (!formData.location || formData.location.trim().length < 2) {
+      errors.location = 'Location is required (min 2 characters).';
+    }
+
+    // Target Role: required
+    if (!formData.targetRole || formData.targetRole.trim().length < 2) {
+      errors.targetRole = 'Target role designation is required.';
+    }
+
+    // Degree Program: accredited or custom
+    const activeDegree = formData.isCustomDegree ? formData.customDegree : formData.degree;
+    const degreeErr = validators.degree(activeDegree);
+    if (degreeErr) errors.degree = degreeErr;
+
+    // Academic Stream: required
+    const streamErr = validators.stream(formData.stream);
+    if (streamErr) errors.stream = streamErr;
+
+    // College / University: required
+    const collegeErr = validators.institution(formData.college);
+    if (collegeErr) errors.college = collegeErr;
+
+    // GPA / Score: valid numeric format
+    const gpaErr = validators.gpa(formData.gpa);
+    if (gpaErr) errors.gpa = gpaErr;
+
+    // Graduation Year: valid 4-digit or range
+    const yearErr = validators.year(formData.gradYear);
+    if (yearErr) errors.gradYear = yearErr;
+
+    // Key Skills: minimum 3 valid skills
+    const skillsErr = validators.skills(formData.keySkills);
+    if (skillsErr) errors.keySkills = skillsErr;
 
     return { isValid: Object.keys(errors).length === 0, errors };
   };
@@ -594,7 +577,7 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                 <Input
                   label="Full Legal Name"
                   required
-                  placeholder="e.g. Anaisha Parvati"
+                  placeholder="e.g. Manan Mulchandani"
                   value={formData.fullName}
                   error={fieldErrors.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
@@ -603,21 +586,22 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                   label="Email Address"
                   type="email"
                   required
-                  placeholder="e.g. anaisha@university.edu"
+                  placeholder="e.g. manan@medicaps.ac.in"
                   value={formData.email}
                   error={fieldErrors.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                 />
-                <Input
-                  label="Phone Number"
-                  placeholder="e.g. +1 (555) 234-5678"
+                <PhoneInputWithCountry
+                  label="Contact Mobile Number"
+                  required
                   value={formData.phone}
                   error={fieldErrors.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  onChange={(val) => handleInputChange('phone', val)}
                 />
                 <Input
                   label="Location (City, State / Country)"
-                  placeholder="e.g. San Francisco, CA"
+                  required
+                  placeholder="e.g. Indore, M.P."
                   value={formData.location}
                   error={fieldErrors.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
@@ -643,32 +627,62 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                   error={fieldErrors.targetRole}
                   onChange={(e) => handleInputChange('targetRole', e.target.value)}
                 />
-                <Input
-                  label="Academic Stream / Major"
+                <Select
+                  label="Academic Stream / Specialization"
                   required
-                  placeholder="e.g. Computer Science, Mechanical Engineering"
                   value={formData.stream}
                   error={fieldErrors.stream}
                   onChange={(e) => handleInputChange('stream', e.target.value)}
+                  options={STREAM_OPTIONS.map((s) => ({ value: s, label: s }))}
                 />
-                <Input
-                  label="Degree Program"
-                  placeholder="e.g. B.S. in Computer Science"
-                  value={formData.degree}
-                  error={fieldErrors.degree}
-                  onChange={(e) => handleInputChange('degree', e.target.value)}
-                />
-                <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <Select
+                    label="Degree / Course Program"
+                    required
+                    value={formData.isCustomDegree ? 'CUSTOM' : formData.degree}
+                    error={fieldErrors.degree}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === 'CUSTOM') {
+                        setFormData((prev) => ({ ...prev, isCustomDegree: true }));
+                      } else {
+                        setFormData((prev) => ({ ...prev, isCustomDegree: false, degree: val }));
+                      }
+                    }}
+                    options={DEGREE_OPTIONS.map((d) => ({
+                      value: d.value,
+                      label: `${d.label} (${d.group})`,
+                    }))}
+                  />
+                  {formData.isCustomDegree && (
+                    <Input
+                      placeholder="Enter custom accredited degree (e.g. B.Tech Mining)"
+                      value={formData.customDegree}
+                      error={fieldErrors.degree}
+                      onChange={(e) => handleInputChange('customDegree', e.target.value)}
+                    />
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <Input
                     label="College / University"
-                    placeholder="e.g. State University"
+                    required
+                    placeholder="e.g. Medi-Caps University"
                     value={formData.college}
                     error={fieldErrors.college}
                     onChange={(e) => handleInputChange('college', e.target.value)}
                   />
                   <Input
-                    label="Score / GPA"
-                    placeholder="e.g. 3.85 / 4.0"
+                    label="Graduation Year"
+                    required
+                    placeholder="e.g. 2026"
+                    value={formData.gradYear}
+                    error={fieldErrors.gradYear}
+                    onChange={(e) => handleInputChange('gradYear', e.target.value)}
+                  />
+                  <Input
+                    label="Score / CGPA"
+                    placeholder="e.g. 8.85 or 85%"
                     value={formData.gpa}
                     error={fieldErrors.gpa}
                     onChange={(e) => handleInputChange('gpa', e.target.value)}
@@ -687,11 +701,34 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
               </div>
 
               <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 select-none">
+                    Key Technical Skills (Comma-separated) <span className="text-error-500">*</span>
+                  </label>
+                  {formData.keySkills && (
+                    <Badge
+                      variant={
+                        formData.keySkills
+                          .split(',')
+                          .filter((s) => s.trim().length >= 2).length >= 3
+                          ? 'success'
+                          : 'warning'
+                      }
+                      size="sm"
+                    >
+                      {
+                        formData.keySkills
+                          .split(',')
+                          .filter((s) => s.trim().length >= 2).length
+                      }{' '}
+                      Skills Validated
+                    </Badge>
+                  )}
+                </div>
                 <Input
-                  label="Key Technical Skills (Comma-separated)"
                   required
                   placeholder="e.g. React, Node.js, Python, SQL, Docker, TailwindCSS"
-                  helperText="These skills will be targeted for verification and emphasized in project descriptions."
+                  helperText="At least 3 valid skills required for ATS parsing compliance."
                   value={formData.keySkills}
                   error={fieldErrors.keySkills}
                   onChange={(e) => handleInputChange('keySkills', e.target.value)}

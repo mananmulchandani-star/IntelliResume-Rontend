@@ -4,6 +4,8 @@ import { useAuth } from '../../../app/providers/AuthProvider';
 import { ROUTES } from '../../../constants/routes';
 import { ROLES, ROLE_DEFAULT_ROUTES } from '../../../constants/roles';
 import { Button, Input, Card, CardContent, CardFooter, Select } from '../../../components/ui';
+import PhoneInputWithCountry from '../../../components/ui/PhoneInputWithCountry';
+import { DEGREE_OPTIONS, STREAM_OPTIONS, validators } from '../../../constants/validationData';
 import {
   Sparkles,
   ArrowRight,
@@ -36,7 +38,9 @@ export default function RegisterPage() {
 
   // Student specific profile
   const [college, setCollege] = useState('');
-  const [degree, setDegree] = useState('');
+  const [degree, setDegree] = useState('BCA');
+  const [customDegree, setCustomDegree] = useState('');
+  const [isCustomDegree, setIsCustomDegree] = useState(false);
   const [gradYear, setGradYear] = useState('2026');
   const [cgpa, setCgpa] = useState('');
   const [targetRole, setTargetRole] = useState('');
@@ -52,6 +56,7 @@ export default function RegisterPage() {
   const [batchCapacity, setBatchCapacity] = useState('1500');
 
   const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -70,29 +75,61 @@ export default function RegisterPage() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setFormError('');
+    setFieldErrors({});
     setSuccessMessage('');
 
-    if (!name.trim() || !email.trim() || !password) {
-      setFormError('Please fill in your name, email, and password.');
-      return;
+    const errors = {};
+
+    // Validate Full Name
+    const nameErr = validators.fullName(name, 'Full name');
+    if (nameErr) errors.name = nameErr;
+
+    // Validate Email
+    const emailErr = validators.email(email);
+    if (emailErr) errors.email = emailErr;
+
+    // Validate Phone
+    if (phone) {
+      const digits = phone.replace(/[^\d]/g, '');
+      if (digits.length < 7 || digits.length > 15) {
+        errors.phone = 'Please enter a valid mobile number with country code.';
+      }
     }
 
-    if (password.length < 6) {
-      setFormError('Password must be at least 6 characters.');
-      return;
+    // Validate Password
+    if (!password || password.length < 6) {
+      errors.password = 'Password must be at least 6 characters.';
     }
 
     // Role-specific validation
-    if (selectedRole === ROLES.STUDENT && (!college.trim() || !degree.trim())) {
-      setFormError('Please provide your college name and degree program.');
-      return;
+    const effectiveDegree = isCustomDegree ? customDegree : degree;
+    if (selectedRole === ROLES.STUDENT) {
+      const degreeErr = validators.degree(effectiveDegree);
+      if (degreeErr) errors.degree = degreeErr;
+
+      const collegeErr = validators.institution(college);
+      if (collegeErr) errors.college = collegeErr;
+
+      if (cgpa) {
+        const gpaErr = validators.gpa(cgpa);
+        if (gpaErr) errors.cgpa = gpaErr;
+      }
+      if (gradYear) {
+        const yearErr = validators.year(gradYear);
+        if (yearErr) errors.gradYear = yearErr;
+      }
     }
 
     if (
       (selectedRole === ROLES.UNIVERSITY_ADMIN || selectedRole === ROLES.COMPANY_RECRUITER) &&
-      !organizationName.trim()
+      (!organizationName || organizationName.trim().length < 3)
     ) {
-      setFormError('Please provide your institution / company organization name.');
+      errors.organizationName = 'Please provide a valid institution / company organization name (min 3 chars).';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setFormError('Please resolve the highlighted fields to ensure your account is verified and legit.');
       return;
     }
 
@@ -107,7 +144,7 @@ export default function RegisterPage() {
 
         // Student details
         college: selectedRole === ROLES.STUDENT ? college.trim() : undefined,
-        degree: selectedRole === ROLES.STUDENT ? degree.trim() : undefined,
+        degree: selectedRole === ROLES.STUDENT ? effectiveDegree.trim() : undefined,
         gradYear: selectedRole === ROLES.STUDENT ? gradYear : undefined,
         grad_year: selectedRole === ROLES.STUDENT ? gradYear : undefined,
         cgpa: selectedRole === ROLES.STUDENT ? cgpa.trim() : undefined,
@@ -235,21 +272,26 @@ export default function RegisterPage() {
               {/* Primary Contact Details */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Input
-                  label={selectedRole === ROLES.STUDENT ? 'Full Name' : 'Contact Person Full Name'}
+                  label={selectedRole === ROLES.STUDENT ? 'Full Legal Name' : 'Contact Person Full Name'}
                   type="text"
-                  placeholder={selectedRole === ROLES.STUDENT ? 'Alex Morgan' : 'Dr. Sarah Jenkins'}
+                  placeholder={selectedRole === ROLES.STUDENT ? 'e.g. Manan Mulchandani' : 'e.g. Dr. Sarah Jenkins'}
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  error={fieldErrors.name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, name: null }));
+                  }}
                   leftIcon={<User className="w-4 h-4 text-neutral-400" />}
                   required
                 />
-                <Input
-                  label="Contact Phone Number"
-                  type="tel"
-                  placeholder="+1 (555) 019-2834"
+                <PhoneInputWithCountry
+                  label="Contact Mobile Number"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  leftIcon={<Phone className="w-4 h-4 text-neutral-400" />}
+                  error={fieldErrors.phone}
+                  onChange={(val) => {
+                    setPhone(val);
+                    setFieldErrors((prev) => ({ ...prev, phone: null }));
+                  }}
                 />
               </div>
 
@@ -259,20 +301,48 @@ export default function RegisterPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Input
                       label="College / University Name"
-                      placeholder="e.g. Stanford University"
+                      placeholder="e.g. Medi-Caps University, Indore"
                       value={college}
-                      onChange={(e) => setCollege(e.target.value)}
+                      error={fieldErrors.college}
+                      onChange={(e) => {
+                        setCollege(e.target.value);
+                        setFieldErrors((prev) => ({ ...prev, college: null }));
+                      }}
                       leftIcon={<Building2 className="w-4 h-4 text-neutral-400" />}
                       required
                     />
-                    <Input
-                      label="Degree & Branch"
-                      placeholder="e.g. B.Tech Computer Science"
-                      value={degree}
-                      onChange={(e) => setDegree(e.target.value)}
-                      leftIcon={<GraduationCap className="w-4 h-4 text-neutral-400" />}
-                      required
-                    />
+                    <div className="space-y-1.5">
+                      <Select
+                        label="Degree / Course Program"
+                        value={isCustomDegree ? 'CUSTOM' : degree}
+                        error={fieldErrors.degree}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === 'CUSTOM') {
+                            setIsCustomDegree(true);
+                          } else {
+                            setIsCustomDegree(false);
+                            setDegree(val);
+                          }
+                          setFieldErrors((prev) => ({ ...prev, degree: null }));
+                        }}
+                        options={DEGREE_OPTIONS.map((d) => ({
+                          value: d.value,
+                          label: `${d.label} (${d.group})`,
+                        }))}
+                      />
+                      {isCustomDegree && (
+                        <Input
+                          placeholder="Enter custom accredited degree (e.g. BCA Cloud Computing)"
+                          value={customDegree}
+                          error={fieldErrors.degree}
+                          onChange={(e) => {
+                            setCustomDegree(e.target.value);
+                            setFieldErrors((prev) => ({ ...prev, degree: null }));
+                          }}
+                        />
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -280,17 +350,25 @@ export default function RegisterPage() {
                       label="Graduation Year"
                       placeholder="2026"
                       value={gradYear}
-                      onChange={(e) => setGradYear(e.target.value)}
+                      error={fieldErrors.gradYear}
+                      onChange={(e) => {
+                        setGradYear(e.target.value);
+                        setFieldErrors((prev) => ({ ...prev, gradYear: null }));
+                      }}
                     />
                     <Input
                       label="CGPA / GPA"
-                      placeholder="3.85 or 8.9"
+                      placeholder="8.85 or 85%"
                       value={cgpa}
-                      onChange={(e) => setCgpa(e.target.value)}
+                      error={fieldErrors.cgpa}
+                      onChange={(e) => {
+                        setCgpa(e.target.value);
+                        setFieldErrors((prev) => ({ ...prev, cgpa: null }));
+                      }}
                     />
                     <Input
                       label="City, State"
-                      placeholder="e.g. San Francisco, CA"
+                      placeholder="e.g. Indore, M.P."
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       leftIcon={<MapPin className="w-4 h-4 text-neutral-400" />}
@@ -471,13 +549,17 @@ export default function RegisterPage() {
                   type="email"
                   placeholder={
                     selectedRole === ROLES.STUDENT
-                      ? 'alex@university.edu'
+                      ? 'manan@medicaps.ac.in'
                       : selectedRole === ROLES.UNIVERSITY_ADMIN
                       ? 'placements@university.edu'
                       : 'recruiting@company.com'
                   }
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  error={fieldErrors.email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, email: null }));
+                  }}
                   leftIcon={<Mail className="w-4 h-4 text-neutral-400" />}
                   required
                 />
@@ -487,7 +569,11 @@ export default function RegisterPage() {
                   type="password"
                   placeholder="At least 6 characters"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  error={fieldErrors.password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, password: null }));
+                  }}
                   leftIcon={<Lock className="w-4 h-4 text-neutral-400" />}
                   helperText="Use at least 6 characters with a combination of letters and numbers."
                   required

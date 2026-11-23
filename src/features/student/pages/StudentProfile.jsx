@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { ROUTES } from '../../../constants/routes';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import { Button, Card, Badge, Input } from '../../../components/ui';
+import { Button, Card, Badge, Input, Select } from '../../../components/ui';
+import PhoneInputWithCountry from '../../../components/ui/PhoneInputWithCountry';
+import { DEGREE_OPTIONS, STREAM_OPTIONS, validators } from '../../../constants/validationData';
 import { Textarea } from '../../../components/ui/Input';
 import SkillVerificationModal from '../components/SkillVerificationModal';
 import {
@@ -64,6 +66,7 @@ export default function StudentProfile() {
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
   const [syncToast, setSyncToast] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     try {
@@ -77,10 +80,50 @@ export default function StudentProfile() {
 
   const handleInputChange = (field, value) => {
     setProfile((prev) => ({ ...prev, [field]: value }));
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   const handleSaveProfile = (e) => {
     e?.preventDefault();
+    const errors = {};
+    const nameErr = validators.fullName(profile.fullName, 'Full legal name');
+    if (nameErr) errors.fullName = nameErr;
+
+    const emailErr = validators.email(profile.email);
+    if (emailErr) errors.email = emailErr;
+
+    if (profile.phone) {
+      const digits = profile.phone.replace(/[^\d]/g, '');
+      if (digits.length < 7 || digits.length > 15) {
+        errors.phone = 'Please enter a valid mobile number with country code.';
+      }
+    }
+
+    const degreeErr = validators.degree(profile.degree);
+    if (degreeErr) errors.degree = degreeErr;
+
+    const uniErr = validators.institution(profile.university);
+    if (uniErr) errors.university = uniErr;
+
+    if (profile.gpa) {
+      const gpaErr = validators.gpa(profile.gpa);
+      if (gpaErr) errors.gpa = gpaErr;
+    }
+
+    if (profile.graduationYear) {
+      const yearErr = validators.year(profile.graduationYear);
+      if (yearErr) errors.graduationYear = yearErr;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     try {
       localStorage.setItem('studentProfile', JSON.stringify(profile));
       setSavedToast(true);
@@ -210,29 +253,37 @@ export default function StudentProfile() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Full Legal Name"
+                  required
                   value={profile.fullName}
+                  error={fieldErrors.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
                 />
                 <Input
                   label="Email Address"
                   type="email"
+                  required
                   value={profile.email}
+                  error={fieldErrors.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                 />
-                <Input
-                  label="Phone Number"
+                <PhoneInputWithCountry
+                  label="Contact Mobile Number"
+                  required
                   value={profile.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  error={fieldErrors.phone}
+                  onChange={(val) => handleInputChange('phone', val)}
                 />
                 <Input
-                  label="Current Location"
+                  label="Current Location (City, State / Country)"
                   value={profile.location}
+                  placeholder="e.g. Indore, M.P."
                   onChange={(e) => handleInputChange('location', e.target.value)}
                 />
               </div>
 
               <Input
                 label="Professional Headline / Target Role"
+                placeholder="e.g. Full Stack Software Engineer"
                 value={profile.headline}
                 onChange={(e) => handleInputChange('headline', e.target.value)}
               />
@@ -241,6 +292,7 @@ export default function StudentProfile() {
                 label="Student Bio / Career Objectives"
                 rows={3}
                 value={profile.bio}
+                placeholder="Brief summary of your academic achievements and career objectives..."
                 onChange={(e) => handleInputChange('bio', e.target.value)}
               />
             </Card>
@@ -257,32 +309,60 @@ export default function StudentProfile() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="College / University Name"
+                  required
                   value={profile.university}
+                  error={fieldErrors.university}
+                  placeholder="e.g. Medi-Caps University, Indore"
                   onChange={(e) => handleInputChange('university', e.target.value)}
                 />
                 <Input
                   label="Student Enrollment / Roll Number"
                   value={profile.studentId}
+                  placeholder="e.g. EN22CA301045"
                   onChange={(e) => handleInputChange('studentId', e.target.value)}
                 />
-                <Input
-                  label="Degree Program"
-                  value={profile.degree}
-                  onChange={(e) => handleInputChange('degree', e.target.value)}
-                />
-                <Input
-                  label="Major / Specialization"
+                <div className="space-y-1.5">
+                  <Select
+                    label="Degree / Academic Course Program"
+                    required
+                    value={DEGREE_OPTIONS.some((d) => d.value === profile.degree) ? profile.degree : 'CUSTOM'}
+                    error={fieldErrors.degree}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      handleInputChange('degree', val === 'CUSTOM' ? '' : val);
+                    }}
+                    options={DEGREE_OPTIONS.map((d) => ({
+                      value: d.value,
+                      label: `${d.label} (${d.group})`,
+                    }))}
+                  />
+                  {(!DEGREE_OPTIONS.some((d) => d.value === profile.degree) || profile.degree === 'CUSTOM') && (
+                    <Input
+                      placeholder="Specify custom accredited degree"
+                      value={profile.degree === 'CUSTOM' ? '' : profile.degree}
+                      error={fieldErrors.degree}
+                      onChange={(e) => handleInputChange('degree', e.target.value)}
+                    />
+                  )}
+                </div>
+                <Select
+                  label="Major / Academic Stream"
                   value={profile.major}
                   onChange={(e) => handleInputChange('major', e.target.value)}
+                  options={STREAM_OPTIONS.map((s) => ({ value: s, label: s }))}
                 />
                 <Input
                   label="Graduation Year"
                   value={profile.graduationYear}
+                  error={fieldErrors.graduationYear}
+                  placeholder="e.g. 2026"
                   onChange={(e) => handleInputChange('graduationYear', e.target.value)}
                 />
                 <Input
                   label="Cumulative GPA / Percentage"
                   value={profile.gpa}
+                  error={fieldErrors.gpa}
+                  placeholder="e.g. 8.85 or 88%"
                   onChange={(e) => handleInputChange('gpa', e.target.value)}
                 />
               </div>
