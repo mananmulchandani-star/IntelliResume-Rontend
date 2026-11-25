@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../../constants/routes';
 import { Button, Card, Badge, Input, Select, Textarea } from '../../../components/ui';
+import { validators } from '../../../constants/validationData';
 import {
   Mail,
   MessageSquare,
@@ -55,10 +56,10 @@ export default function ContactPage() {
 
   const validate = () => {
     const errors = {};
-    if (!formData.name.trim()) errors.name = 'Please provide your full name.';
-    if (!formData.email.trim() || !formData.email.includes('@')) {
-      errors.email = 'Please provide a valid email address.';
-    }
+    const nameErr = validators.fullName(formData.name, 'Full name');
+    if (nameErr) errors.name = nameErr;
+    const emailErr = validators.email(formData.email);
+    if (emailErr) errors.email = emailErr;
     if (!formData.subject.trim()) errors.subject = 'Please enter a subject.';
     if (!formData.message.trim() || formData.message.length < 15) {
       errors.message = 'Please provide a message with at least 15 characters.';
@@ -183,9 +184,17 @@ export default function ContactPage() {
                         label="Your Full Name"
                         required
                         placeholder="Alex Morgan"
+                        helperText="Alphabets (A-Z) and spaces only."
                         value={formData.name}
                         error={formErrors.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData({ ...formData, name: val });
+                          setFormErrors((prev) => ({
+                            ...prev,
+                            name: validators.fullName(val, 'Full name'),
+                          }));
+                        }}
                       />
                       <Input
                         label="Email Address"
@@ -194,7 +203,14 @@ export default function ContactPage() {
                         placeholder="alex@domain.com"
                         value={formData.email}
                         error={formErrors.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData({ ...formData, email: val });
+                          setFormErrors((prev) => ({
+                            ...prev,
+                            email: validators.email(val),
+                          }));
+                        }}
                       />
                     </div>
 

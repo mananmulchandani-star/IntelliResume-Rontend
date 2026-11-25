@@ -21,6 +21,7 @@ import {
   Select,
 } from '../../../components/ui';
 import { Textarea } from '../../../components/ui/Input';
+import { validators } from '../../../constants/validationData';
 import {
   Layers,
   Plus,
@@ -64,6 +65,7 @@ export default function ApplicationTracker() {
     salary: '',
     notes: '',
   });
+  const [newAppErrors, setNewAppErrors] = useState({});
 
   // Load from localStorage
   useEffect(() => {
@@ -102,15 +104,29 @@ export default function ApplicationTracker() {
 
   const handleCreateApplication = (e) => {
     e.preventDefault();
-    if (!newAppForm.company || !newAppForm.position) return;
+    const errors = {};
+    if (!newAppForm.company || newAppForm.company.trim().length < 2) {
+      errors.company = 'Company name is required (min 2 characters).';
+    }
+    const roleErr = validators.role(newAppForm.position, 'Job Title / Role');
+    if (roleErr) {
+      errors.position = roleErr;
+    }
+    if (Object.keys(errors).length > 0) {
+      setNewAppErrors(errors);
+      return;
+    }
 
     const newApp = {
       id: `app-${Date.now()}`,
       ...newAppForm,
+      company: newAppForm.company.trim(),
+      position: newAppForm.position.trim(),
       appliedDate: new Date().toISOString().split('T')[0],
     };
 
     saveApplications([newApp, ...applications]);
+    setNewAppErrors({});
     setIsNewModalOpen(false);
     setNewAppForm({
       company: '',
@@ -384,14 +400,31 @@ export default function ApplicationTracker() {
               required
               placeholder="e.g. Google, Amazon, Vercel"
               value={newAppForm.company}
-              onChange={(e) => setNewAppForm({ ...newAppForm, company: e.target.value })}
+              error={newAppErrors.company}
+              onChange={(e) => {
+                const val = e.target.value;
+                setNewAppForm({ ...newAppForm, company: val });
+                setNewAppErrors((prev) => ({
+                  ...prev,
+                  company: !val.trim() ? 'Company name is required.' : null,
+                }));
+              }}
             />
             <Input
               label="Job Title / Role"
               required
               placeholder="e.g. Software Engineering Intern"
+              helperText="Alphabets (A-Z) and spaces only."
               value={newAppForm.position}
-              onChange={(e) => setNewAppForm({ ...newAppForm, position: e.target.value })}
+              error={newAppErrors.position}
+              onChange={(e) => {
+                const val = e.target.value;
+                setNewAppForm({ ...newAppForm, position: val });
+                setNewAppErrors((prev) => ({
+                  ...prev,
+                  position: validators.role(val, 'Job Title / Role'),
+                }));
+              }}
             />
             <div className="grid grid-cols-2 gap-3">
               <Input

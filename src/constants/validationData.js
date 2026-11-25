@@ -115,12 +115,17 @@ export function parsePhoneNumber(rawPhone, defaultCountryCode = '+91') {
 }
 
 /**
+ * Alphabet-only regex (letters A-Z / a-z separated by spaces; no digits or symbols)
+ */
+const ALPHABET_SPACE_REGEX = /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/;
+
+/**
  * Comprehensive Validation Engine
  */
 export const validators = {
   /**
    * Validate full legal name
-   * Rules: Min 2 characters, only letters, spaces, hyphens, dots, apostrophes
+   * Rules: Required, min 2 chars, max 70 chars, alphabets (A-Z) and spaces only
    */
   fullName: (value, fieldLabel = 'Full name') => {
     if (!value || !value.trim()) {
@@ -133,12 +138,42 @@ export const validators = {
     if (trimmed.length > 70) {
       return `${fieldLabel} cannot exceed 70 characters.`;
     }
-    // Only letters, spaces, hyphens, dots, and apostrophes
-    const nameRegex = /^[A-Za-z]+(?:[ '\.\-][A-Za-z]+)*$/;
-    if (!nameRegex.test(trimmed)) {
-      return `${fieldLabel} can only contain alphabetic letters, spaces, hyphens, and periods (no numbers or symbols).`;
+    if (!ALPHABET_SPACE_REGEX.test(trimmed)) {
+      return `${fieldLabel} must contain alphabets (A-Z) and spaces only (no numbers or special characters).`;
     }
     return null;
+  },
+
+  /**
+   * Validate target role / job title / position
+   * Rules: Alphabets (A-Z) and spaces only, min 2 chars, max 80 chars
+   */
+  role: (value, fieldLabel = 'Target role', { required = true } = {}) => {
+    if (!value || !value.trim()) {
+      return required ? `${fieldLabel} is required.` : null;
+    }
+    const trimmed = value.trim();
+    if (trimmed.length < 2) {
+      return `${fieldLabel} must be at least 2 characters.`;
+    }
+    if (trimmed.length > 80) {
+      return `${fieldLabel} cannot exceed 80 characters.`;
+    }
+    if (!ALPHABET_SPACE_REGEX.test(trimmed)) {
+      return `${fieldLabel} must contain alphabets (A-Z) and spaces only (no numbers or special characters).`;
+    }
+    return null;
+  },
+
+  /**
+   * Validate a full phone string (including dial code prefix if present)
+   */
+  phoneFull: (rawPhone, required = true) => {
+    if (!rawPhone || !rawPhone.trim()) {
+      return required ? 'Mobile contact number is required.' : null;
+    }
+    const { country, nationalNumber } = parsePhoneNumber(rawPhone);
+    return validators.phone(nationalNumber, country.dialCode);
   },
 
   /**
@@ -247,12 +282,13 @@ export const validators = {
     if (!gpaValue || !gpaValue.toString().trim()) {
       return null; // Optional unless required by workflow
     }
-    const clean = gpaValue.toString().trim().replace(/[^0-9.]/g, '');
-    const num = parseFloat(clean);
-    if (isNaN(num)) {
-      return 'CGPA / Score must be a valid numerical value.';
+    const trimmed = gpaValue.toString().trim();
+    const match = trimmed.match(/^(\d+(?:\.\d+)?)(?:\s*(?:\/\s*(?:10(?:\.0+)?|4(?:\.0+)?|100)|%|CGPA|GPA))?(?:\s+(?:CGPA|GPA))?(?:\s*\/\s*(?:CGPA|GPA))?$/i);
+    if (!match) {
+      return 'CGPA / Score must be a valid numerical value (e.g., 8.85, 8.85 / 10.0, or 85%).';
     }
-    if (num < 0 || num > 100) {
+    const num = parseFloat(match[1]);
+    if (isNaN(num) || num < 0 || num > 100) {
       return 'CGPA must be between 0.0 and 10.0 (or percentage 0 to 100%).';
     }
     return null;
@@ -303,8 +339,9 @@ export const validators = {
     if (!entry.company || !entry.company.trim()) {
       errors.company = 'Company / Organization name is required.';
     }
-    if (!entry.position || !entry.position.trim()) {
-      errors.position = 'Job position / Role title is required.';
+    const posErr = validators.role(entry.position || entry.jobTitle, 'Position / Role');
+    if (posErr) {
+      errors.position = posErr;
     }
     if (entry.description && entry.description.trim().length > 0 && entry.description.trim().length < 15) {
       errors.description = 'Experience bullet point should be at least 15 characters to explain your contribution.';

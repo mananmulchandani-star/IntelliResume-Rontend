@@ -20,6 +20,7 @@ import {
   ExternalLink,
   Sparkles,
   BookOpen,
+  AlertCircle,
   Check,
 } from 'lucide-react';
 
@@ -66,6 +67,7 @@ export default function StudentProfile() {
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
   const [syncToast, setSyncToast] = useState(false);
+  const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
@@ -78,52 +80,65 @@ export default function StudentProfile() {
     }
   }, []);
 
+  const validateProfileField = (field, value) => {
+    switch (field) {
+      case 'fullName':
+        return validators.fullName(value, 'Full legal name');
+      case 'email':
+        return validators.email(value);
+      case 'phone':
+        return value ? validators.phoneFull(value, false) : null;
+      case 'headline':
+        return validators.role(value, 'Target role / Headline', { required: false });
+      case 'degree':
+        return validators.degree(value);
+      case 'university':
+        return validators.institution(value);
+      case 'gpa':
+        return value ? validators.gpa(value) : null;
+      case 'graduationYear':
+        return value ? validators.year(value) : null;
+      default:
+        return null;
+    }
+  };
+
+  const validateProfile = (targetProfile = profile) => {
+    const errors = {};
+    const fields = ['fullName', 'email', 'phone', 'headline', 'degree', 'university', 'gpa', 'graduationYear'];
+    for (const f of fields) {
+      const err = validateProfileField(f, targetProfile[f]);
+      if (err) errors[f] = err;
+    }
+    return errors;
+  };
+
   const handleInputChange = (field, value) => {
     setProfile((prev) => ({ ...prev, [field]: value }));
+    setFormError('');
+    const err = validateProfileField(field, value);
     setFieldErrors((prev) => {
       const next = { ...prev };
-      delete next[field];
+      if (err) {
+        next[field] = err;
+      } else {
+        delete next[field];
+      }
       return next;
     });
   };
 
   const handleSaveProfile = (e) => {
     e?.preventDefault();
-    const errors = {};
-    const nameErr = validators.fullName(profile.fullName, 'Full legal name');
-    if (nameErr) errors.fullName = nameErr;
-
-    const emailErr = validators.email(profile.email);
-    if (emailErr) errors.email = emailErr;
-
-    if (profile.phone) {
-      const digits = profile.phone.replace(/[^\d]/g, '');
-      if (digits.length < 7 || digits.length > 15) {
-        errors.phone = 'Please enter a valid mobile number with country code.';
-      }
-    }
-
-    const degreeErr = validators.degree(profile.degree);
-    if (degreeErr) errors.degree = degreeErr;
-
-    const uniErr = validators.institution(profile.university);
-    if (uniErr) errors.university = uniErr;
-
-    if (profile.gpa) {
-      const gpaErr = validators.gpa(profile.gpa);
-      if (gpaErr) errors.gpa = gpaErr;
-    }
-
-    if (profile.graduationYear) {
-      const yearErr = validators.year(profile.graduationYear);
-      if (yearErr) errors.graduationYear = yearErr;
-    }
+    const errors = validateProfile();
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      setFormError('Please fix the highlighted profile fields before saving.');
       return;
     }
 
+    setFormError('');
     try {
       localStorage.setItem('studentProfile', JSON.stringify(profile));
       setSavedToast(true);
@@ -134,6 +149,13 @@ export default function StudentProfile() {
   };
 
   const handleSyncToResume = () => {
+    const errors = validateProfile();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setFormError('Please fix the highlighted profile fields before syncing to your active resume.');
+      return;
+    }
+    setFormError('');
     try {
       const current = JSON.parse(localStorage.getItem('currentResume') || '{}');
       const updatedResume = {
@@ -212,11 +234,19 @@ export default function StudentProfile() {
       }
     >
       <div className="space-y-6 max-w-5xl mx-auto">
+        {formError && (
+          <div className="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{formError}</span>
+          </div>
+        )}
+
         {/* Top Profile Header Card */}
         <Card className="p-6 border-neutral-200 shadow-xs flex flex-col sm:flex-row items-center sm:items-start gap-5">
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-primary-600 to-indigo-600 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-md">
-            {profile.fullName
-              .split(' ')
+            {(profile.fullName || 'S')
+              .trim()
+              .split(/\s+/)
               .map((n) => n[0])
               .join('')
               .slice(0, 2)
@@ -254,6 +284,8 @@ export default function StudentProfile() {
                 <Input
                   label="Full Legal Name"
                   required
+                  placeholder="e.g. Manan Mulchandani"
+                  helperText="Alphabets (A-Z) and spaces only."
                   value={profile.fullName}
                   error={fieldErrors.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
@@ -284,7 +316,9 @@ export default function StudentProfile() {
               <Input
                 label="Professional Headline / Target Role"
                 placeholder="e.g. Full Stack Software Engineer"
+                helperText="Alphabets (A-Z) and spaces only."
                 value={profile.headline}
+                error={fieldErrors.headline}
                 onChange={(e) => handleInputChange('headline', e.target.value)}
               />
 
@@ -322,28 +356,37 @@ export default function StudentProfile() {
                   onChange={(e) => handleInputChange('studentId', e.target.value)}
                 />
                 <div className="space-y-1.5">
-                  <Select
-                    label="Degree / Academic Course Program"
-                    required
-                    value={DEGREE_OPTIONS.some((d) => d.value === profile.degree) ? profile.degree : 'CUSTOM'}
-                    error={fieldErrors.degree}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      handleInputChange('degree', val === 'CUSTOM' ? '' : val);
-                    }}
-                    options={DEGREE_OPTIONS.map((d) => ({
-                      value: d.value,
-                      label: `${d.label} (${d.group})`,
-                    }))}
-                  />
-                  {(!DEGREE_OPTIONS.some((d) => d.value === profile.degree) || profile.degree === 'CUSTOM') && (
-                    <Input
-                      placeholder="Specify custom accredited degree"
-                      value={profile.degree === 'CUSTOM' ? '' : profile.degree}
-                      error={fieldErrors.degree}
-                      onChange={(e) => handleInputChange('degree', e.target.value)}
-                    />
-                  )}
+                  {(() => {
+                    const isListedDegree = DEGREE_OPTIONS.some(
+                      (d) => d.value !== 'CUSTOM' && d.value === profile.degree
+                    );
+                    return (
+                      <>
+                        <Select
+                          label="Degree / Academic Course Program"
+                          required
+                          value={isListedDegree ? profile.degree : 'CUSTOM'}
+                          error={isListedDegree ? fieldErrors.degree : undefined}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            handleInputChange('degree', val === 'CUSTOM' ? '' : val);
+                          }}
+                          options={DEGREE_OPTIONS.map((d) => ({
+                            value: d.value,
+                            label: `${d.label} (${d.group})`,
+                          }))}
+                        />
+                        {!isListedDegree && (
+                          <Input
+                            placeholder="Specify custom accredited degree"
+                            value={profile.degree === 'CUSTOM' ? '' : profile.degree}
+                            error={fieldErrors.degree}
+                            onChange={(e) => handleInputChange('degree', e.target.value)}
+                          />
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
                 <Select
                   label="Major / Academic Stream"

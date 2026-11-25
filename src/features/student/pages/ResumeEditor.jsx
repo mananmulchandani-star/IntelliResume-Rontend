@@ -1,29 +1,18 @@
 // src/features/student/pages/ResumeEditor.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import html2canvas from 'html2canvas';
 import { ROUTES } from '../../../constants/routes';
 import { exportElementToPDF, exportResumeDataToPDF } from '../../../utils/pdfGenerator';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import { Button, Card, Input, Select, Badge, Tabs, Tab } from '../../../components/ui';
+import { Button, Card, Input, Select, Badge } from '../../../components/ui';
 import PhoneInputWithCountry from '../../../components/ui/PhoneInputWithCountry';
-import { DEGREE_OPTIONS, STREAM_OPTIONS, validators } from '../../../constants/validationData';
+import { DEGREE_OPTIONS, validators } from '../../../constants/validationData';
 import { Textarea } from '../../../components/ui/Input';
 import SkillVerificationModal from '../components/SkillVerificationModal';
-import {
-  ProfessionalTemplate,
-  ModernTemplate,
-  CreativeTemplate,
-  IRMSpecialTemplate,
-  TwinGridTemplate,
-  RESUME_TEMPLATES,
-  getTemplateComponent,
-} from '../components/ResumeTemplates';
+import { getTemplateComponent, RESUME_TEMPLATES } from '../components/ResumeTemplates';
 import {
   Save,
   Download,
-  FileDown,
-  Sparkles,
   ShieldCheck,
   Plus,
   Trash2,
@@ -34,11 +23,10 @@ import {
   Briefcase,
   Code2,
   FolderGit2,
-  Globe,
-  Award,
   Layers,
   Upload,
   Check,
+  AlertCircle,
 } from 'lucide-react';
 
 const INITIAL_RESUME_STATE = {
@@ -108,6 +96,58 @@ const INITIAL_RESUME_STATE = {
   ],
 };
 
+function normalizeResumeData(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return INITIAL_RESUME_STATE;
+  }
+
+  const rawInfo = raw.personalInfo && typeof raw.personalInfo === 'object' ? raw.personalInfo : {};
+  const rawEdu = Array.isArray(raw.education) ? raw.education : [];
+  const rawExp = Array.isArray(raw.workExperience)
+    ? raw.workExperience
+    : Array.isArray(raw.experience)
+    ? raw.experience
+    : [];
+  const rawProjects = Array.isArray(raw.projects) ? raw.projects : [];
+  const rawSkills = Array.isArray(raw.skills)
+    ? raw.skills.map((s) => (typeof s === 'string' ? s : s?.name || s?.skill || '')).filter(Boolean)
+    : typeof raw.skills === 'string'
+    ? raw.skills.split(',').map((s) => s.trim()).filter(Boolean)
+    : [];
+  const rawCerts = Array.isArray(raw.certifications)
+    ? raw.certifications.map((c) => (typeof c === 'string' ? c : c?.name || '')).filter(Boolean)
+    : [];
+  const rawAchievements = Array.isArray(raw.achievements)
+    ? raw.achievements.map((a) => (typeof a === 'string' ? a : a?.title || '')).filter(Boolean)
+    : [];
+
+  return {
+    ...INITIAL_RESUME_STATE,
+    ...raw,
+    id: raw.id || `resume-${Date.now()}`,
+    selectedTemplate: raw.selectedTemplate || 'Professional',
+    personalInfo: {
+      ...INITIAL_RESUME_STATE.personalInfo,
+      ...rawInfo,
+      fullName: rawInfo.fullName ?? raw.fullName ?? INITIAL_RESUME_STATE.personalInfo.fullName,
+      jobTitle: rawInfo.jobTitle ?? raw.jobTitle ?? INITIAL_RESUME_STATE.personalInfo.jobTitle,
+      email: rawInfo.email ?? raw.email ?? INITIAL_RESUME_STATE.personalInfo.email,
+      phone: rawInfo.phone ?? raw.phone ?? INITIAL_RESUME_STATE.personalInfo.phone,
+      location: rawInfo.location ?? raw.location ?? INITIAL_RESUME_STATE.personalInfo.location,
+      about: rawInfo.about ?? rawInfo.summary ?? raw.about ?? raw.summary ?? INITIAL_RESUME_STATE.personalInfo.about,
+    },
+    education: rawEdu,
+    workExperience: rawExp,
+    internships: Array.isArray(raw.internships) ? raw.internships : [],
+    projects: rawProjects,
+    skills: rawSkills,
+    certifications: rawCerts,
+    achievements: rawAchievements,
+    languages: Array.isArray(raw.languages) ? raw.languages : [],
+    extracurriculars: Array.isArray(raw.extracurriculars) ? raw.extracurriculars : [],
+  };
+}
+
 export default function ResumeEditor() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -116,15 +156,15 @@ export default function ResumeEditor() {
   const [resumeData, setResumeData] = useState(() => {
     try {
       const fromNav = location.state?.resumeData;
-      if (fromNav) return fromNav;
+      if (fromNav) return normalizeResumeData(fromNav);
 
       const current = localStorage.getItem('currentResume');
-      if (current) return JSON.parse(current);
+      if (current) return normalizeResumeData(JSON.parse(current));
 
       const all = localStorage.getItem('userResumes');
       if (all) {
         const parsed = JSON.parse(all);
-        if (parsed.length > 0) return parsed[0];
+        if (Array.isArray(parsed) && parsed.length > 0) return normalizeResumeData(parsed[0]);
       }
     } catch (e) {
       console.error('Error restoring resume state:', e);
@@ -152,11 +192,8 @@ export default function ResumeEditor() {
   const personalErrors = {
     fullName: validators.fullName(resumeData.personalInfo?.fullName, 'Full Legal Name'),
     email: validators.email(resumeData.personalInfo?.email),
-    phone: validators.phone(
-      (resumeData.personalInfo?.phone || '').replace(/^\+[0-9]+\s*/, ''),
-      (resumeData.personalInfo?.phone || '').match(/^\+[0-9]+/)?.[0] || '+91'
-    ),
-    jobTitle: !resumeData.personalInfo?.jobTitle?.trim() ? 'Job title or headline is required.' : null,
+    phone: validators.phoneFull(resumeData.personalInfo?.phone, true),
+    jobTitle: validators.role(resumeData.personalInfo?.jobTitle, 'Job Title / Role'),
     location: !resumeData.personalInfo?.location?.trim() ? 'Location is required.' : null,
   };
 
@@ -537,7 +574,8 @@ export default function ResumeEditor() {
                     label="Full Name"
                     required
                     placeholder="e.g. Manan Mulchandani"
-                    value={resumeData.personalInfo.fullName}
+                    helperText="Alphabets (A-Z) and spaces only."
+                    value={resumeData.personalInfo?.fullName ?? ''}
                     error={personalErrors.fullName}
                     onChange={(e) => handlePersonalInfoChange('fullName', e.target.value)}
                   />
@@ -545,7 +583,8 @@ export default function ResumeEditor() {
                     label="Job Title / Professional Headline"
                     required
                     placeholder="e.g. Full Stack Software Engineer"
-                    value={resumeData.personalInfo.jobTitle}
+                    helperText="Alphabets (A-Z) and spaces only."
+                    value={resumeData.personalInfo?.jobTitle ?? ''}
                     error={personalErrors.jobTitle}
                     onChange={(e) => handlePersonalInfoChange('jobTitle', e.target.value)}
                   />
@@ -658,33 +697,37 @@ export default function ResumeEditor() {
                       </button>
 
                       <div className="space-y-1.5">
-                        <Select
-                          label="Degree / Academic Course Program"
-                          required
-                          value={
-                            DEGREE_OPTIONS.some((d) => d.value === edu.degree)
-                              ? edu.degree
-                              : 'CUSTOM'
-                          }
-                          error={educationErrors[idx]?.degree}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            handleUpdateEducation(idx, 'degree', val === 'CUSTOM' ? '' : val);
-                          }}
-                          options={DEGREE_OPTIONS.map((d) => ({
-                            value: d.value,
-                            label: `${d.label} (${d.group})`,
-                          }))}
-                        />
-                        {(!DEGREE_OPTIONS.some((d) => d.value === edu.degree) ||
-                          edu.degree === 'CUSTOM') && (
-                          <Input
-                            placeholder="Specify custom accredited degree (e.g. BCA Cloud & Security)"
-                            value={edu.degree === 'CUSTOM' ? '' : edu.degree}
-                            error={educationErrors[idx]?.degree}
-                            onChange={(e) => handleUpdateEducation(idx, 'degree', e.target.value)}
-                          />
-                        )}
+                        {(() => {
+                          const isListedDegree = DEGREE_OPTIONS.some(
+                            (d) => d.value !== 'CUSTOM' && d.value === edu.degree
+                          );
+                          return (
+                            <>
+                              <Select
+                                label="Degree / Academic Course Program"
+                                required
+                                value={isListedDegree ? edu.degree : 'CUSTOM'}
+                                error={isListedDegree ? educationErrors[idx]?.degree : undefined}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  handleUpdateEducation(idx, 'degree', val === 'CUSTOM' ? '' : val);
+                                }}
+                                options={DEGREE_OPTIONS.map((d) => ({
+                                  value: d.value,
+                                  label: `${d.label} (${d.group})`,
+                                }))}
+                              />
+                              {!isListedDegree && (
+                                <Input
+                                  placeholder="Specify custom accredited degree (e.g. BCA Cloud & Security)"
+                                  value={edu.degree === 'CUSTOM' ? '' : (edu.degree || '')}
+                                  error={educationErrors[idx]?.degree}
+                                  onChange={(e) => handleUpdateEducation(idx, 'degree', e.target.value)}
+                                />
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
 
                       <Input

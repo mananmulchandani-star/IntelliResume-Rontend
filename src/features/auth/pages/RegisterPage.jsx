@@ -5,7 +5,7 @@ import { ROUTES } from '../../../constants/routes';
 import { ROLES, ROLE_DEFAULT_ROUTES } from '../../../constants/roles';
 import { Button, Input, Card, CardContent, CardFooter, Select } from '../../../components/ui';
 import PhoneInputWithCountry from '../../../components/ui/PhoneInputWithCountry';
-import { DEGREE_OPTIONS, STREAM_OPTIONS, validators } from '../../../constants/validationData';
+import { DEGREE_OPTIONS, validators } from '../../../constants/validationData';
 import {
   Sparkles,
   ArrowRight,
@@ -88,12 +88,10 @@ export default function RegisterPage() {
     const emailErr = validators.email(email);
     if (emailErr) errors.email = emailErr;
 
-    // Validate Phone
+    // Validate Phone (optional at signup, validated against selected country if entered)
     if (phone) {
-      const digits = phone.replace(/[^\d]/g, '');
-      if (digits.length < 7 || digits.length > 15) {
-        errors.phone = 'Please enter a valid mobile number with country code.';
-      }
+      const phoneErr = validators.phoneFull(phone, false);
+      if (phoneErr) errors.phone = phoneErr;
     }
 
     // Validate Password
@@ -110,6 +108,11 @@ export default function RegisterPage() {
       const collegeErr = validators.institution(college);
       if (collegeErr) errors.college = collegeErr;
 
+      if (targetRole) {
+        const targetRoleErr = validators.role(targetRole, 'Target role', { required: false });
+        if (targetRoleErr) errors.targetRole = targetRoleErr;
+      }
+
       if (cgpa) {
         const gpaErr = validators.gpa(cgpa);
         if (gpaErr) errors.cgpa = gpaErr;
@@ -125,6 +128,11 @@ export default function RegisterPage() {
       (!organizationName || organizationName.trim().length < 3)
     ) {
       errors.organizationName = 'Please provide a valid institution / company organization name (min 3 chars).';
+    }
+
+    if (selectedRole === ROLES.COMPANY_RECRUITER && department) {
+      const roleErr = validators.role(department, 'Designation / Recruiter Title', { required: false });
+      if (roleErr) errors.department = roleErr;
     }
 
     if (Object.keys(errors).length > 0) {
@@ -274,12 +282,17 @@ export default function RegisterPage() {
                 <Input
                   label={selectedRole === ROLES.STUDENT ? 'Full Legal Name' : 'Contact Person Full Name'}
                   type="text"
-                  placeholder={selectedRole === ROLES.STUDENT ? 'e.g. Manan Mulchandani' : 'e.g. Dr. Sarah Jenkins'}
+                  placeholder={selectedRole === ROLES.STUDENT ? 'e.g. Manan Mulchandani' : 'e.g. Sarah Jenkins'}
+                  helperText="Alphabets (A-Z) and spaces only."
                   value={name}
                   error={fieldErrors.name}
                   onChange={(e) => {
-                    setName(e.target.value);
-                    setFieldErrors((prev) => ({ ...prev, name: null }));
+                    const val = e.target.value;
+                    setName(val);
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      name: validators.fullName(val, 'Full name'),
+                    }));
                   }}
                   leftIcon={<User className="w-4 h-4 text-neutral-400" />}
                   required
@@ -378,8 +391,17 @@ export default function RegisterPage() {
                   <Input
                     label="Primary Career Interest / Target Role"
                     placeholder="e.g. Full Stack Software Engineer"
+                    helperText="Alphabets (A-Z) and spaces only."
                     value={targetRole}
-                    onChange={(e) => setTargetRole(e.target.value)}
+                    error={fieldErrors.targetRole}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setTargetRole(val);
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        targetRole: validators.role(val, 'Target role', { required: false }),
+                      }));
+                    }}
                     leftIcon={<Briefcase className="w-4 h-4 text-neutral-400" />}
                   />
                 </>
@@ -393,7 +415,11 @@ export default function RegisterPage() {
                       label="University / Institution Name"
                       placeholder="e.g. State Institute of Technology"
                       value={organizationName}
-                      onChange={(e) => setOrganizationName(e.target.value)}
+                      error={fieldErrors.organizationName}
+                      onChange={(e) => {
+                        setOrganizationName(e.target.value);
+                        setFieldErrors((prev) => ({ ...prev, organizationName: null }));
+                      }}
                       leftIcon={<Building2 className="w-4 h-4 text-neutral-400" />}
                       required
                     />
@@ -466,15 +492,28 @@ export default function RegisterPage() {
                       label="Company / Enterprise Name"
                       placeholder="e.g. Stripe, Inc."
                       value={organizationName}
-                      onChange={(e) => setOrganizationName(e.target.value)}
+                      error={fieldErrors.organizationName}
+                      onChange={(e) => {
+                        setOrganizationName(e.target.value);
+                        setFieldErrors((prev) => ({ ...prev, organizationName: null }));
+                      }}
                       leftIcon={<Building2 className="w-4 h-4 text-neutral-400" />}
                       required
                     />
                     <Input
                       label="Designation / Recruiter Title"
                       placeholder="e.g. Head of University Recruiting"
+                      helperText="Alphabets (A-Z) and spaces only."
                       value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
+                      error={fieldErrors.department}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setDepartment(val);
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          department: validators.role(val, 'Designation / Recruiter Title', { required: false }),
+                        }));
+                      }}
                       leftIcon={<Briefcase className="w-4 h-4 text-neutral-400" />}
                     />
                   </div>
@@ -557,8 +596,9 @@ export default function RegisterPage() {
                   value={email}
                   error={fieldErrors.email}
                   onChange={(e) => {
-                    setEmail(e.target.value);
-                    setFieldErrors((prev) => ({ ...prev, email: null }));
+                    const val = e.target.value;
+                    setEmail(val);
+                    setFieldErrors((prev) => ({ ...prev, email: validators.email(val) }));
                   }}
                   leftIcon={<Mail className="w-4 h-4 text-neutral-400" />}
                   required

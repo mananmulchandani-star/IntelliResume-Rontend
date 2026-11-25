@@ -26,28 +26,28 @@ const QUICK_PROMPTS = [
   {
     title: 'Full Stack Engineering Fresher',
     role: 'Full Stack Software Engineer',
-    stream: 'Computer Science',
+    stream: 'Computer Science & Engineering',
     skills: 'React, Node.js, TypeScript, PostgreSQL, TailwindCSS, Docker, Git',
     prompt: 'Generate an ATS-optimized software engineer fresher resume emphasizing modern web frameworks, performant backend APIs, and collaborative open-source or hackathon projects.',
   },
   {
     title: 'Data Science & ML Intern',
-    role: 'Data Science & Machine Learning Intern',
-    stream: 'Data Science & AI',
+    role: 'Data Science and Machine Learning Intern',
+    stream: 'Data Science & Big Data Engineering',
     skills: 'Python, PyTorch, Pandas, Scikit-learn, SQL, Tableau, Jupyter',
     prompt: 'Generate a resume highlighting predictive modeling, EDA, data visualization, and real-world ML projects with quantified evaluation metrics.',
   },
   {
     title: 'Cloud & DevOps Junior Engineer',
-    role: 'Cloud Operations & DevOps Engineer',
+    role: 'Cloud Operations and DevOps Engineer',
     stream: 'Information Technology',
     skills: 'AWS, Linux, Docker, Kubernetes, CI/CD, Terraform, Python',
     prompt: 'Generate an infrastructure-focused resume highlighting containerization, CI/CD pipeline automation, and cloud deployment reliability.',
   },
   {
     title: 'Product Design & Frontend Builder',
-    role: 'Product Designer & UI Engineer',
-    stream: 'Design & Computing',
+    role: 'Product Designer and UI Engineer',
+    stream: 'Human-Computer Interaction (HCI) & UI/UX',
     skills: 'Figma, React, TailwindCSS, UX Research, Design Systems, Wireframing',
     prompt: 'Generate a resume emphasizing user experience design, component architecture, accessible UI development, and rapid design-to-code execution.',
   },
@@ -87,71 +87,77 @@ export default function ResumeBuilder() {
     'Compiling verified structure and modular templates...',
   ];
 
+  const validateField = (field, value, state = formData) => {
+    switch (field) {
+      case 'fullName':
+        return validators.fullName(value, 'Full legal name');
+      case 'email':
+        return validators.email(value);
+      case 'phone':
+        return validators.phoneFull(value, true);
+      case 'location':
+        return !value || value.trim().length < 2
+          ? 'Location is required (min 2 characters).'
+          : null;
+      case 'targetRole':
+        return validators.role(value, 'Target role');
+      case 'degree':
+      case 'customDegree': {
+        const activeDegree = state.isCustomDegree ? (field === 'customDegree' ? value : state.customDegree) : (field === 'degree' ? value : state.degree);
+        return validators.degree(activeDegree);
+      }
+      case 'stream':
+        return validators.stream(value);
+      case 'college':
+        return validators.institution(value);
+      case 'gpa':
+        return validators.gpa(value);
+      case 'gradYear':
+        return validators.year(value);
+      case 'keySkills':
+        return validators.skills(value);
+      default:
+        return null;
+    }
+  };
+
   const validateForm = () => {
     const errors = {};
+    const fieldsToCheck = [
+      'fullName',
+      'email',
+      'phone',
+      'location',
+      'targetRole',
+      'degree',
+      'stream',
+      'college',
+      'gpa',
+      'gradYear',
+      'keySkills',
+    ];
 
-    // Full Name: required, min 2 chars, letters, spaces, hyphens, periods only
-    const nameErr = validators.fullName(formData.fullName, 'Full legal name');
-    if (nameErr) errors.fullName = nameErr;
-
-    // Email: required, RFC-5322 strict pattern
-    const emailErr = validators.email(formData.email);
-    if (emailErr) errors.email = emailErr;
-
-    // Phone: with country code verification
-    if (formData.phone) {
-      const digits = formData.phone.replace(/[^\d]/g, '');
-      if (digits.length < 7 || digits.length > 15) {
-        errors.phone = 'Please enter a valid mobile number with country code.';
-      }
-    } else {
-      errors.phone = 'Mobile contact number is required.';
+    for (const f of fieldsToCheck) {
+      const err = validateField(f, formData[f], formData);
+      if (err) errors[f] = err;
     }
-
-    // Location: required
-    if (!formData.location || formData.location.trim().length < 2) {
-      errors.location = 'Location is required (min 2 characters).';
-    }
-
-    // Target Role: required
-    if (!formData.targetRole || formData.targetRole.trim().length < 2) {
-      errors.targetRole = 'Target role designation is required.';
-    }
-
-    // Degree Program: accredited or custom
-    const activeDegree = formData.isCustomDegree ? formData.customDegree : formData.degree;
-    const degreeErr = validators.degree(activeDegree);
-    if (degreeErr) errors.degree = degreeErr;
-
-    // Academic Stream: required
-    const streamErr = validators.stream(formData.stream);
-    if (streamErr) errors.stream = streamErr;
-
-    // College / University: required
-    const collegeErr = validators.institution(formData.college);
-    if (collegeErr) errors.college = collegeErr;
-
-    // GPA / Score: valid numeric format
-    const gpaErr = validators.gpa(formData.gpa);
-    if (gpaErr) errors.gpa = gpaErr;
-
-    // Graduation Year: valid 4-digit or range
-    const yearErr = validators.year(formData.gradYear);
-    if (yearErr) errors.gradYear = yearErr;
-
-    // Key Skills: minimum 3 valid skills
-    const skillsErr = validators.skills(formData.keySkills);
-    if (skillsErr) errors.keySkills = skillsErr;
 
     return { isValid: Object.keys(errors).length === 0, errors };
   };
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const nextState = { ...formData, [field]: value };
+    setFormData(nextState);
+    const errorKey = field === 'customDegree' ? 'degree' : field;
+    const err = validateField(field, value, nextState);
     setFieldErrors((prev) => {
-      const n = { ...prev };
-      delete n[field];
-      return n;
+      const next = { ...prev };
+      if (err) {
+        next[errorKey] = err;
+      } else {
+        delete next[errorKey];
+      }
+      return next;
     });
   };
 
@@ -194,11 +200,13 @@ export default function ResumeBuilder() {
       setCurrentStep((prev) => (prev < loadingSteps.length - 1 ? prev + 1 : prev));
     }, 1100);
 
+    const effectiveDegree = formData.isCustomDegree ? formData.customDegree.trim() : formData.degree;
+
     const promptPayload = `
-Target Role: ${formData.targetRole}
+Target Role: ${formData.targetRole.trim()}
 Academic Stream: ${formData.stream}
 Experience Level: ${formData.experienceLevel}
-Education: ${formData.degree} at ${formData.college} (GPA: ${formData.gpa})
+Education: ${effectiveDegree} at ${formData.college.trim()} (GPA: ${formData.gpa})
 Core Skills: ${formData.keySkills}
 User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume with strong quantified bullet points for entry-level placements.'}
 `.trim();
@@ -255,10 +263,10 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
           },
           education: [
             {
-              degree: formData.degree || 'B.S. in Computer Science & Engineering',
-              institution: formData.college || 'State Institute of Technology',
-              year: '2022 - 2026',
-              score: formData.gpa ? `${formData.gpa} CGPA / GPA` : '3.88 GPA',
+              degree: effectiveDegree || 'BCA',
+              institution: formData.college || 'Medi-Caps University, Indore',
+              year: formData.gradYear || '2026',
+              score: formData.gpa ? `${formData.gpa} CGPA` : '8.85 / 10.0',
               details: 'Relevant Coursework: Data Structures & Algorithms, Distributed Systems, Database Management Systems, Object-Oriented Software Design, Cloud Computing & Microservices, Computer Networks, Operating Systems.',
             },
           ],
@@ -480,10 +488,10 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
         },
         education: generatedData.education && generatedData.education.length > 0 ? generatedData.education : [
           {
-            degree: formData.degree || 'B.S. in Computer Science & Engineering',
-            institution: formData.college || 'State Institute of Technology',
-            year: '2022 - 2026',
-            score: formData.gpa ? `${formData.gpa} CGPA / GPA` : '3.88 GPA',
+            degree: effectiveDegree || 'BCA',
+            institution: formData.college || 'Medi-Caps University, Indore',
+            year: formData.gradYear || '2026',
+            score: formData.gpa ? `${formData.gpa} CGPA` : '8.85 / 10.0',
             details: 'Relevant Coursework: Data Structures & Algorithms, Distributed Systems, Database Management Systems, Object-Oriented Software Design, Cloud Computing, Computer Networks, Operating Systems.',
           },
         ],
@@ -578,6 +586,7 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                   label="Full Legal Name"
                   required
                   placeholder="e.g. Manan Mulchandani"
+                  helperText="Alphabets (A-Z) and spaces only."
                   value={formData.fullName}
                   error={fieldErrors.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
@@ -623,6 +632,7 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                   label="Target Job Title / Role"
                   required
                   placeholder="e.g. Full Stack Software Engineer"
+                  helperText="Alphabets (A-Z) and spaces only."
                   value={formData.targetRole}
                   error={fieldErrors.targetRole}
                   onChange={(e) => handleInputChange('targetRole', e.target.value)}
@@ -640,13 +650,22 @@ User Instructions: ${formData.prompt || 'Generate a high-impact, clean resume wi
                     label="Degree / Course Program"
                     required
                     value={formData.isCustomDegree ? 'CUSTOM' : formData.degree}
-                    error={fieldErrors.degree}
+                    error={!formData.isCustomDegree ? fieldErrors.degree : undefined}
                     onChange={(e) => {
                       const val = e.target.value;
                       if (val === 'CUSTOM') {
                         setFormData((prev) => ({ ...prev, isCustomDegree: true }));
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          degree: validators.degree(formData.customDegree),
+                        }));
                       } else {
                         setFormData((prev) => ({ ...prev, isCustomDegree: false, degree: val }));
+                        setFieldErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.degree;
+                          return next;
+                        });
                       }
                     }}
                     options={DEGREE_OPTIONS.map((d) => ({
